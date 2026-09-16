@@ -33,6 +33,7 @@ npm run dev
 6. `supabase/v6_candidate_conversion.sql`
 7. `supabase/v7_recruiter_os.sql`
 8. `supabase/v8_production_compliance.sql`
+9. `supabase/v9_least_privilege.sql`
 
 Deploy the Edge Functions under `supabase/functions/` and configure their secrets. See `docs/PRODUCTION-SETUP.md` for the deployment checklist.
 
