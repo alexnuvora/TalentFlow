@@ -18,7 +18,12 @@ Deno.serve(async(req)=>{if(req.method==='OPTIONS')return new Response('ok',{head
  let answers:any={}; try{answers=body.answers?JSON.parse(String(body.answers)):{}}catch{throw new Error('Invalid qualification answers');}
  const questions=Array.isArray(job.application_questions)?job.application_questions:[];
  for(const q of questions){if(q.required && !String(answers[q.id]??'').trim())throw new Error(`Please answer: ${q.question}`);}
- const {data:existing}=await supabase.from('candidates').select('id').eq('company_id',job.company_id).eq('email',email).maybeSingle(); let candidate:any=existing;
+ const {data:existing,error:lookupError}=await supabase.from('candidates').select('id').eq('company_id',job.company_id).eq('email',email).maybeSingle();
+ if(lookupError)throw new Error('Unable to process application');
+ // An email address is not proof of identity. Never reveal an existing portal token,
+ // overwrite an existing CV, or attach an application without verified ownership.
+ if(existing)return json({error:'Please contact the recruitment team to apply using your existing record. Identity verification is required.'},409);
+ let candidate:any=null;
  if(!candidate){const {data:created,error:ce}=await supabase.from('candidates').insert({company_id:job.company_id,full_name:fullName,email,phone:body.phone||null,location:body.location||null,linkedin_url:body.linkedin_url||null,source:body.source||body.utm_source||'careers',stage:'new',consent_at:new Date().toISOString(),lawful_basis:'contract_steps',retention_review_at:new Date(Date.now()+6*30.4375*86400000).toISOString()}).select('id').single();if(ce)throw ce;candidate=created;}
  let resumePath:string|null=null; const resume=body.resume_file as File|undefined;
  if(resume && resume.size){if(resume.size>5*1024*1024)throw new Error('CV must be 5MB or smaller'); const allowedTypes=['application/pdf','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/msword'];if(resume.type&&!allowedTypes.includes(resume.type))throw new Error('CV must be PDF or Word document'); const ext=(resume.name.split('.').pop()||'pdf').toLowerCase().replace(/[^a-z0-9]/g,'');resumePath=`${job.company_id}/${candidate.id}/${crypto.randomUUID()}.${ext}`;const {error:up}=await supabase.storage.from('candidate-resumes').upload(resumePath,resume,{contentType:resume.type||'application/octet-stream',upsert:false});if(up)throw new Error('CV upload failed'); await supabase.from('candidates').update({resume_path:resumePath}).eq('id',candidate.id);}

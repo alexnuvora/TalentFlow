@@ -5,18 +5,18 @@ import { Badge, Card, Empty, Button } from '../components/Ui';
 
 export default function ClientPortal(){
   const [client,setClient]=useState<any>(null),[jobs,setJobs]=useState<any[]>([]),[candidates,setCandidates]=useState<any[]>([]),[interviews,setInterviews]=useState<any[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState('');
-  useEffect(()=>{(async()=>{const {data:{user}}=await supabase.auth.getUser(); if(!user){setError('Please sign in.');setLoading(false);return}
-    const {data:profile}=await supabase.from('profiles').select('client_id,full_name').eq('id',user.id).single();
-    if(!profile?.client_id){setError('This account is not configured as a client portal user.');setLoading(false);return}
-    const [cr,jr,ar,ir]=await Promise.all([
-      supabase.from('clients').select('*').eq('id',profile.client_id).single(),
-      supabase.from('jobs').select('*').eq('client_id',profile.client_id).order('created_at',{ascending:false}),
-      supabase.from('applications').select('id,status,submitted_at,candidate_id,job_id,candidates(full_name,email,location,score,stage),jobs(title)').eq('company_id',(await supabase.from('profiles').select('company_id').eq('id',user.id).single()).data?.company_id).order('submitted_at',{ascending:false}),
-      supabase.from('interviews').select('*, candidates(full_name,email), jobs(title)').eq('client_id',profile.client_id).order('scheduled_at',{ascending:true})
-    ]);
-    setClient(cr.data); setJobs(jr.data||[]); setCandidates((ar.data||[]).filter((a:any)=>jobsFor(a,jr.data||[]))); setInterviews(ir.data||[]); if(cr.error||jr.error||ar.error||ir.error)setError((cr.error||jr.error||ar.error||ir.error)?.message||'Unable to load portal'); setLoading(false);
-  })()},[]);
-  function jobsFor(a:any,j:any[]){return j.some(x=>x.id===a.job_id)}
+  useEffect(()=>{
+    let active=true;
+    (async()=>{
+      try {
+        const {data,error}=await supabase.rpc('client_portal_data');
+        if(error)throw error;
+        if(active){setClient(data.client);setJobs(data.jobs);setCandidates(data.candidates);setInterviews(data.interviews);}
+      }catch{if(active)setError('Unable to load the portal. Please check that this account has client access.');}
+      finally{if(active)setLoading(false);}
+    })();
+    return ()=>{active=false};
+  },[]);
   if(loading)return <div className="public"><div className="loading">Loading client portal…</div></div>;
   if(error)return <div className="public"><Card><h2>Client portal</h2><p className="muted">{error}</p><Button onClick={()=>supabase.auth.signOut()}>Sign out</Button></Card></div>;
   return <div className="public portal"><header><div className="brand big"><div className="brand-mark">TF</div><div><strong>TalentFlow</strong><span>Client portal</span></div></div><div className="button-row"><Badge tone="green">{client?.company_name}</Badge><Button variant="ghost" onClick={()=>supabase.auth.signOut()}><LogOut size={16}/> Sign out</Button></div></header>
