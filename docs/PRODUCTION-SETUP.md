@@ -12,6 +12,7 @@ Run these in Supabase SQL Editor in this order:
 6. `supabase/v6_candidate_conversion.sql`
 7. `supabase/v7_recruiter_os.sql`
 8. `supabase/v8_production_compliance.sql`
+9. `supabase/v9_least_privilege.sql`
 
 Apply each migration once in order through a version-controlled staging workflow. Do not paste the full chain repeatedly into a live database; some enum and policy statements are intentionally one-time operations.
 
