@@ -1,2 +1,1 @@
-import { Card } from './Ui';
-export function Metric({label,value,detail}:{label:string;value:string|number;detail?:string}){return <Card className="metric"><div className="metric-label">{label}</div><div className="metric-value">{value}</div>{detail&&<div className="metric-detail">{detail}</div>}</Card>}
+export function Metric({label,value,detail}:{label:string;value:string|number;detail?:string}){return <div className="metric"><div className="metric-label">{label}</div><div className="metric-line"><strong className="metric-value">{value}</strong>{detail&&<span className="metric-detail">{detail}</span>}</div></div>}
