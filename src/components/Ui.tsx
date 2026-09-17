@@ -1,8 +1,11 @@
 import type { ReactNode } from 'react';
-import { LoaderCircle, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 export function Button({children,onClick,type='button',variant='primary',disabled=false}:{children:ReactNode;onClick?:()=>void;type?:'button'|'submit';variant?:'primary'|'ghost'|'danger';disabled?:boolean}){return <button type={type} disabled={disabled} onClick={onClick} className={`btn ${variant} ${disabled?'disabled':''}`}>{children}</button>}
 export function Badge({children,tone='neutral'}:{children:ReactNode;tone?:'neutral'|'green'|'amber'|'red'|'blue'}){return <span className={`badge ${tone}`}>{children}</span>}
 export function Card({children,className='' }:{children:ReactNode;className?:string}){return <section className={`card ${className}`}>{children}</section>}
 export function Empty({title,text}:{title:string;text:string}){return <div className="empty"><div className="empty-icon">○</div><h3>{title}</h3><p>{text}</p></div>}
-export function Spinner(){return <LoaderCircle className="spin" size={20}/>}
+export function Skeleton({width='100%',height=14,className=''}:{width?:string|number;height?:string|number;className?:string}){return <span className={`skeleton ${className}`} style={{width,height}} aria-hidden="true"/>}
+export function SkeletonRows({rows=5}:{rows?:number}){return <div className="skeleton-rows" aria-label="Loading">{Array.from({length:rows},(_,i)=><div className="skeleton-row" key={i}><Skeleton width={i%2?'42%':'34%'} height={13}/><Skeleton width={i%3?'25%':'31%'} height={13}/><Skeleton width="14%" height={13}/><Skeleton width="18%" height={13}/></div>)}</div>}
+export function SkeletonCards({count=4}:{count?:number}){return <div className="skeleton-cards" aria-label="Loading">{Array.from({length:count},(_,i)=><div className="card skeleton-card" key={i}><Skeleton width="45%" height={18}/><Skeleton width="70%" height={12}/><Skeleton width="92%" height={12}/><Skeleton width="64%" height={12}/></div>)}</div>}
+export function Spinner(){return <div className="skeleton-loader" aria-label="Loading"><Skeleton width="38%" height={18}/><Skeleton width="72%" height={13}/><Skeleton width="58%" height={13}/><Skeleton width="84%" height={13}/></div>}
 export function SearchBox({value,onChange,placeholder='Search…'}:{value:string;onChange:(v:string)=>void;placeholder?:string}){return <label className="search"><Search size={17}/><input value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder}/></label>}
