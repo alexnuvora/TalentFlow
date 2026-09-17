@@ -1,0 +1,3 @@
+update public.saas_plans set recruiter_limit=1,active_job_limit=10,candidate_limit=2500,automation_limit=5 where code='starter';
+update public.saas_plans set recruiter_limit=5,active_job_limit=50,candidate_limit=25000,automation_limit=25 where code='growth';
+update public.saas_plans set recruiter_limit=15,active_job_limit=200,candidate_limit=100000,automation_limit=100 where code='scale';
