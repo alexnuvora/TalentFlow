@@ -1,5 +1,3 @@
 User-agent: *
 Allow: /
 Sitemap: https://talentflow-nu-neon.vercel.app/sitemap.xml
-
-# Private application routes carry page-level noindex directives.
