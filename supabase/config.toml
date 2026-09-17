@@ -1,5 +1,9 @@
 [functions.submit-application]
 verify_jwt = false
 
+# Browser CORS preflight requests do not carry a user Authorization header.
+# Keep gateway JWT verification disabled so OPTIONS reaches the handler.
+# ai-screen-candidate authenticates POST requests with auth.getUser()
+# and authorizes owner/manager/recruiter roles before screening.
 [functions.ai-screen-candidate]
-verify_jwt = true
+verify_jwt = false
