@@ -1,6 +1,65 @@
-import {Link} from 'react-router-dom';
-const controller=import.meta.env.VITE_LEGAL_NAME?.trim();
-const address=import.meta.env.VITE_LEGAL_ADDRESS?.trim();
-const privacyEmail=import.meta.env.VITE_PRIVACY_EMAIL?.trim();
-const retention=import.meta.env.VITE_CANDIDATE_RETENTION_MONTHS||'6';
-export default function Privacy(){const hasContact=!!privacyEmail;return <main className="public legal-page"><Link to="/careers">← Back to opportunities</Link><h1>Candidate privacy information</h1><p className="muted">Last updated: 17 September 2026</p>{controller?<p><strong>{controller}</strong>{address?`, ${address}`:''} operates this recruitment service.{hasContact<> Privacy enquiries: <a href={`mailto:${privacyEmail}`}>{privacyEmail}</a>.</>:null}</p>:<p>TalentFlow is the recruitment service used to manage applications and registrations of interest. Operator identity and dedicated privacy-contact details will be added here when they are established.</p>}<h2>Information we use</h2><p>We use identity and contact details, CV and employment history, application answers, interview and recruiter notes, communications, availability, right-to-work and suitability information, and technical security records.</p><h2>Why information is used</h2><p>Information is used to respond to applications or registrations of interest, assess suitable opportunities, arrange interviews, protect the service, keep necessary records, and establish or defend legal claims. The applicable lawful basis depends on the recruitment activity and circumstances.</p><h2>AI-assisted screening</h2><p>AI may organise job-relevant evidence from application information and, where extraction succeeds, CV text. It provides decision support only. A recruiter can view the source CV, must review the evidence and can record review sign-off. AI does not make the final hiring or rejection decision.</p><h2>Who receives information</h2><p>Authorised recruitment staff and contracted technology providers may receive information they need. A candidate-pool registration is not a client submission. Identifiable candidate information is only sent to a client through a recruiter-reviewed submission process.</p><h2>Retention</h2><p>Unsuccessful records are normally reviewed after {retention} months unless a longer period is justified for a live opportunity, legal obligation, dispute or requested talent-pool retention.</p><h2>Your privacy choices</h2><p>The candidate portal provides controls for access, correction and erasure requests and communication preferences. Requests are reviewed before action so identity, live recruitment activity and records that must be retained can be considered appropriately.</p><h2>Recruitment communications</h2><p>Messages about an active application are service communications. Non-essential future-opportunity outreach respects the candidate’s recorded preference.</p><h2>Security</h2><p>We use access controls, private document storage, tenant-aware authorization, audit records and time-limited CV links. Privacy requests are verified through the private candidate portal before operational action.</p>{!hasContact&&<p className="muted small-text">A dedicated public privacy email has not yet been established. Candidates with an active application can use the privacy controls in their private candidate portal.</p>}</main>}
+import { Link } from 'react-router-dom';
+
+const controller = import.meta.env.VITE_LEGAL_NAME?.trim();
+const address = import.meta.env.VITE_LEGAL_ADDRESS?.trim();
+const privacyEmail = import.meta.env.VITE_PRIVACY_EMAIL?.trim();
+const retention = import.meta.env.VITE_CANDIDATE_RETENTION_MONTHS || '6';
+
+export default function Privacy() {
+  const hasContact = Boolean(privacyEmail);
+
+  return (
+    <main className="public legal-page">
+      <Link to="/careers">← Back to opportunities</Link>
+      <h1>Candidate privacy information</h1>
+      <p className="muted">Last updated: 17 September 2026</p>
+
+      {controller ? (
+        <p>
+          <strong>{controller}</strong>
+          {address ? `, ${address}` : ''} operates this recruitment service.
+          {hasContact ? (
+            <>
+              {' '}Privacy enquiries: <a href={`mailto:${privacyEmail}`}>{privacyEmail}</a>.
+            </>
+          ) : null}
+        </p>
+      ) : (
+        <p>
+          TalentFlow is the recruitment service used to manage applications and registrations of interest.
+          Operator identity and dedicated privacy-contact details will be added here when they are established.
+        </p>
+      )}
+
+      <h2>Information we use</h2>
+      <p>We use identity and contact details, CV and employment history, application answers, interview and recruiter notes, communications, availability, right-to-work and suitability information, and technical security records.</p>
+
+      <h2>Why information is used</h2>
+      <p>Information is used to respond to applications or registrations of interest, assess suitable opportunities, arrange interviews, protect the service, keep necessary records, and establish or defend legal claims. The applicable lawful basis depends on the recruitment activity and circumstances.</p>
+
+      <h2>AI-assisted screening</h2>
+      <p>AI may organise job-relevant evidence from application information and, where extraction succeeds, CV text. It provides decision support only. A recruiter can view the source CV, must review the evidence and can record review sign-off. AI does not make the final hiring or rejection decision.</p>
+
+      <h2>Who receives information</h2>
+      <p>Authorised recruitment staff and contracted technology providers may receive information they need. A candidate-pool registration is not a client submission. Identifiable candidate information is only sent to a client through a recruiter-reviewed submission process.</p>
+
+      <h2>Retention</h2>
+      <p>Unsuccessful records are normally reviewed after {retention} months unless a longer period is justified for a live opportunity, legal obligation, dispute or requested talent-pool retention.</p>
+
+      <h2>Your privacy choices</h2>
+      <p>The candidate portal provides controls for access, correction and erasure requests and communication preferences. Requests are reviewed before action so identity, live recruitment activity and records that must be retained can be considered appropriately.</p>
+
+      <h2>Recruitment communications</h2>
+      <p>Messages about an active application are service communications. Non-essential future-opportunity outreach respects the candidate’s recorded preference.</p>
+
+      <h2>Security</h2>
+      <p>We use access controls, private document storage, tenant-aware authorization, audit records and time-limited CV links. Privacy requests are verified through the private candidate portal before operational action.</p>
+
+      {!hasContact ? (
+        <p className="muted small-text">
+          A dedicated public privacy email has not yet been established. Candidates with an active application can use the privacy controls in their private candidate portal.
+        </p>
+      ) : null}
+    </main>
+  );
+}
