@@ -1,5 +1,15 @@
 import { supabase } from './supabase';
-export async function getDashboard(){const [jobs,candidates,clients,apps]=await Promise.all([supabase.from('jobs').select('*').order('created_at',{ascending:false}),supabase.from('candidates').select('*').order('created_at',{ascending:false}),supabase.from('clients').select('*').order('created_at',{ascending:false}),supabase.from('applications').select('*').order('submitted_at',{ascending:false})]);for(const r of [jobs,candidates,clients,apps])if(r.error)throw r.error;return{jobs:jobs.data||[],candidates:candidates.data||[],clients:clients.data||[],applications:apps.data||[]}}
+export async function getDashboard(){
+ const results=await Promise.all([
+ supabase.from('jobs').select('id,title,location,employment_type,status',{count:'exact'}).eq('status','published').order('created_at',{ascending:false}).limit(5),
+ supabase.from('candidates').select('id,full_name,email,source,stage',{count:'exact'}).is('erased_at',null).order('created_at',{ascending:false}).limit(6),
+ supabase.from('jobs').select('id',{head:true,count:'exact'}),
+ supabase.from('applications').select('id',{head:true,count:'exact'}),
+ supabase.from('placements').select('id',{head:true,count:'exact'}),
+ supabase.from('applications').select('id',{head:true,count:'exact'}).in('status',['qualified','submitted','interview','offer','placed'])
+ ]);for(const r of results)if(r.error)throw r.error;
+ return {jobs:results[0].data||[],candidates:results[1].data||[],published:results[0].count||0,candidateCount:results[1].count||0,jobCount:results[2].count||0,applicationCount:results[3].count||0,placed:results[4].count||0,qualified:results[5].count||0};
+}
 export async function signIn(email:string,password:string){return supabase.auth.signInWithPassword({email,password})}export async function signOut(){return supabase.auth.signOut()}export async function updateCandidateStage(id:string,stage:string){return supabase.from('candidates').update({stage}).eq('id',id)}export async function createJob(payload:Record<string,unknown>){return supabase.from('jobs').insert(payload).select().single()}export async function createClient(payload:Record<string,unknown>){return supabase.from('clients').insert(payload).select().single()}
 export async function getCandidates(){return supabase.from('candidates').select('*').order('created_at',{ascending:false})}
 export async function createCandidate(payload:Record<string,unknown>){return supabase.from('candidates').insert(payload).select().single()}
