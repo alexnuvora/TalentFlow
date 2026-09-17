@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
+const read=p=>fs.readFileSync(new URL(`../${p}`,import.meta.url),'utf8');
+test('billing uses canonical production invoice tables',()=>{const s=read('src/pages/Billing.tsx');assert.match(s,/from\('invoices'\)/);assert.match(s,/from\('invoice_payments'\)/);assert.doesNotMatch(s,/client_invoices/);});
+test('public auth routes are noindex and recovery is complete',()=>{const app=read('src/App.tsx'),recovery=read('src/pages/PasswordRecovery.tsx');assert.match(app,/forgot-password/);assert.match(app,/reset-password/);assert.match(recovery,/resetPasswordForEmail/);assert.match(recovery,/updateUser\(\{password\}\)/);assert.match(recovery,/robots:noIndex/);});
+test('private workspace has a noindex SEO guard',()=>{const s=read('src/App.tsx');assert.match(s,/PrivateSeo/);assert.match(s,/robots:noIndex/);assert.match(s,/path="\/dashboard\/\*"/);});
+test('careers uses canonical published job fields',()=>{const api=read('src/lib/api.ts'),home=read('src/pages/CareersHome.tsx');assert.match(api,/commission_text/);assert.doesNotMatch(api,/updated_at/);assert.match(home,/eq\('status','published'\)/);assert.match(home,/setSeo/);});
+test('browser production env contains no obvious server secrets',()=>{const s=read('.env.production');for(const key of ['SERVICE_ROLE','STRIPE_SECRET','WEBHOOK_SECRET','AI_API_KEY','RESEND_API_KEY','TWILIO_AUTH'])assert.doesNotMatch(s,new RegExp(key));});
