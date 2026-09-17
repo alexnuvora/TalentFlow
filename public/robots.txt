@@ -1,9 +1,3 @@
 User-agent: *
 Allow: /
-Disallow: /dashboard/
-Disallow: /login
-Disallow: /signup
-Disallow: /onboarding
-Disallow: /client
-Disallow: /candidate
 Sitemap: https://talentflow-nu-neon.vercel.app/sitemap.xml
