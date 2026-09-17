@@ -19,13 +19,16 @@ export function useWorkspaceAccess():WorkspaceAccess{
   const[loading,setLoading]=useState(true),[error,setError]=useState(''),[role,setRole]=useState(''),[companyId,setCompanyId]=useState<string|null>(null),[subscription,setSubscription]=useState<any>(null);
   const refresh=useCallback(async()=>{
     setLoading(true);setError('');
+    const{data:{user},error:userError}=await supabase.auth.getUser();
+    if(userError||!user){setRole('');setCompanyId(null);setSubscription(null);setError(userError?.message||'Your session has expired. Please sign in again.');setLoading(false);return}
     const[p,s]=await Promise.all([
-      supabase.from('profiles').select('role,company_id').single(),
+      supabase.from('profiles').select('role,company_id').eq('id',user.id).maybeSingle(),
       supabase.rpc('current_subscription_snapshot')
     ]);
-    if(p.error){setError(p.error.message);setLoading(false);return}
-    setRole(p.data?.role||'');setCompanyId(p.data?.company_id||null);
-    if(s.error)setError(s.error.message);else setSubscription(s.data||null);
+    if(p.error){setRole('');setCompanyId(null);setSubscription(null);setError(p.error.message);setLoading(false);return}
+    if(!p.data){setRole('');setCompanyId(null);setSubscription(null);setError('Your workspace profile is not available yet. Complete onboarding or contact a workspace owner.');setLoading(false);return}
+    setRole(p.data.role||'');setCompanyId(p.data.company_id||null);
+    if(s.error){setSubscription(null);setError(s.error.message)}else setSubscription(s.data||null);
     setLoading(false);
   },[]);
   useEffect(()=>{void refresh()},[refresh]);
