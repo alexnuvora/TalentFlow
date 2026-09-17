@@ -1,0 +1,42 @@
+name: Database regression tests
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: test-only-password
+          POSTGRES_DB: talentflow_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: test-only-password
+      PGDATABASE: talentflow_test
+      PGOPTIONS: "-c search_path=public,extensions"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore the schema-only production fixture
+        run: |
+          psql -v ON_ERROR_STOP=1 -f tests/fixtures/bootstrap.sql
+          for migration in tests/fixtures/production-schema/*.sql; do
+            psql -v ON_ERROR_STOP=1 -f "$migration"
+          done
+      - name: Apply release migration
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260917190000_subscription_and_access_review.sql
+      - name: Check plan enforcement and tenant access
+        run: psql -v ON_ERROR_STOP=1 -f tests/subscriptions.sql
