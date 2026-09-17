@@ -1,0 +1,23 @@
+# TalentFlow
+
+> TalentFlow is recruitment operations software for recruitment agencies and independent recruiters.
+
+TalentFlow connects recruitment CRM and applicant tracking workflows with client candidate submissions, interviews, recruitment automation, placements, invoices and payment tracking.
+
+## Primary pages
+- / — Product overview and pricing
+- /careers — Current recruitment opportunities
+- /privacy — Privacy information
+- /candidate-terms — Candidate terms
+- /accessibility — Accessibility information
+
+## Product facts
+- Recruitment CRM and candidate/application tracking
+- Client candidate review workflows
+- Interview management
+- Recruitment automation
+- Placement and commercial tracking
+- Client invoices and payment ledger
+- Starter, Growth and Scale subscription plans
+
+Private account, client and candidate portal pages are not intended for indexing.
