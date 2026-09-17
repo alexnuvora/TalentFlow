@@ -3,7 +3,23 @@ verify_jwt = false
 
 # Browser CORS preflight requests do not carry a user Authorization header.
 # Keep gateway JWT verification disabled so OPTIONS reaches the handler.
-# ai-screen-candidate authenticates POST requests with auth.getUser()
-# and authorizes owner/manager/recruiter roles before screening.
+# ai-screen-candidate authenticates POST requests with auth.getUser().
 [functions.ai-screen-candidate]
+verify_jwt = false
+
+# Invoked only by pg_cron with a rotated secret stored in Supabase Vault.
+# The function validates that secret against a private server-side hash.
+[functions.process-automation-queue]
+verify_jwt = false
+
+# Authenticated owner/manager invoice PDF and delivery operations.
+[functions.invoice-operations]
+verify_jwt = true
+
+# Authenticated workspace-owner Stripe checkout/customer-portal operations.
+[functions.subscription-billing]
+verify_jwt = true
+
+# Stripe signs webhook payloads itself; JWT gateway verification must be disabled.
+[functions.stripe-webhook]
 verify_jwt = false
