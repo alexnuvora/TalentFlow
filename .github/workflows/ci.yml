@@ -22,3 +22,16 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm run build
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.9.6
+      - name: Check server functions
+        run: deno check --node-modules-dir=auto supabase/functions/*/index.ts
+      - name: Install browser test runner
+        run: npm install --no-save --package-lock=false playwright@1.58.2
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify customer journeys
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/talentflow-preview.log 2>&1 &
+          node tests/browser-smoke.mjs

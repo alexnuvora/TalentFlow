@@ -1,0 +1,4 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {safeSlug,escapeHtml,jobSchema} from '../scripts/seo-utils.mjs';
+test('SEO file paths reject traversal and ambiguous slugs',()=>{for(const x of ['../index','a/b','a%2fb','',null,'x\\y'])assert.equal(safeSlug(x),false);assert.equal(safeSlug('sales-agent'),true)});
+test('talent pools are never advertised as JobPosting',()=>{const r=jobSchema({application_mode:'register_interest',title:'Sales',hiring_organization:'Client'},'https://example.test/careers/sales');assert.equal(r['@type'],'WebPage')});
+test('vacancy schema requires a known hiring organisation and escapes content',()=>{assert.equal(jobSchema({title:'Sales'},'https://example.test')['@type'],'WebPage');assert.equal(jobSchema({title:'Sales',hiring_organization:'Client',employment_type:'self_employed'},'https://example.test').employmentType,'CONTRACTOR');assert.equal(escapeHtml('<script>'), '&lt;script&gt;')});
