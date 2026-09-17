@@ -10,4 +10,12 @@
 .candidate-card .stage-select{width:100%;min-height:34px;border:1px solid var(--border-strong,#d4dbd8);border-radius:6px;background:#fff;color:#34413d;padding:6px 28px 6px 8px;font-size:11px;font-weight:600;text-transform:capitalize;outline:0}
 .candidate-card .stage-select:focus{border-color:var(--accent,#14745f);box-shadow:0 0 0 3px var(--focus,#14745f24)}
 .billing-plans{align-items:stretch}.billing-plan{min-height:168px}.billing-plan button{border-radius:6px;padding:8px 10px;color:#34413d;cursor:pointer}.billing-plan button:hover{background:#f5f7f6}
-@media(max-width:620px){.toolbar{align-items:stretch}.toolbar input,.toolbar select{width:100%;min-width:0}.billing-plans{grid-template-columns:1fr}}
+/* Overview navigation: rows look like product navigation, text links are deliberately understated. */
+.overview-page .card-head .text-link,.overview-page .empty .text-link{display:inline-flex;align-items:center;min-height:30px;padding:5px 8px;margin:-5px -8px;border-radius:5px;color:var(--accent,#14745f);font-size:11px;font-weight:650;line-height:1.2;text-decoration:none}
+.overview-page .card-head .text-link:hover,.overview-page .empty .text-link:hover{background:#f0f6f4;text-decoration:none}
+.overview-page .overview-row-link{margin:0 -8px;padding:11px 8px;border-radius:5px;color:var(--ink,#17211f);transition:background .12s ease,border-color .12s ease}
+.overview-page .overview-row-link:hover{background:#f7faf9;text-decoration:none}
+.overview-page .overview-row-link:focus-visible,.overview-page .text-link:focus-visible{outline:2px solid #76b6a6;outline-offset:2px}
+.overview-page .overview-row-link strong{color:var(--ink,#17211f)}.overview-page .overview-row-link .row-arrow{color:#9aa5a1;font-size:14px;transition:transform .12s ease,color .12s ease}.overview-page .overview-row-link:hover .row-arrow{color:var(--accent,#14745f);transform:translateX(2px)}
+.overview-page .button-row .btn{text-decoration:none}.overview-page .button-row .btn:hover{text-decoration:none}
+@media(max-width:620px){.toolbar{align-items:stretch}.toolbar input,.toolbar select{width:100%;min-width:0}.billing-plans{grid-template-columns:1fr}.overview-page .card-head{align-items:flex-start}.overview-page .card-head .text-link{white-space:nowrap}}
