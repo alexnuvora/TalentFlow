@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.95.0",
+    "pdfjs-dist": "npm:pdfjs-dist@5.4.149",
+    "@thednp/dommatrix": "npm:@thednp/dommatrix@2.0.12",
+    "mammoth": "npm:mammoth@1.8.0"
+  }
+}
