@@ -1,4 +1,4 @@
-# TalentFlow — Performance Recruitment OS
+# TalentFlow — Performance Recruitment OS 
 
 Multi-client recruitment infrastructure for candidate acquisition, qualification, scheduling, placement fees and measurable campaign ROI.
 
