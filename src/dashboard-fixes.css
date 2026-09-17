@@ -1,0 +1,13 @@
+/* Targeted dashboard UI fixes. Loaded after all other styles so product controls remain consistent. */
+.app-shell a:not(.btn):not(.button){text-decoration:none}
+.app-shell .text-link,.app-shell .public-link,.app-shell td a,.app-shell .candidate-name{color:var(--accent,#14745f);font-weight:600;text-decoration:none}
+.app-shell .text-link:hover,.app-shell .public-link:hover,.app-shell td a:hover,.app-shell .candidate-name:hover{text-decoration:underline;text-underline-offset:3px}
+.toolbar{display:flex;align-items:center;gap:10px;margin:0 0 16px;flex-wrap:wrap}
+.toolbar input,.toolbar select{height:38px;border:1px solid var(--border-strong,#d4dbd8);border-radius:6px;background:#fff;color:var(--ink,#17211f);padding:8px 10px;font:inherit;font-size:12px;outline:0;box-shadow:0 1px 1px #00000005}
+.toolbar input{min-width:min(360px,100%);flex:1 1 280px}.toolbar select{min-width:170px}
+.toolbar input:focus,.toolbar select:focus{border-color:var(--accent,#14745f);box-shadow:0 0 0 3px var(--focus,#14745f24)}
+.candidate-card .candidate-name{display:block;color:var(--ink,#17211f);font-size:13px;line-height:1.35}
+.candidate-card .stage-select{width:100%;min-height:34px;border:1px solid var(--border-strong,#d4dbd8);border-radius:6px;background:#fff;color:#34413d;padding:6px 28px 6px 8px;font-size:11px;font-weight:600;text-transform:capitalize;outline:0}
+.candidate-card .stage-select:focus{border-color:var(--accent,#14745f);box-shadow:0 0 0 3px var(--focus,#14745f24)}
+.billing-plans{align-items:stretch}.billing-plan{min-height:168px}.billing-plan button{border-radius:6px;padding:8px 10px;color:#34413d;cursor:pointer}.billing-plan button:hover{background:#f5f7f6}
+@media(max-width:620px){.toolbar{align-items:stretch}.toolbar input,.toolbar select{width:100%;min-width:0}.billing-plans{grid-template-columns:1fr}}
