@@ -3,7 +3,7 @@
   "private": true,
   "version": "8.0.0",
   "type": "module",
-  "scripts": {"dev":"vite","test":"node --test tests/*.test.mjs","typecheck":"tsc -b --pretty false","build":"tsc -b && vite build","check":"npm test && npm run typecheck && npm audit --audit-level=high","preview":"vite preview"},
+  "scripts": {"dev":"vite","test":"node --test tests/*.test.mjs","typecheck":"tsc -b --pretty false","build":"tsc -b && vite build && node scripts/seo-build.mjs","check":"npm test && npm run typecheck && npm audit --audit-level=high","preview":"vite preview"},
   "engines":{"node":">=20.19.0"},
   "dependencies": {"@supabase/supabase-js":"^2.57.0","lucide-react":"^0.468.0","react":"^19.1.1","react-dom":"^19.1.1","react-router-dom":"^7.8.2"},
   "devDependencies": {"@types/react":"^19.1.10","@types/react-dom":"^19.1.7","@vitejs/plugin-react":"^5.0.2","typescript":"^5.9.2","vite":"^7.1.3"}
