@@ -6,4 +6,3 @@
   <url><loc>https://talentflow-nu-neon.vercel.app/candidate-terms</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
   <url><loc>https://talentflow-nu-neon.vercel.app/accessibility</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
 </urlset>
-<!-- Replace the temporary Vercel host with the production custom domain when connected. Dynamic job URLs should be generated from live published jobs. -->
