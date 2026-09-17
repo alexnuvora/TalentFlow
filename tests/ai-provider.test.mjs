@@ -13,6 +13,11 @@ test('rejects insecure and credential-bearing URLs',()=> {
 test('legacy server environment names remain supported',()=>assert.equal(providerConfig(read({OPENAI_API_KEY:'secret',OPENAI_MODEL:'legacy'})).model,'legacy'));
 const valid = {score:75,summary:'Job-related evidence',strengths:[],gaps:[],interview_questions:[],evidence:[]};
 test('valid reports are allowlisted',()=>assert.deepEqual(validateReport({...valid,stage:'rejected'}),valid));
-test('malformed AI output is rejected',()=> {
-  for(const value of [{},{...valid,score:'75'},{...valid,score:101},{...valid,evidence:[{}]},{...valid,summary:''}]) assert.throws(()=>validateReport(value));
+test('provider output is normalized without inventing required content',()=> {
+  assert.deepEqual(validateReport({...valid,score:'75'}),valid);
+  assert.equal(validateReport({...valid,score:101}).score,100);
+  assert.deepEqual(validateReport({...valid,strengths:'Relevant experience'}).strengths,['Relevant experience']);
+  assert.throws(()=>validateReport({}));
+  assert.throws(()=>validateReport({...valid,score:'not-a-number'}));
+  assert.throws(()=>validateReport({...valid,summary:''}));
 });
