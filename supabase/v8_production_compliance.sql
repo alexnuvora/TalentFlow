@@ -1,4 +1,4 @@
--- TalentFlow V8: production security and UK recruitment compliance controls.
+-- Vorlen V8: production security and UK recruitment compliance controls.
 -- Run after v7_recruiter_os.sql. Review periods with UK counsel and your records schedule.
 create or replace function public.is_manager() returns boolean language sql stable security definer set search_path=public as $$
  select exists(select 1 from public.profiles where id=auth.uid() and role in ('owner','manager','recruiter'))
