@@ -1,4 +1,4 @@
--- TalentFlow V7 Recruiter Operating System
+-- Vorlen V7 Recruiter Operating System
 alter table public.candidates add column if not exists recruiter_summary text;
 alter table public.candidates add column if not exists next_action text;
 alter table public.candidates add column if not exists next_action_at timestamptz;
