@@ -1,4 +1,4 @@
--- TalentFlow commercial / placement engine
+-- Vorlen commercial / placement engine
 -- Run after supabase/schema.sql in Supabase SQL Editor.
 
 create type public.contract_status as enum ('draft','active','paused','expired','terminated');
