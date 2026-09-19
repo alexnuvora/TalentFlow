@@ -1,8 +1,8 @@
-# TalentFlow
+# Vorlen
 
-> TalentFlow is recruitment operations software for recruitment agencies and independent recruiters.
+> Vorlen is recruitment operations software for recruitment agencies and independent recruiters.
 
-TalentFlow connects recruitment CRM and applicant tracking workflows with client candidate submissions, interviews, recruitment automation, placements, invoices and payment tracking.
+Vorlen connects recruitment CRM and applicant tracking workflows with client candidate submissions, interviews, recruitment automation, placements, invoices and payment tracking.
 
 ## Primary pages
 - / — Product overview and pricing
