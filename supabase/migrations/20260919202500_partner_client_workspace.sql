@@ -6,7 +6,7 @@ create table if not exists public.partner_client_activity (
   company_id uuid not null references public.companies(id) on delete cascade,
   client_id uuid not null references public.clients(id) on delete cascade,
   partner_id uuid not null references auth.users(id) on delete cascade,
-  status text not null default 'not_contacted' check (status in ('not_contacted','no_answer','contacted','busy','not_interested','call_back','interested','follow_up','meeting_booked','converted','do_not_contact')),
+  status text not null default 'not_contacted' check (status in ('not_contacted','no_answer','contacted','busy','not_interested','call_back','send_more_info','interested','follow_up','meeting_booked','converted','do_not_contact')),
   callback_at timestamptz,
   last_contacted_at timestamptz,
   updated_at timestamptz not null default now(),
