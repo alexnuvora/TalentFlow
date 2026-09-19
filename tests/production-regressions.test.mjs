@@ -21,5 +21,5 @@ test('workspace invitation flow always returns invited users to Vorlen and route
 test('send more info outcome requires the company brochure attachment',()=>{const s=read('supabase/functions/partner-client-email/index.ts');assert.match(s,/send_more_info/);assert.match(s,/COMPANY_BROCHURE_BUCKET/);assert.match(s,/COMPANY_BROCHURE_PATH/);assert.match(s,/attachments/);assert.match(s,/Vorlen-Company-Brochure\\.pdf/);assert.match(s,/PDFDocument/);});
 
 test('landing page contains no legacy TalentFlow customer branding',()=>{const s=read('src/pages/Landing.tsx');assert.doesNotMatch(s,/TALENTFLOW/);});
-test('partner sourcing UI blocks non-sourcing partner profiles',()=>{const s=read('src/pages/PartnerClients.tsx');assert.match(s,/candidate_sourcer/);assert.match(s,/hybrid/);assert.match(s,/Add candidate/);});
+test('partner sourcing UI blocks non-sourcing partner profiles',()=>{const s=read('src/pages/PartnerClients.tsx');assert.match(s,/candidate_sourcer/);assert.match(s,/hybrid/);assert.match(s,/Add candidate/);assert.match(s,/Candidate creation is only available/);});
 test('post-call follow-up task errors are surfaced',()=>{const s=read('src/pages/PartnerClients.tsx');assert.match(s,/follow-up task could not be created/);});
