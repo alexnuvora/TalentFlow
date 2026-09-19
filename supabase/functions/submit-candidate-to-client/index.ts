@@ -1,4 +1,30 @@
-// Production source is deployed as Supabase Edge Function submit-candidate-to-client v12.
-// Keep this file aligned with production. Client-facing submissions use a polished candidate introduction template,
-// preserve candidate-authorisation and human-review checks in the reservation RPC, and support idempotent recovery/resend.
-// See deployed function for current runtime source.
+import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.57.0';
+const cors={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization, x-client-info, apikey, content-type'};
+const json=(x:any,s=200)=>new Response(JSON.stringify(x),{status:s,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
+const esc=(v:any)=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]!));
+Deno.serve(async req=>{if(req.method==='OPTIONS')return new Response('ok',{headers:cors});try{
+if(req.method!=='POST')return json({error:'Method not allowed'},405);
+const auth=req.headers.get('Authorization')||'',url=Deno.env.get('SUPABASE_URL')!,anon=Deno.env.get('SUPABASE_ANON_KEY')!,service=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const uc=createClient(url,anon,{global:{headers:{Authorization:auth}}}),db=createClient(url,service);
+const{data:{user}}=await uc.auth.getUser();if(!user)return json({error:'Authentication required'},401);
+const b=await req.json(),appId=String(b.application_id||''),summary=String(b.recruiter_summary||'').trim(),recipient=String(b.recipient_email||'').trim(),authorisation=String(b.candidate_authorisation||'').trim();
+if(!appId||!recipient||summary.length<10||authorisation.length<10||b.review_confirmed!==true)return json({error:'Application, recipient, reviewed summary, candidate authorisation and human review confirmation are required'},400);
+const{data:res,error:re}=await uc.rpc('reserve_client_submission',{p_application:appId,p_summary:summary,p_authorisation:authorisation,p_recipient:recipient});
+if(re)return json({error:re.message},400);
+const submissionId=res?.submission_id;if(!submissionId)return json({error:'Submission reservation failed'},500);
+const{data:s,error:se}=await db.from('candidate_submissions').select('id,candidate_id,job_id,client_id,delivery_id,status,recruiter_summary,recipient_email').eq('id',submissionId).single();
+if(se||!s)return json({error:'Reserved submission could not be loaded'},500);
+const [{data:c},{data:j},{data:cl},{data:d}]=await Promise.all([db.from('candidates').select('full_name').eq('id',s.candidate_id).single(),db.from('jobs').select('title').eq('id',s.job_id).single(),db.from('clients').select('company_name').eq('id',s.client_id).single(),db.from('outbound_deliveries').select('id,status,provider_message_id').eq('id',s.delivery_id).single()]);
+if(!c||!j||!cl||!d)return json({error:'Submission dependencies could not be loaded'},500);
+if(s.status==='submitted'&&b.force_resend!==true)return json({ok:true,already_submitted:true,submission_id:s.id});
+const key=Deno.env.get('RESEND_API_KEY'),from=Deno.env.get('RESEND_FROM');if(!key||!from)return json({error:'Email delivery is not configured'},503);
+const html=`<!doctype html><html><body style="margin:0;background:#f6f7f9;font-family:Arial,Helvetica,sans-serif;color:#172033"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:32px 16px"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:620px;margin:0 auto;background:#fff;border-radius:12px"><tr><td style="padding:36px"><p style="font-size:16px;line-height:24px;margin:0 0 20px">Hi,</p><p style="font-size:16px;line-height:24px;margin:0 0 20px">I’m pleased to introduce <strong>${esc(c.full_name)}</strong> for the <strong>${esc(j.title)}</strong> position.</p><p style="font-size:16px;line-height:24px;margin:0 0 24px">We’ve reviewed the application and believe the candidate is worth considering for this opportunity.</p><table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f8fafc;border-radius:8px;margin-bottom:24px"><tr><td style="padding:18px;font-size:15px;line-height:24px"><strong>Candidate:</strong> ${esc(c.full_name)}<br><strong>Position:</strong> ${esc(j.title)}</td></tr></table><p style="font-size:14px;font-weight:bold;margin:0 0 8px">Recruiter summary</p><p style="font-size:16px;line-height:24px;margin:0 0 24px">${esc(s.recruiter_summary)}</p><p style="font-size:16px;line-height:24px;margin:0 0 24px">The candidate has given permission for their details to be shared with ${esc(cl.company_name)} in connection with this opportunity.</p><p style="font-size:16px;line-height:24px;margin:0 0 24px">Please review the profile and let us know if you would like to arrange an interview or discuss the application further.</p><p style="font-size:16px;line-height:24px;margin:0">Kind regards,<br><strong>TalentFlow Recruitment</strong></p></td></tr></table></td></tr></table></body></html>`;
+const resendId=String(b.resend_request_id||'').trim();if(b.force_resend===true&&!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(resendId))return json({error:'A valid resend request ID is required'},400);
+const idem=b.force_resend===true?`client-submission:${s.id}:resend:${resendId}`:`client-submission:${s.id}`;
+const send=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${key}`,'Content-Type':'application/json','Idempotency-Key':idem},body:JSON.stringify({from,to:[s.recipient_email],subject:`Candidate introduction: ${c.full_name} — ${j.title}`,html})});
+const raw=await send.text();if(!send.ok)return json({error:'Client email could not be sent',provider_status:send.status},502);
+let out:any={};try{out=JSON.parse(raw)}catch{}const now=new Date().toISOString();
+await db.from('outbound_deliveries').update({status:'sent',provider_message_id:out.id||d.provider_message_id,sent_at:now,last_error:null}).eq('id',d.id);
+await db.from('candidate_submissions').update({status:'submitted',submitted_at:now}).eq('id',s.id);await db.from('applications').update({status:'submitted'}).eq('id',appId);
+return json({ok:true,submission_id:s.id,email_id:out.id||null,resent:b.force_resend===true});
+}catch(e){return json({error:e instanceof Error?e.message:'Unable to submit candidate'},500)}});
