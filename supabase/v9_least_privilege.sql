@@ -1,4 +1,4 @@
--- TalentFlow V9: least-privilege Data API and RPC hardening.
+-- Vorlen V9: least-privilege Data API and RPC hardening.
 
 -- Remove table-owner-style defaults such as TRUNCATE, REFERENCES and TRIGGER.
 revoke all privileges on all tables in schema public from anon, authenticated;
