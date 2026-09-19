@@ -1,10 +1,10 @@
-# TalentFlow Agent API
+# Vorlen Agent API
 
-Authenticated operational API for approved TalentFlow staff and AI clients.
+Authenticated operational API for approved Vorlen staff and AI clients.
 
 Endpoint: Supabase Edge Function `talentflow-agent-api`.
 
-Authentication uses a normal TalentFlow user JWT. The function resolves the user's `profiles.company_id` and role server-side. Callers cannot supply or override a tenant/company id.
+Authentication uses a normal Vorlen user JWT. The function resolves the user's `profiles.company_id` and role server-side. Callers cannot supply or override a tenant/company id.
 
 Initial actions:
 - `search_clients`
