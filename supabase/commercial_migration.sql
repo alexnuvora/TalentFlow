@@ -121,3 +121,24 @@ $$;
 
 drop trigger if exists trg_placement_defaults on public.placements;
 create trigger trg_placement_defaults before insert or update on public.placements for each row execute function public.set_placement_defaults();
+
+
+-- Audit trigger fix: branch by trigger table before referencing table-specific fields.
+create or replace function public.audit_commercial_change() returns trigger language plpgsql set search_path='public' as $$
+declare v_action text;
+begin
+  if tg_op='INSERT' then
+    v_action := 'created';
+    insert into public.commercial_audit_log(company_id,entity_type,entity_id,action,before_data,after_data)
+    values(new.company_id,case when tg_table_name='client_contracts' then 'contract' else 'placement' end,new.id,v_action,null,to_jsonb(new));
+    return new;
+  end if;
+  if tg_table_name='client_contracts' then
+    if old.status is distinct from new.status and new.status in ('expired','terminated') then v_action := 'archived'; else v_action := 'updated'; end if;
+  elsif tg_table_name='placements' then
+    if old.invoice_status is distinct from new.invoice_status then v_action := 'invoice_status_changed'; else v_action := 'updated'; end if;
+  else v_action := 'updated'; end if;
+  insert into public.commercial_audit_log(company_id,entity_type,entity_id,action,before_data,after_data)
+  values(new.company_id,case when tg_table_name='client_contracts' then 'contract' else 'placement' end,new.id,v_action,to_jsonb(old),to_jsonb(new));
+  return new;
+end; $$;
