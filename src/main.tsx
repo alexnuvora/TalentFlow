@@ -7,5 +7,6 @@ import './marketing.css';
 import './careers.css';
 import './customer.css';
 import './v9.css';
+import './dashboard-fixes.css';
 
 createRoot(document.getElementById('root')!).render(<React.StrictMode><ErrorBoundary><ToastProvider><App/></ToastProvider></ErrorBoundary></React.StrictMode>);
