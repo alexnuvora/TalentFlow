@@ -1,4 +1,4 @@
--- TalentFlow V5: acquisition engine, campaign landing pages, referral links and ROI attribution.
+-- Vorlen V5: acquisition engine, campaign landing pages, referral links and ROI attribution.
 -- Run after schema.sql, commercial_migration.sql and v4_migration.sql.
 
 alter table public.application_events add column if not exists campaign_id uuid references public.campaigns(id) on delete set null;
