@@ -16,7 +16,8 @@ export default function PartnerClients(){
  const[clients,setClients]=useState<any[]>([]),[activity,setActivity]=useState<any[]>([]),[candidates,setCandidates]=useState<any[]>([]),[jobs,setJobs]=useState<any[]>([]),[tasks,setTasks]=useState<any[]>([]),[profile,setProfile]=useState<any>(null);
  const[selected,setSelected]=useState<any>(null),[notes,setNotes]=useState<any[]>([]),[brief,setBrief]=useState<any>(null),[detailTab,setDetailTab]=useState<'activity'|'ai'>('activity');
  const requestedView=params.get('view');
- const view:( 'overview'|'clients'|'candidates'|'tasks')=requestedView==='clients'||requestedView==='candidates'||requestedView==='tasks'?requestedView:'overview';[search,setSearch]=useState(''),[loading,setLoading]=useState(true),[busy,setBusy]=useState(''),[note,setNote]=useState(''),[status,setStatus]=useState('not_contacted'),[callbackAt,setCallbackAt]=useState(''),[error,setError]=useState('');
+ const view:'overview'|'clients'|'candidates'|'tasks'=requestedView==='clients'||requestedView==='candidates'||requestedView==='tasks'?requestedView:'overview';
+ const[search,setSearch]=useState(''),[loading,setLoading]=useState(true),[busy,setBusy]=useState(''),[note,setNote]=useState(''),[status,setStatus]=useState('not_contacted'),[callbackAt,setCallbackAt]=useState(''),[error,setError]=useState('');
  const[newTask,setNewTask]=useState({title:'',task_type:'follow_up',due_at:'',priority:'normal'});
 
  async function load(){
