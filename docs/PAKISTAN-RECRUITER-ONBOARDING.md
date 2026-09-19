@@ -18,7 +18,7 @@ Do not enable a recruiter account's live candidate-data access until every requi
 - Candidate privacy notice accurately describes overseas recruiter access.
 - DPIA covers AI screening and overseas recruiter workflow where high-risk processing applies.
 
-## TalentFlow access
+## Vorlen access
 - Create the user with role `recruiter`.
 - Insert a valid row in `recruiter_data_access_approvals` only after the evidence above is complete.
 - Set `country_code='PK'`.
@@ -28,8 +28,8 @@ Do not enable a recruiter account's live candidate-data access until every requi
 - Revoke immediately when the engagement ends or if an incident occurs.
 
 ## Operational boundaries
-- Recruiters prospect and source; they do not bind TalentFlow to client terms unless explicitly authorised.
-- Client pricing/contracts/invoicing remain controlled by TalentFlow.
+- Recruiters prospect and source; they do not bind Vorlen to client terms unless explicitly authorised.
+- Client pricing/contracts/invoicing remain controlled by Vorlen.
 - Candidate submissions use the authorised workflow.
 - AI screening requires meaningful human review.
-- Recruitment activity is recorded in TalentFlow for audit and commission attribution.
+- Recruitment activity is recorded in Vorlen for audit and commission attribution.
