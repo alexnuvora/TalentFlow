@@ -56,3 +56,5 @@
 .partner-page .partner-notes{max-height:280px;overflow:auto;margin-top:10px}
 @media(max-width:1050px){.partner-page>.grid.four{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.partner-page{padding-top:16px}.partner-page>.grid.four{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.partner-page>.grid.four .card{padding:12px}.partner-page>.tabs{width:100%}.partner-page>.tabs button{flex:1;justify-content:center}.partner-page .partner-contact-grid{grid-template-columns:1fr}.partner-page .callback-row{grid-template-columns:1fr auto}}
+
+.partner-coach{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}.partner-coach input{min-width:0;border:1px solid #d8e1de;border-radius:9px;padding:10px 11px;outline:none}.partner-coach input:focus{border-color:#0a8063;box-shadow:0 0 0 3px #0a806312}.coach-answer{margin-top:12px;padding:13px 14px;border:1px solid #cfe8df;background:#f4fbf8;border-radius:10px}.coach-answer strong{display:block;color:#08795e;margin-bottom:6px}.coach-answer p{margin:0 0 7px;line-height:1.5}.coach-answer small{color:#60736d}@media(max-width:700px){.partner-coach{grid-template-columns:1fr}}
