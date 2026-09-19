@@ -1,4 +1,4 @@
--- TalentFlow V4: campaign attribution, automation sequences and billing integration records
+-- Vorlen V4: campaign attribution, automation sequences and billing integration records
 create table if not exists public.campaigns (
  id uuid primary key default gen_random_uuid(), company_id uuid not null references public.companies(id) on delete cascade,
  client_id uuid references public.clients(id) on delete cascade, name text not null, source text not null, medium text, campaign text, landing_path text,
