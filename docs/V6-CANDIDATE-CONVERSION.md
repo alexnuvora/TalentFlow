@@ -1,4 +1,4 @@
-# TalentFlow V6 — Candidate Conversion Engine
+# Vorlen V6 — Candidate Conversion Engine
 
 V6 turns a public vacancy into a conversion funnel: multi-step application, qualification questions, CV upload, consent capture, attribution, candidate portal and optional self-booking of screening calls.
 
@@ -7,7 +7,7 @@ V6 turns a public vacancy into a conversion funnel: multi-step application, qual
 1. Apply migrations in order: `schema.sql`, `commercial_migration.sql`, `v3_migration.sql`, `v4_migration.sql`, `v5_acquisition.sql`, then `v6_candidate_conversion.sql`.
 2. Ensure the `candidate-resumes` private Storage bucket exists (the migration creates it).
 3. Deploy `supabase/functions/submit-application`.
-4. Set the Edge Function secret `PUBLIC_APP_URL` to the public TalentFlow URL.
+4. Set the Edge Function secret `PUBLIC_APP_URL` to the public Vorlen URL.
 5. Configure `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and `VITE_APP_URL` in the web app.
 6. Recruiters can create public screening slots under **Interviews → Add screening slot**. Candidates receive available times in their private portal.
 
