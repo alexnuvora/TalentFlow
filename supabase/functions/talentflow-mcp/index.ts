@@ -8,17 +8,17 @@ const safe=(v:string)=>v.replace(/[%_,()]/g,'');
 const uuid=(v:unknown)=>typeof v==='string'&&/^[-0-9a-f]{36}$/i.test(v);
 
 const tools=[
- {name:'search_clients',description:'Search TalentFlow clients and prospects in the authenticated workspace.',inputSchema:{type:'object',properties:{query:{type:'string'}},additionalProperties:false}},
- {name:'search_jobs',description:'Search jobs in the authenticated TalentFlow workspace.',inputSchema:{type:'object',properties:{query:{type:'string'}},additionalProperties:false}},
- {name:'search_candidates',description:'Search candidates in the authenticated TalentFlow workspace.',inputSchema:{type:'object',properties:{query:{type:'string'}},additionalProperties:false}},
+ {name:'search_clients',description:'Search Vorlen clients and prospects in the authenticated workspace.',inputSchema:{type:'object',properties:{query:{type:'string'}},additionalProperties:false}},
+ {name:'search_jobs',description:'Search jobs in the authenticated Vorlen workspace.',inputSchema:{type:'object',properties:{query:{type:'string'}},additionalProperties:false}},
+ {name:'search_candidates',description:'Search candidates in the authenticated Vorlen workspace.',inputSchema:{type:'object',properties:{query:{type:'string'}},additionalProperties:false}},
  {name:'create_client',description:'Create a client/prospect. Requires owner or manager role.',inputSchema:{type:'object',required:['company_name'],properties:{company_name:{type:'string'},contact_name:{type:'string'},email:{type:'string'},phone:{type:'string'},website:{type:'string'},status:{type:'string'}},additionalProperties:false}},
- {name:'create_candidate',description:'Create a candidate record in TalentFlow.',inputSchema:{type:'object',required:['full_name'],properties:{full_name:{type:'string'},email:{type:'string'},phone:{type:'string'},location:{type:'string'},source:{type:'string'},recruiter_summary:{type:'string'}},additionalProperties:false}},
+ {name:'create_candidate',description:'Create a candidate record in Vorlen.',inputSchema:{type:'object',required:['full_name'],properties:{full_name:{type:'string'},email:{type:'string'},phone:{type:'string'},location:{type:'string'},source:{type:'string'},recruiter_summary:{type:'string'}},additionalProperties:false}},
  {name:'create_application',description:'Attach a candidate to a job as an application.',inputSchema:{type:'object',required:['candidate_id','job_id'],properties:{candidate_id:{type:'string'},job_id:{type:'string'},status:{type:'string'}},additionalProperties:false}},
- {name:'record_activity',description:'Record an audited TalentFlow activity/note.',inputSchema:{type:'object',required:['detail'],properties:{detail:{type:'string'},event_type:{type:'string'},candidate_id:{type:'string'},job_id:{type:'string'}},additionalProperties:false}}
+ {name:'record_activity',description:'Record an audited Vorlen activity/note.',inputSchema:{type:'object',required:['detail'],properties:{detail:{type:'string'},event_type:{type:'string'},candidate_id:{type:'string'},job_id:{type:'string'}},additionalProperties:false}}
 ];
 
 Deno.serve(async(req)=>{
- if(req.method!=='POST')return new Response(JSON.stringify({name:'TalentFlow MCP',status:'ok'}),{status:200,headers});
+ if(req.method!=='POST')return new Response(JSON.stringify({name:'Vorlen MCP',status:'ok'}),{status:200,headers});
  let body:any={};try{body=await req.json()}catch{return err(null,-32700,'Parse error',400)}
  const id=body.id??null,method=body.method;
  if(method==='initialize')return rpc(id,{protocolVersion:body?.params?.protocolVersion||'2025-11-25',capabilities:{tools:{listChanged:false}},serverInfo:{name:'talentflow',version:'1.0.0'}});
