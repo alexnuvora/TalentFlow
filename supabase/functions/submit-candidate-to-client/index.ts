@@ -12,8 +12,9 @@ if(!appId||!recipient||summary.length<10||authorisation.length<10||b.review_conf
 const{data:res,error:re}=await uc.rpc('reserve_client_submission',{p_application:appId,p_summary:summary,p_authorisation:authorisation,p_recipient:recipient});
 if(re)return json({error:re.message},400);
 const submissionId=res?.submission_id;if(!submissionId)return json({error:'Submission reservation failed'},500);
-const{data:s,error:se}=await db.from('candidate_submissions').select('id,candidate_id,job_id,client_id,delivery_id,status,recruiter_summary,recipient_email').eq('id',submissionId).single();
+const{data:s,error:se}=await db.from('candidate_submissions').select('id,company_id,candidate_id,job_id,client_id,delivery_id,status,recruiter_summary,recipient_email').eq('id',submissionId).single();
 if(se||!s)return json({error:'Reserved submission could not be loaded'},500);
+if(res?.existing===true&&b.force_resend===true){const{error:ue}=await db.from('candidate_submissions').update({recruiter_summary:summary,candidate_authorisation:authorisation,recipient_email:recipient,reviewed_by:user.id,review_confirmed_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',submissionId);if(ue)return json({error:'Updated client-facing submission could not be saved'},500);s.recruiter_summary=summary;s.recipient_email=recipient;}
 const [{data:c},{data:j},{data:cl},{data:d}]=await Promise.all([db.from('candidates').select('full_name').eq('id',s.candidate_id).single(),db.from('jobs').select('title').eq('id',s.job_id).single(),db.from('clients').select('company_name').eq('id',s.client_id).single(),db.from('outbound_deliveries').select('id,status,provider_message_id').eq('id',s.delivery_id).single()]);
 if(!c||!j||!cl||!d)return json({error:'Submission dependencies could not be loaded'},500);
 const{data:company}=await db.from('companies').select('name,legal_name').eq('id',s.company_id).single();const agencyName=company?.name||company?.legal_name||'Recruitment team';const{data:recruiter}=await db.from('profiles').select('full_name').eq('id',user.id).maybeSingle();
