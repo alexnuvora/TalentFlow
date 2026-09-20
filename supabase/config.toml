@@ -23,3 +23,8 @@ verify_jwt = true
 # Stripe signs webhook payloads itself; JWT gateway verification must be disabled.
 [functions.stripe-webhook]
 verify_jwt = false
+
+# Local development mirrors production's invite-only access model.
+# Hosted production Auth must also have "Allow new users to sign up" disabled.
+[auth]
+enable_signup = false
