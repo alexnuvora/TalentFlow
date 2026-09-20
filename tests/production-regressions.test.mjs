@@ -23,3 +23,5 @@ test('send more info outcome requires the company brochure attachment',()=>{cons
 test('landing page contains no legacy TalentFlow customer branding',()=>{const s=read('src/pages/Landing.tsx');assert.doesNotMatch(s,/TALENTFLOW/);});
 test('partner sourcing UI blocks non-sourcing partner profiles',()=>{const s=read('src/pages/PartnerClients.tsx');assert.match(s,/candidate_sourcer/);assert.match(s,/hybrid/);assert.match(s,/Add candidate/);assert.match(s,/Candidate creation is only available/);});
 test('post-call follow-up task errors are surfaced',()=>{const s=read('src/pages/PartnerClients.tsx');assert.match(s,/follow-up task could not be created/);});
+
+test('invite-only access has no self-service workspace creation path',()=>{const app=read('src/App.tsx'),login=read('src/pages/Login.tsx'),seo=read('scripts/seo-build.mjs');assert.doesNotMatch(app,/pages\/Onboarding|path="\/onboarding"/);assert.doesNotMatch(login,/nav\('\/onboarding'\)/);assert.match(login,/does not have access to a Vorlen workspace/);assert.doesNotMatch(seo,/Disallow: \/signup|Disallow: \/onboarding/);});
