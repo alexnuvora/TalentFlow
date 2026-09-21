@@ -18,7 +18,7 @@ test('partner accounts are isolated to dedicated workspace navigation',()=>{cons
 
 test('workspace invitation flow always returns invited users to Vorlen and routes partners correctly',()=>{const admin=read('supabase/functions/admin-user-management/index.ts'),reset=read('src/pages/PasswordRecovery.tsx'),login=read('src/pages/Login.tsx');assert.match(admin,/talentflow-nu-neon\\.vercel\\.app/);assert.match(admin,/\/reset-password/);assert.match(reset,/role==='partner'.*\/dashboard\/partner/);assert.match(login,/role==='partner'.*\/dashboard\/partner/);});
 
-test('send more info outcome requires the company brochure attachment',()=>{const s=read('supabase/functions/partner-client-email/index.ts');assert.match(s,/send_more_info/);assert.match(s,/COMPANY_BROCHURE_BUCKET/);assert.match(s,/COMPANY_BROCHURE_PATH/);assert.match(s,/attachments/);assert.match(s,/Vorlen-Company-Brochure\\.pdf/);assert.match(s,/PDFDocument/);});
+test('send more info outcome requires the company brochure attachment',()=>{const s=read('supabase/functions/partner-client-email/index.ts');assert.match(s,/send_more_info/);assert.match(s,/COMPANY_BROCHURE_BUCKET/);assert.match(s,/COMPANY_BROCHURE_PATH/);assert.match(s,/attachments/);assert.match(s,/Vorlen-Company-Brochure\.pdf/);assert.match(s,/PDFDocument/);});
 
 test('landing page contains no legacy TalentFlow customer branding',()=>{const s=read('src/pages/Landing.tsx');assert.doesNotMatch(s,/TALENTFLOW/);});
 test('partner sourcing UI blocks non-sourcing partner profiles',()=>{const s=read('src/pages/PartnerClients.tsx');assert.match(s,/candidate_sourcer/);assert.match(s,/hybrid/);assert.match(s,/Add candidate/);assert.match(s,/Candidate creation is only available/);});
