@@ -7,7 +7,7 @@ if(req.method!=='POST')return json({error:'Method not allowed'},405);
 const auth=req.headers.get('Authorization')||'',url=Deno.env.get('SUPABASE_URL')!,anon=Deno.env.get('SUPABASE_ANON_KEY')!,service=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const uc=createClient(url,anon,{global:{headers:{Authorization:auth}}}),db=createClient(url,service);
 const{data:{user}}=await uc.auth.getUser();if(!user)return json({error:'Authentication required'},401);
-const b=await req.json(),appId=String(b.application_id||''),summary=String(b.recruiter_summary||'').trim(),recipient=String(b.recipient_email||'').trim(),authorisation=String(b.candidate_authorisation||'').trim();
+const{data:profile}=await db.from('profiles').select('company_id').eq('id',user.id).single();if(!profile)return json({error:'Workspace not found'},403);const{data:candidateAllowed}=await db.rpc('candidate_processing_allowed',{p_company_id:profile.company_id});if(candidateAllowed!==true)return json({error:'Candidate processing is disabled until Vorlen completes the candidate compliance activation process.'},409);const b=await req.json(),appId=String(b.application_id||''),summary=String(b.recruiter_summary||'').trim(),recipient=String(b.recipient_email||'').trim(),authorisation=String(b.candidate_authorisation||'').trim();
 if(!appId||!recipient||summary.length<10||authorisation.length<10||b.review_confirmed!==true)return json({error:'Application, recipient, reviewed summary, candidate authorisation and human review confirmation are required'},400);
 const{data:res,error:re}=await uc.rpc('reserve_client_submission',{p_application:appId,p_summary:summary,p_authorisation:authorisation,p_recipient:recipient});
 if(re)return json({error:re.message},400);
