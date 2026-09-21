@@ -94,5 +94,51 @@ using (
   )
 );
 
--- Recruitment RPCs were updated in production to require approved candidate-data
--- access plus an active candidate-processing phase for owner/manager/recruiter flows.
+do $
+declare ddl text;
+begin
+  select pg_get_functiondef('public.record_introduction_compliance(uuid,text,text,text,boolean,boolean,text)'::regprocedure) into ddl;
+  if position('if auth.uid() is null or not public.is_manager() then' in ddl)=0 then
+    raise exception 'record_introduction_compliance expected guard not found';
+  end if;
+  ddl:=replace(ddl,
+    'if auth.uid() is null or not public.is_manager() then raise exception ''Staff access required''; end if;',
+    'if auth.uid() is null or not public.has_candidate_data_access() or not public.candidate_processing_allowed(public.current_company_id()) then raise exception ''Approved recruitment staff access required''; end if;');
+  execute ddl;
+
+  select pg_get_functiondef('public.reserve_client_submission(uuid,text,text,text)'::regprocedure) into ddl;
+  if position('if not public.is_manager() or auth.uid() is null then' in ddl)=0 then
+    raise exception 'reserve_client_submission expected guard not found';
+  end if;
+  ddl:=replace(ddl,
+    'if not public.is_manager() or auth.uid() is null then raise exception ''Staff access required'';end if;',
+    'if auth.uid() is null or not public.has_candidate_data_access() or not public.candidate_processing_allowed(public.current_company_id()) then raise exception ''Approved recruitment staff access required'';end if;');
+  execute ddl;
+
+  select pg_get_functiondef('public.review_application(uuid,text,text)'::regprocedure) into ddl;
+  if position('if not public.is_manager() or auth.uid() is null then' in ddl)=0 then
+    raise exception 'review_application expected guard not found';
+  end if;
+  ddl:=replace(ddl,
+    'if not public.is_manager() or auth.uid() is null then raise exception ''Staff access required'';end if;',
+    'if auth.uid() is null or not public.has_candidate_data_access() or not public.candidate_processing_allowed(public.current_company_id()) then raise exception ''Approved recruitment staff access required'';end if;');
+  execute ddl;
+
+  select pg_get_functiondef('public.signoff_screening_report(uuid)'::regprocedure) into ddl;
+  if position('select * into p from public.profiles where id=auth.uid() and role in (''owner'',''manager'',''recruiter'');' in ddl)=0 then
+    raise exception 'signoff_screening_report expected role guard not found';
+  end if;
+  ddl:=replace(ddl,
+    'select * into p from public.profiles where id=auth.uid() and role in (''owner'',''manager'',''recruiter'');if not found then raise exception ''Staff access required'';end if;',
+    'if auth.uid() is null or not public.has_candidate_data_access() or not public.candidate_processing_allowed(public.current_company_id()) then raise exception ''Approved recruitment staff access required'';end if; select * into p from public.profiles where id=auth.uid(); if not found then raise exception ''Staff access required'';end if;');
+  execute ddl;
+
+  select pg_get_functiondef('public.manage_interview(uuid,text,timestamptz,integer,text,text)'::regprocedure) into ddl;
+  if position('select * into p from public.profiles where id=auth.uid() and role in (''owner'',''manager'',''recruiter'');' in ddl)=0 then
+    raise exception 'manage_interview expected role guard not found';
+  end if;
+  ddl:=replace(ddl,
+    'select * into p from public.profiles where id=auth.uid() and role in (''owner'',''manager'',''recruiter'');if not found then raise exception ''Staff access required'';end if;',
+    'if auth.uid() is null or not public.has_candidate_data_access() or not public.candidate_processing_allowed(public.current_company_id()) then raise exception ''Approved recruitment staff access required'';end if; select * into p from public.profiles where id=auth.uid(); if not found then raise exception ''Staff access required'';end if;');
+  execute ddl;
+end $;
