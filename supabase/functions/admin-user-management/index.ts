@@ -126,7 +126,14 @@ Deno.serve(async req=>{
 
     if(b.action==='role'){
       if(!['owner','manager','recruiter','partner','viewer'].includes(b.role))return json({error:'Invalid role'},400);
+      const{data:target}=await db.from('profiles').select('id,role').eq('id',b.user_id).eq('company_id',me.company_id).maybeSingle();
+      if(!target)return json({error:'Workspace user not found'},404);
+      if(target.role==='owner'&&me.role!=='owner')return json({error:'Only an owner can change an owner account'},403);
       if(b.role==='owner'&&me.role!=='owner')return json({error:'Only an owner can assign the owner role'},403);
+      if(target.role==='owner'&&b.role!=='owner'){
+        const{count}=await db.from('profiles').select('id',{count:'exact',head:true}).eq('company_id',me.company_id).eq('role','owner');
+        if((count||0)<=1)return json({error:'The workspace must keep at least one owner'},409);
+      }
       if(b.role==='viewer'&&!b.client_id)return json({error:'Client required for viewer access'},400);
       const{error}=await db.from('profiles').update({role:b.role,client_id:b.role==='viewer'?b.client_id:null}).eq('id',b.user_id).eq('company_id',me.company_id);
       if(error)return json({error:error.message},400);
