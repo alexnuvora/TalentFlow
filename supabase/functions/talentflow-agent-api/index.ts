@@ -20,6 +20,7 @@ Deno.serve(async(req)=>{
   const db=createClient(url,service);
   const {data:profile}=await db.from('profiles').select('company_id,role').eq('id',user.id).maybeSingle();
   if(!profile?.company_id||!['owner','manager','recruiter'].includes(profile.role))return json({error:'Staff access required'},403);
+  const{data:candidateAllowed}=await db.rpc('candidate_processing_allowed',{p_company_id:profile.company_id});
   const b=await req.json().catch(()=>({}));
   const action=str(b.action,80);
   const args=b.args&&typeof b.args==='object'?b.args:{};
@@ -36,6 +37,7 @@ Deno.serve(async(req)=>{
    const {data,error}=await x;if(error)throw error;return json({data});
   }
   if(action==='search_candidates'){
+   if(candidateAllowed!==true)return json({error:'Candidate processing is disabled'},409);
    const q=str(args.query,120);let x=db.from('candidates').select('id,full_name,email,phone,location,stage,score,source,recruiter_summary,next_action,next_action_at,created_at').eq('company_id',company_id).limit(25);
    if(q)x=x.or(`full_name.ilike.%${q.replace(/[%_,()]/g,'')}%,email.ilike.%${q.replace(/[%_,()]/g,'')}%`);
    const {data,error}=await x;if(error)throw error;return json({data});
@@ -47,11 +49,13 @@ Deno.serve(async(req)=>{
    const {data,error}=await db.from('clients').insert(payload).select().single();if(error)throw error;await log(`create_client:${data.id}`);return json({data},201);
   }
   if(action==='create_candidate'){
+   if(candidateAllowed!==true)return json({error:'Candidate processing is disabled'},409);
    const payload={company_id,full_name:str(args.full_name,200),email:str(args.email,320)||null,phone:str(args.phone,80)||null,location:str(args.location,200)||null,source:str(args.source,100)||'agent',recruiter_summary:str(args.recruiter_summary,1000)||null};
    if(!payload.full_name)return json({error:'full_name required'},400);
    const {data,error}=await db.from('candidates').insert(payload).select().single();if(error)throw error;await log(`create_candidate:${data.id}`);return json({data},201);
   }
   if(action==='create_application'){
+   if(candidateAllowed!==true)return json({error:'Candidate processing is disabled'},409);
    if(!uuid(args.candidate_id)||!uuid(args.job_id))return json({error:'valid candidate_id and job_id required'},400);
    const {data:job}=await db.from('jobs').select('id').eq('id',args.job_id).eq('company_id',company_id).maybeSingle();
    const {data:candidate}=await db.from('candidates').select('id').eq('id',args.candidate_id).eq('company_id',company_id).maybeSingle();
