@@ -55,7 +55,7 @@ Deno.serve(async req=>{
         return json({error:'This email already has different access in this workspace',code:'already_has_workspace_access',user_id:existing.id,role:existingProfile.role},409);
       }
 
-      const configured=(Deno.env.get('PUBLIC_APP_URL')||'').replace(/\/$/,'');
+      const configured='https://www.vorlen.co.uk';
       const requestOrigin=req.headers.get('origin')||'';
       const allowed=/^https:\/\/(?:www\.)?vorlen\.co\.uk$/i.test(requestOrigin)?requestOrigin:'';
       const base=configured||allowed||'https://vorlen.co.uk';
