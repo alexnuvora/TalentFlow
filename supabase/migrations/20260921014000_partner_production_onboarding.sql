@@ -8,3 +8,9 @@ alter table public.partner_commissions add column if not exists agreement_id uui
 -- Production policies restrict partner rows to self and managers to the current workspace.
 -- Production partner_is_active() fails closed unless onboarding is active and current terms are accepted.
 -- Production invoice trigger accrues commission only from qualifying fees actually received by Vorlen.
+
+-- Follow-up hardening applied in production:
+-- partner_is_active is evaluated at the database boundary for partner access policies.
+-- accept_partner_agreement atomically captures acceptance evidence and SHA-256 terms hash.
+-- activate_partner validates completed details and accepted terms before manager activation.
+-- clients/candidates/jobs/activity/notes/tasks partner policies require active onboarding.
