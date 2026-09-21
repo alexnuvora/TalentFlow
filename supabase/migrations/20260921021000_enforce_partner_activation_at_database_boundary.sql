@@ -1,0 +1,24 @@
+-- Enforce active partner onboarding at the database boundary.
+create or replace function public.partner_is_active(p_partner uuid default auth.uid()) returns boolean language sql stable security definer set search_path=public as $$select exists(select 1 from public.partner_onboarding o join public.partner_agreements a on a.id=o.agreement_id where o.partner_id=p_partner and o.partner_id=auth.uid() and o.company_id=public.current_company_id() and o.status='active' and a.status='accepted' and a.accepted_at is not null)$$;
+revoke all on function public.partner_is_active(uuid) from public,anon;
+grant execute on function public.partner_is_active(uuid) to authenticated;
+drop policy if exists "partner assigned candidates select" on public.candidates;
+create policy "partner assigned candidates select" on public.candidates for select to authenticated using(company_id=public.current_company_id() and public.partner_is_active() and exists(select 1 from public.partner_assignments a where a.company_id=candidates.company_id and a.partner_id=(select auth.uid()) and a.candidate_id=candidates.id and a.completed_at is null));
+drop policy if exists "partner assigned candidates update" on public.candidates;
+create policy "partner assigned candidates update" on public.candidates for update to authenticated using(company_id=public.current_company_id() and public.partner_is_active() and exists(select 1 from public.partner_assignments a where a.company_id=candidates.company_id and a.partner_id=(select auth.uid()) and a.candidate_id=candidates.id and a.completed_at is null)) with check(company_id=public.current_company_id() and public.partner_is_active());
+drop policy if exists "candidate sourcer insert" on public.candidates;
+create policy "candidate sourcer insert" on public.candidates for insert to authenticated with check(company_id=public.current_company_id() and public.partner_is_active() and exists(select 1 from public.partner_profiles pp where pp.user_id=(select auth.uid()) and pp.company_id=candidates.company_id and pp.active and pp.specialism in('candidate_sourcer','hybrid')));
+drop policy if exists "partner assigned jobs select" on public.jobs;
+create policy "partner assigned jobs select" on public.jobs for select to authenticated using(company_id=public.current_company_id() and public.partner_is_active() and exists(select 1 from public.partner_assignments a where a.company_id=jobs.company_id and a.partner_id=(select auth.uid()) and a.job_id=jobs.id and a.completed_at is null));
+drop policy if exists "partner activity own workspace" on public.partner_client_activity;
+create policy "partner activity own workspace" on public.partner_client_activity for all to authenticated using(company_id=public.current_company_id() and partner_id=(select auth.uid()) and public.partner_is_active()) with check(company_id=public.current_company_id() and partner_id=(select auth.uid()) and public.partner_is_active());
+drop policy if exists "partner notes insert own" on public.partner_client_notes;
+create policy "partner notes insert own" on public.partner_client_notes for insert to authenticated with check(company_id=public.current_company_id() and partner_id=(select auth.uid()) and public.partner_is_active());
+drop policy if exists "candidate sourcer self assigns candidate" on public.partner_assignments;
+create policy "candidate sourcer self assigns candidate" on public.partner_assignments for insert to authenticated with check(company_id=public.current_company_id() and partner_id=(select auth.uid()) and public.partner_is_active() and candidate_id is not null and client_id is null and job_id is null and exists(select 1 from public.partner_profiles pp where pp.user_id=(select auth.uid()) and pp.company_id=partner_assignments.company_id and pp.active and pp.specialism in('candidate_sourcer','hybrid')));
+drop policy if exists "partner tasks create" on public.partner_tasks;
+create policy "partner tasks create" on public.partner_tasks for insert to authenticated with check(company_id=public.current_company_id() and ((partner_id=(select auth.uid()) and public.partner_is_active()) or public.is_manager()));
+drop policy if exists "partner tasks update" on public.partner_tasks;
+create policy "partner tasks update" on public.partner_tasks for update to authenticated using(company_id=public.current_company_id() and ((partner_id=(select auth.uid()) and public.partner_is_active()) or public.is_manager())) with check(company_id=public.current_company_id() and ((partner_id=(select auth.uid()) and public.partner_is_active()) or public.is_manager()));
+drop policy if exists "partner tasks delete" on public.partner_tasks;
+create policy "partner tasks delete" on public.partner_tasks for delete to authenticated using(company_id=public.current_company_id() and ((partner_id=(select auth.uid()) and public.partner_is_active()) or public.is_manager()));
