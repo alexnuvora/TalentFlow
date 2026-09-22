@@ -1,8 +1,0 @@
--- Applied to production. Cache auth.uid() once per statement in role-aware RLS policies.
-alter policy "profiles own company" on public.profiles using ((id = (select auth.uid())) or (company_id = current_company_id()));
-alter policy "clients role aware" on public.clients using ((company_id = current_company_id()) and (is_manager() or (((select role from public.profiles where id=(select auth.uid()))='viewer'::public.user_role) and ((select client_id from public.profiles where id=(select auth.uid()))=id))));
-alter policy "jobs role aware" on public.jobs using ((company_id=current_company_id()) and (is_manager() or client_id=(select client_id from public.profiles where id=(select auth.uid()))));
-alter policy "applications role aware" on public.applications using ((company_id=current_company_id()) and (is_manager() or job_id in (select j.id from public.jobs j where j.client_id=(select client_id from public.profiles where id=(select auth.uid())))));
-alter policy "candidates role aware" on public.candidates using ((company_id=current_company_id()) and (is_manager() or id in (select a.candidate_id from public.applications a where a.job_id in (select j.id from public.jobs j where j.client_id=(select client_id from public.profiles where id=(select auth.uid()))))));
-alter policy "interviews role aware" on public.interviews using ((company_id=current_company_id()) and (is_manager() or client_id=(select client_id from public.profiles where id=(select auth.uid()))));
-alter policy "submissions client read" on public.candidate_submissions using ((company_id=current_company_id()) and client_id=(select client_id from public.profiles where id=(select auth.uid())));

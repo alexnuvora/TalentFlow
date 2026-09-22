@@ -1,0 +1,10 @@
+revoke execute on function public.calculate_placement_fee(uuid,numeric,numeric,numeric) from public,anon,authenticated;
+revoke execute on function public.create_placement_invoice(uuid,date) from public,anon,authenticated;
+revoke execute on function public.record_invoice_adjustment(uuid,text,numeric,text,text) from public,anon,authenticated;
+revoke execute on function public.record_invoice_payment(uuid,numeric,text,text) from public,anon,authenticated;
+revoke execute on function public.void_invoice(uuid,text) from public,anon,authenticated;
+grant execute on function public.calculate_placement_fee(uuid,numeric,numeric,numeric) to service_role;
+grant execute on function public.create_placement_invoice(uuid,date) to service_role;
+grant execute on function public.record_invoice_adjustment(uuid,text,numeric,text,text) to service_role;
+grant execute on function public.record_invoice_payment(uuid,numeric,text,text) to service_role;
+grant execute on function public.void_invoice(uuid,text) to service_role;

@@ -1,0 +1,18 @@
+alter table public.partner_agreements add column if not exists terms_hash text,add column if not exists accepted_terms_hash text,add column if not exists accepted_user_agent text;
+create or replace function public.accept_partner_agreement(p_agreement uuid,p_accepted_name text,p_user_agent text default null) returns void language plpgsql security invoker set search_path=public as $$declare v_hash text;begin
+ if nullif(trim(p_accepted_name),'') is null then raise exception 'Full legal name is required';end if;
+ select encode(extensions.digest(terms_text,'sha256'),'hex') into v_hash from public.partner_agreements where id=p_agreement and partner_id=auth.uid() and status='pending' for update;
+ if v_hash is null then raise exception 'Pending partner agreement not found';end if;
+ update public.partner_agreements set status='accepted',accepted_at=now(),accepted_name=trim(p_accepted_name),terms_hash=v_hash,accepted_terms_hash=v_hash,accepted_user_agent=left(p_user_agent,500) where id=p_agreement and partner_id=auth.uid();
+ update public.partner_onboarding set status='details_pending',agreement_id=p_agreement,updated_at=now() where partner_id=auth.uid() and company_id=public.current_company_id();
+end$$;
+revoke all on function public.accept_partner_agreement(uuid,text,text) from public,anon;grant execute on function public.accept_partner_agreement(uuid,text,text) to authenticated;
+create or replace function public.activate_partner(p_partner uuid) returns void language plpgsql security invoker set search_path=public as $$declare o public.partner_onboarding%rowtype;a public.partner_agreements%rowtype;begin
+ if not public.is_manager() then raise exception 'Manager access required';end if;
+ select * into o from public.partner_onboarding where partner_id=p_partner and company_id=public.current_company_id() for update;
+ if o.status<>'review_pending' or nullif(trim(o.legal_name),'') is null or nullif(trim(o.country),'') is null or nullif(trim(o.address),'') is null or nullif(trim(o.phone),'') is null or nullif(trim(o.payment_method),'') is null then raise exception 'Partner onboarding is incomplete';end if;
+ select * into a from public.partner_agreements where id=o.agreement_id and partner_id=p_partner and company_id=o.company_id;
+ if a.status<>'accepted' or a.accepted_at is null or a.accepted_terms_hash is null then raise exception 'Accepted partner agreement required';end if;
+ update public.partner_onboarding set status='active',reviewed_by=auth.uid(),reviewed_at=now(),activated_at=now(),updated_at=now() where partner_id=p_partner;
+end$$;
+revoke all on function public.activate_partner(uuid) from public,anon;grant execute on function public.activate_partner(uuid) to authenticated;

@@ -1,6 +1,3 @@
--- Align role-visible application flows with database authorization boundaries.
--- Applied to production as migration 20260921234356.
-
 create or replace function private.has_candidate_data_access()
 returns boolean
 language sql
@@ -21,11 +18,16 @@ using (
     private.is_manager()
     or exists(select 1 from public.profiles p where p.id=(select auth.uid()) and p.role='recruiter')
     or exists(select 1 from public.profiles p where p.id=(select auth.uid()) and p.role='viewer' and p.client_id=clients.id)
-    or (private.partner_is_active() and exists(
-      select 1 from public.partner_assignments a
-      where a.company_id=clients.company_id and a.partner_id=(select auth.uid())
-        and a.client_id=clients.id and a.completed_at is null
-    ))
+    or (
+      private.partner_is_active()
+      and exists(
+        select 1 from public.partner_assignments a
+        where a.company_id=clients.company_id
+          and a.partner_id=(select auth.uid())
+          and a.client_id=clients.id
+          and a.completed_at is null
+      )
+    )
   )
 );
 
@@ -38,11 +40,16 @@ using (
     private.is_manager()
     or exists(select 1 from public.profiles p where p.id=(select auth.uid()) and p.role='recruiter')
     or client_id=(select p.client_id from public.profiles p where p.id=(select auth.uid()))
-    or (private.partner_is_active() and exists(
-      select 1 from public.partner_assignments a
-      where a.company_id=jobs.company_id and a.partner_id=(select auth.uid())
-        and a.job_id=jobs.id and a.completed_at is null
-    ))
+    or (
+      private.partner_is_active()
+      and exists(
+        select 1 from public.partner_assignments a
+        where a.company_id=jobs.company_id
+          and a.partner_id=(select auth.uid())
+          and a.job_id=jobs.id
+          and a.completed_at is null
+      )
+    )
   )
 );
 
@@ -53,9 +60,10 @@ using (
   company_id = private.current_company_id()
   and (
     private.is_manager()
-    or (public.has_candidate_data_access() and exists(
-      select 1 from public.profiles p where p.id=(select auth.uid()) and p.role='recruiter'
-    ))
+    or (
+      public.has_candidate_data_access()
+      and exists(select 1 from public.profiles p where p.id=(select auth.uid()) and p.role='recruiter')
+    )
     or client_id=(select p.client_id from public.profiles p where p.id=(select auth.uid()))
   )
 );
@@ -69,19 +77,31 @@ with check (
   and public.candidate_processing_allowed(company_id)
 );
 
-drop policy if exists "calls staff" on public.call_notes;
 drop policy if exists "call notes recruitment staff" on public.call_notes;
+drop policy if exists "calls staff" on public.call_notes;
 create policy "call notes recruitment staff"
 on public.call_notes for all to authenticated
-using (company_id=private.current_company_id() and private.has_candidate_data_access())
-with check (company_id=private.current_company_id() and private.has_candidate_data_access());
+using (
+  company_id=private.current_company_id()
+  and private.has_candidate_data_access()
+)
+with check (
+  company_id=private.current_company_id()
+  and private.has_candidate_data_access()
+);
 
-drop policy if exists "screening staff" on public.screening_reports;
 drop policy if exists "screening recruitment staff" on public.screening_reports;
+drop policy if exists "screening staff" on public.screening_reports;
 create policy "screening recruitment staff"
 on public.screening_reports for all to authenticated
-using (company_id=private.current_company_id() and private.has_candidate_data_access())
-with check (company_id=private.current_company_id() and private.has_candidate_data_access());
+using (
+  company_id=private.current_company_id()
+  and private.has_candidate_data_access()
+)
+with check (
+  company_id=private.current_company_id()
+  and private.has_candidate_data_access()
+);
 
 drop policy if exists "submissions read" on public.candidate_submissions;
 create policy "submissions read"
@@ -94,7 +114,7 @@ using (
   )
 );
 
-do $
+do $$
 declare ddl text;
 begin
   select pg_get_functiondef('public.record_introduction_compliance(uuid,text,text,text,boolean,boolean,text)'::regprocedure) into ddl;
@@ -141,4 +161,4 @@ begin
     'select * into p from public.profiles where id=auth.uid() and role in (''owner'',''manager'',''recruiter'');if not found then raise exception ''Staff access required'';end if;',
     'if auth.uid() is null or not public.has_candidate_data_access() or not public.candidate_processing_allowed(public.current_company_id()) then raise exception ''Approved recruitment staff access required'';end if; select * into p from public.profiles where id=auth.uid(); if not found then raise exception ''Staff access required'';end if;');
   execute ddl;
-end $;
+end $$;

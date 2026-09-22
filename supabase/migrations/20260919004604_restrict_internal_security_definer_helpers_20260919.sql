@@ -1,0 +1,10 @@
+revoke all on function public.has_candidate_data_access() from public, anon, authenticated;
+revoke all on function public.is_manager() from public, anon;
+revoke all on function public.current_company_id() from public, anon;
+revoke all on function public.ensure_starter_subscription(uuid) from public, anon, authenticated;
+revoke all on function public.require_workspace_feature(text) from public, anon;
+revoke all on function public.claim_automation_enrollments(integer) from public, anon, authenticated;
+revoke all on function public.refresh_invoice_balance(uuid) from public, anon, authenticated;
+grant execute on function public.is_manager() to authenticated;
+grant execute on function public.current_company_id() to authenticated;
+grant execute on function public.require_workspace_feature(text) to authenticated;

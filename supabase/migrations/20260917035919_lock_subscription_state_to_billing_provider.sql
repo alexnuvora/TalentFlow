@@ -1,0 +1,1 @@
+revoke execute on function public.change_subscription_plan(text) from authenticated; revoke execute on function public.set_subscription_cancel_at_period_end(boolean) from authenticated; revoke execute on function public.current_plan_limits(uuid) from authenticated;

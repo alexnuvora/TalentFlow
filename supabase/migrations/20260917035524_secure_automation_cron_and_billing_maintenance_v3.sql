@@ -1,0 +1,9 @@
+create extension if not exists pg_cron; create extension if not exists pg_net; create extension if not exists pgcrypto;
+create schema if not exists private; revoke all on schema private from public,anon,authenticated;
+create table if not exists private.runtime_secrets(name text primary key, secret_hash text not null, rotated_at timestamptz not null default now());
+do $$ declare s text; begin s:=encode(gen_random_bytes(32),'hex'); insert into private.runtime_secrets(name,secret_hash,rotated_at) values('automation_cron',encode(digest(s,'sha256'),'hex'),now()) on conflict(name) do update set secret_hash=excluded.secret_hash,rotated_at=excluded.rotated_at; perform vault.create_secret(s,'talentflow_automation_cron_secret','TalentFlow internal automation scheduler secret'); end $$;
+create or replace function public.verify_automation_runtime_secret(p_secret text) returns boolean language sql stable security definer set search_path=public,private,extensions as $$ select exists(select 1 from private.runtime_secrets where name='automation_cron' and secret_hash=encode(digest(coalesce(p_secret,''),'sha256'),'hex')) $$;
+revoke all on function public.verify_automation_runtime_secret(text) from public,anon,authenticated; grant execute on function public.verify_automation_runtime_secret(text) to service_role;
+select cron.unschedule(jobid) from cron.job where jobname in ('talentflow-automation-queue','talentflow-invoice-maintenance');
+select cron.schedule('talentflow-automation-queue','* * * * *',$$select net.http_post(url:='https://mzkaodoruhklzluikagy.supabase.co/functions/v1/process-automation-queue',headers:=jsonb_build_object('Content-Type','application/json','x-automation-secret',(select decrypted_secret from vault.decrypted_secrets where name='talentflow_automation_cron_secret' order by created_at desc limit 1)),body:='{}'::jsonb);$$);
+select cron.schedule('talentflow-invoice-maintenance','15 * * * *',$$select public.mark_overdue_invoices();$$);

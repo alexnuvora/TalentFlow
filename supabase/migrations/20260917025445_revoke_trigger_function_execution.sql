@@ -1,0 +1,1 @@
+revoke all on function public.tf_application_automation() from public,anon,authenticated;revoke all on function public.tf_candidate_automation() from public,anon,authenticated;revoke all on function public.tf_interview_automation() from public,anon,authenticated;revoke all on function public.tf_placement_automation() from public,anon,authenticated;
