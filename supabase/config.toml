@@ -28,3 +28,5 @@ verify_jwt = false
 # Hosted production Auth must also have "Allow new users to sign up" disabled.
 [auth]
 enable_signup = false
+site_url = "https://www.vorlen.co.uk"
+additional_redirect_urls = ["https://www.vorlen.co.uk/**"]
