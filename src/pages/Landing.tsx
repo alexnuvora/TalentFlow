@@ -1,6 +1,6 @@
 import {useEffect} from 'react';
 import {Link} from 'react-router-dom';
-import {ArrowRight,BriefcaseBusiness,CheckCircle2,Network,ShieldCheck,Users} from 'lucide-react';
+import {ArrowRight,ArrowUpRight,Check,ChevronDown} from 'lucide-react';
 import VorlenBrand from '../components/VorlenBrand';
 import {orgSchema,setSeo} from '../lib/seo';
 
@@ -12,23 +12,18 @@ const faqs=[
   ['Can recruiters work with Vorlen?','Vorlen operates a selective partner network for experienced recruitment and business-development professionals. Partner access is subject to formal terms, onboarding and approval.']
 ];
 
-const employerPoints=[
-  ['01','Start with the vacancy','We record the role, hiring context and agreed terms before delivery begins.'],
-  ['02','Search with intent','Direct sourcing, applications and recruiter-led market work are focused on the actual brief.'],
-  ['03','Review properly','Candidate evidence is assessed and introductions require human review and candidate authority.'],
-  ['04','Keep momentum','Client feedback, interviews and placement activity remain connected instead of disappearing into email chains.']
-];
-
-const paths=[
-  {eyebrow:'EMPLOYERS',title:'Need to hire?',copy:'Give us the brief. We will run a structured permanent recruitment search and introduce candidates who have been reviewed against the role.',cta:'Discuss a vacancy',to:'/employers',icon:BriefcaseBusiness},
-  {eyebrow:'CANDIDATES',title:'Ready for your next move?',copy:'See live opportunities, understand the role before you apply and keep track of your recruitment activity through Vorlen.',cta:'Explore opportunities',to:'/candidates',icon:Users},
-  {eyebrow:'PARTNERS',title:'Build with Vorlen.',copy:'Experienced recruiters can develop UK employer relationships and deliver recruitment through Vorlen under an approved partner agreement.',cta:'Explore partnership',to:'/partners',icon:Network}
+const method=[
+  ['01','Brief','Get precise about the role before the search begins.','Vacancy context, requirements and agreed terms are recorded first.'],
+  ['02','Search','Go looking for relevance, not volume.','Direct sourcing and applications are worked against the actual brief.'],
+  ['03','Assess','Turn candidate information into useful evidence.','Recruiters review job-related experience and suitability before progression.'],
+  ['04','Introduce','Send context, not a pile of CVs.','Candidate authority and human review come before a client introduction.'],
+  ['05','Progress','Keep the hiring process moving.','Feedback, interviews and outcomes stay connected to the vacancy.']
 ];
 
 export default function Landing(){
   useEffect(()=>setSeo({
     title:'Vorlen | UK Permanent Recruitment Agency',
-    description:'Vorlen is a UK permanent recruitment agency helping employers hire with structured search, human-reviewed candidate assessment and connected recruitment delivery.',
+    description:'Vorlen is a UK permanent recruitment agency helping employers hire with focused search, human-reviewed candidate assessment and connected recruitment delivery.',
     path:'/',
     jsonLd:[
       orgSchema(),
@@ -37,126 +32,138 @@ export default function Landing(){
     ]
   }),[]);
 
-  return <div className="vorlen-site">
+  return <div className="vl-home">
     <a className="skip-link" href="#main">Skip to content</a>
-    <header className="vorlen-nav">
+
+    <header className="vl-nav">
       <VorlenBrand/>
       <nav aria-label="Primary navigation">
-        <a href="#employers">Employers</a>
-        <a href="#approach">How we work</a>
+        <Link to="/employers">Employers</Link>
+        <Link to="/services/permanent-recruitment">Services</Link>
         <Link to="/careers">Careers</Link>
         <Link to="/partners">Partners</Link>
       </nav>
-      <div className="vorlen-nav-actions">
-        <Link className="vorlen-text-link" to="/login">Sign in</Link>
-        <Link className="vorlen-button small" to="/contact">Talk to Vorlen <ArrowRight size={15}/></Link>
+      <div className="vl-nav-actions">
+        <Link className="vl-signin" to="/login">Sign in</Link>
+        <Link className="vl-nav-cta" to="/contact">Start a search <ArrowUpRight size={15}/></Link>
       </div>
     </header>
 
     <main id="main">
-      <section className="vorlen-hero">
-        <div className="vorlen-hero-copy">
-          <p className="vorlen-eyebrow">UK PERMANENT RECRUITMENT</p>
-          <h1>Hiring should feel <em>decisive.</em></h1>
-          <p className="vorlen-hero-lead">Vorlen helps UK employers find, assess and hire people for permanent roles. Clear briefs, focused search, human-reviewed introductions and a recruitment process that keeps moving.</p>
-          <div className="vorlen-hero-actions">
-            <Link className="vorlen-button" to="/contact">I need to hire <ArrowRight size={17}/></Link>
-            <Link className="vorlen-button secondary" to="/careers">I'm looking for a role</Link>
-          </div>
-          <div className="vorlen-trust-line">
-            <span><CheckCircle2 size={15}/> Permanent recruitment</span>
-            <span><CheckCircle2 size={15}/> UK employers</span>
-            <span><CheckCircle2 size={15}/> Human-reviewed introductions</span>
+      <section className="vl-hero">
+        <div className="vl-hero-index" aria-hidden="true">
+          <span>V / 01</span>
+          <span>UK — 2026</span>
+        </div>
+
+        <div className="vl-hero-main">
+          <p className="vl-kicker"><span/> Permanent recruitment / United Kingdom</p>
+          <h1>Find the person.<br/><i>Move with certainty.</i></h1>
+          <div className="vl-hero-bottom">
+            <p>Vorlen runs focused permanent recruitment searches for UK employers — from a clear brief to human-reviewed introductions, interviews and placement.</p>
+            <div className="vl-hero-actions">
+              <Link className="vl-primary" to="/contact">I need to hire <ArrowRight size={17}/></Link>
+              <Link className="vl-secondary" to="/careers">Explore opportunities</Link>
+            </div>
           </div>
         </div>
-        <aside className="vorlen-standard" aria-label="The Vorlen standard">
-          <div className="vorlen-standard-top"><span>THE VORLEN STANDARD</span><ShieldCheck size={20}/></div>
-          <blockquote>“Technology should make recruitment clearer. It should never replace judgement.”</blockquote>
-          <div className="vorlen-standard-list">
-            <div><span>01</span><p><strong>Real vacancies first.</strong> Recruitment starts with a genuine employer requirement.</p></div>
-            <div><span>02</span><p><strong>Evidence over noise.</strong> Candidate review stays focused on the role.</p></div>
-            <div><span>03</span><p><strong>Humans make the call.</strong> Recruiters remain accountable for progression and introductions.</p></div>
-          </div>
+
+        <aside className="vl-hero-ledger" aria-label="Vorlen recruitment process">
+          <div className="vl-ledger-head"><span>SEARCH PROTOCOL</span><span>01—05</span></div>
+          {['Brief the role','Search the market','Review evidence','Introduce with context','Progress the hire'].map((item,i)=>
+            <div className="vl-ledger-row" key={item}><span>0{i+1}</span><strong>{item}</strong>{i<4&&<i/>}</div>
+          )}
+          <div className="vl-ledger-note"><Check size={15}/><span>Human review remains accountable for candidate progression and introductions.</span></div>
         </aside>
       </section>
 
-      <section className="vorlen-signal-strip" aria-label="Vorlen recruitment principles">
-        <span>BRIEF</span><i/>
-        <span>SEARCH</span><i/>
-        <span>ASSESS</span><i/>
-        <span>INTRODUCE</span><i/>
-        <span>INTERVIEW</span><i/>
-        <span>PLACE</span>
+      <section className="vl-statement">
+        <p className="vl-kicker">THE PROBLEM WE REMOVE</p>
+        <h2>Recruitment gets noisy when the brief, search, candidate evidence and client feedback live in different places.</h2>
+        <p className="vl-statement-copy">Vorlen keeps the work connected. Recruiters can spend more time judging fit and moving the process forward — while employers get a clearer view of what is actually happening with the vacancy.</p>
       </section>
 
-      <section className="vorlen-section vorlen-intro" id="employers">
-        <div className="vorlen-section-head">
-          <p className="vorlen-eyebrow">FOR EMPLOYERS</p>
-          <h2>A recruitment partner that stays close to the work.</h2>
-          <p>You should know what is happening with your vacancy without chasing a chain of emails. Vorlen keeps the brief, candidate review, feedback and interview activity connected while recruiters focus on finding the right people.</p>
+      <section className="vl-method" id="approach">
+        <div className="vl-method-intro">
+          <p className="vl-kicker">HOW THE WORK MOVES</p>
+          <h2>One search.<br/>Five disciplined moves.</h2>
+          <p>Technology organises the operating detail. People remain responsible for the recruitment judgement.</p>
+          <Link to="/services/permanent-recruitment">See permanent recruitment <ArrowRight size={14}/></Link>
         </div>
-        <div className="vorlen-process">
-          {employerPoints.map(([n,t,d])=><article key={n}><span>{n}</span><h3>{t}</h3><p>{d}</p></article>)}
-        </div>
-        <div className="vorlen-wide-cta">
-          <div><p className="vorlen-eyebrow">HIRING NOW?</p><h3>Tell us who you need.</h3><p>We will start with the vacancy and work backwards from the hire.</p></div>
-          <Link className="vorlen-button light" to="/contact">Discuss your vacancy <ArrowRight size={17}/></Link>
-        </div>
-      </section>
-
-      <section className="vorlen-dark-section" id="approach">
-        <div className="vorlen-dark-copy">
-          <p className="vorlen-eyebrow light">HOW VORLEN WORKS</p>
-          <h2>Structured enough to be reliable. Human enough to be useful.</h2>
-          <p>Our technology connects the operational detail — candidate records, screening evidence, client submissions, interviews and placements. The recruitment judgement stays with people.</p>
-        </div>
-        <div className="vorlen-dark-grid">
-          <article><strong>01</strong><h3>Commercial clarity</h3><p>Client terms and the vacancy are recorded before candidate introductions begin.</p></article>
-          <article><strong>02</strong><h3>Candidate control</h3><p>Candidate information is handled through defined recruitment and privacy processes.</p></article>
-          <article><strong>03</strong><h3>Review before introduction</h3><p>Suitability evidence and candidate willingness are recorded before a profile goes to a client.</p></article>
-          <article><strong>04</strong><h3>One connected process</h3><p>Feedback, interviews and placement outcomes remain attached to the work that produced them.</p></article>
-        </div>
-      </section>
-
-      <section className="vorlen-section vorlen-audiences">
-        <div className="vorlen-section-head compact">
-          <p className="vorlen-eyebrow">WORK WITH VORLEN</p>
-          <h2>One brand. Three ways in.</h2>
-        </div>
-        <div className="vorlen-path-grid">
-          {paths.map(({eyebrow,title,copy,cta,to,icon:Icon})=><article key={eyebrow}>
-            <div className="vorlen-path-icon"><Icon size={20}/></div>
-            <p className="vorlen-eyebrow">{eyebrow}</p>
-            <h3>{title}</h3>
-            <p>{copy}</p>
-            <Link to={to}>{cta} <ArrowRight size={15}/></Link>
+        <div className="vl-method-list">
+          {method.map(([n,title,lead,copy])=><article key={n}>
+            <span className="vl-method-number">{n}</span>
+            <div><h3>{title}</h3><strong>{lead}</strong><p>{copy}</p></div>
+            <ArrowUpRight className="vl-method-arrow" size={19}/>
           </article>)}
         </div>
       </section>
 
-      <section className="vorlen-partner-section" id="partners">
-        <div>
-          <p className="vorlen-eyebrow light">VORLEN PARTNER NETWORK</p>
-          <h2>Experienced recruiters. Independent drive. Vorlen behind the operation.</h2>
+      <section className="vl-choice" aria-label="Ways to work with Vorlen">
+        <div className="vl-choice-employer">
+          <span>FOR EMPLOYERS</span>
+          <h2>There is a role to fill.</h2>
+          <p>Bring us the vacancy. We will shape the search around the actual requirement and keep you close to candidate review and progression.</p>
+          <Link to="/employers">Recruit with Vorlen <ArrowRight size={16}/></Link>
         </div>
-        <div className="vorlen-partner-copy">
-          <p>Selected partners can develop UK clients, bring genuine vacancies into Vorlen, source candidates and progress recruitment activity through the platform. The model is performance based and governed by formal partner terms.</p>
-          <Link className="vorlen-button light" to="/contact">Talk about partnership <ArrowRight size={16}/></Link>
+        <div className="vl-choice-candidate">
+          <span>FOR CANDIDATES</span>
+          <h2>There is a move to make.</h2>
+          <p>Explore published opportunities, understand the role before applying and keep your recruitment activity connected through Vorlen.</p>
+          <Link to="/careers">View current opportunities <ArrowRight size={16}/></Link>
         </div>
       </section>
 
-      <section className="vorlen-section vorlen-faq">
-        <div className="vorlen-section-head compact"><p className="vorlen-eyebrow">QUESTIONS</p><h2>What people usually want to know.</h2></div>
-        <div className="vorlen-faq-list">{faqs.map(([q,a])=><details key={q}><summary>{q}<span>+</span></summary><p>{a}</p></details>)}</div>
+      <section className="vl-principles">
+        <div className="vl-principles-title">
+          <p className="vl-kicker">THE VORLEN STANDARD</p>
+          <h2>What we will not optimise away.</h2>
+        </div>
+        <div className="vl-principles-list">
+          <div><span>01</span><strong>Real vacancies first.</strong><p>The search begins with a genuine employer requirement and a defined role.</p></div>
+          <div><span>02</span><strong>Evidence over volume.</strong><p>More CVs is not the objective. Useful, role-relevant evidence is.</p></div>
+          <div><span>03</span><strong>Human judgement stays in the loop.</strong><p>Technology may assist the work; people remain accountable for progression and introductions.</p></div>
+        </div>
+      </section>
+
+      <section className="vl-partner">
+        <div className="vl-partner-number">03</div>
+        <div>
+          <p className="vl-kicker light">VORLEN PARTNER NETWORK</p>
+          <h2>Recruit independently.<br/>Operate as one team.</h2>
+        </div>
+        <div className="vl-partner-copy">
+          <p>Experienced recruiters and business-development professionals can work through Vorlen under formal partner terms, shared operating controls and one connected recruitment system.</p>
+          <Link to="/partners">Explore the partner network <ArrowRight size={16}/></Link>
+        </div>
+      </section>
+
+      <section className="vl-faq">
+        <div className="vl-faq-title">
+          <p className="vl-kicker">QUESTIONS / ANSWERS</p>
+          <h2>The useful things to know first.</h2>
+        </div>
+        <div className="vl-faq-list">
+          {faqs.map(([q,a],i)=><details key={q}>
+            <summary><span>0{i+1}</span><strong>{q}</strong><ChevronDown size={18}/></summary>
+            <p>{a}</p>
+          </details>)}
+        </div>
+      </section>
+
+      <section className="vl-close">
+        <p className="vl-kicker light">START WITH THE VACANCY</p>
+        <h2>If the hire matters,<br/><i>make the search deliberate.</i></h2>
+        <Link className="vl-close-cta" to="/contact">Discuss a vacancy <ArrowUpRight size={18}/></Link>
       </section>
     </main>
 
-    <footer className="vorlen-footer">
-      <div className="vorlen-footer-brand"><VorlenBrand/><p>Permanent recruitment, properly run.</p></div>
-      <div><strong>For employers</strong><Link to="/employers">For employers</Link><Link to="/services/permanent-recruitment">Permanent recruitment</Link><Link to="/services/candidate-sourcing">Candidate sourcing</Link></div>
-      <div><strong>For candidates</strong><Link to="/candidates">For candidates</Link><Link to="/careers">Open opportunities</Link><Link to="/candidate-terms">Candidate terms</Link></div>
-      <div><strong>Vorlen</strong><Link to="/partners">Partner network</Link><Link to="/locations/manchester">Manchester</Link><Link to="/locations/greater-manchester">Greater Manchester</Link><a href="mailto:contact@vorlen.co.uk">contact@vorlen.co.uk</a></div>
-      <div className="vorlen-footer-bottom"><span>© {new Date().getFullYear()} Vorlen</span><span>United Kingdom</span></div>
+    <footer className="vl-footer">
+      <div className="vl-footer-brand"><VorlenBrand/><p>Permanent recruitment, properly run.</p></div>
+      <div><strong>Employers</strong><Link to="/employers">For employers</Link><Link to="/services/permanent-recruitment">Permanent recruitment</Link><Link to="/services/candidate-sourcing">Candidate sourcing</Link></div>
+      <div><strong>Candidates</strong><Link to="/candidates">For candidates</Link><Link to="/careers">Open opportunities</Link><Link to="/candidate-terms">Candidate terms</Link></div>
+      <div><strong>Vorlen</strong><Link to="/partners">Partner network</Link><Link to="/locations/manchester">Manchester</Link><Link to="/locations/greater-manchester">Greater Manchester</Link><Link to="/contact">Contact</Link></div>
+      <div className="vl-footer-base"><span>© {new Date().getFullYear()} Vorlen</span><span>VORLEN T/A IVY AND PEARLS LTD · Company No. 17387520</span></div>
     </footer>
   </div>
 }
