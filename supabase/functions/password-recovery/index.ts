@@ -13,6 +13,7 @@ const headers=(req:Request)=>{
 };
 const json=(req:Request,body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...headers(req),'Content-Type':'application/json'}});
 const esc=(v:string)=>v.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
+const shell=(title:string,body:string)=>`<!doctype html><html><body style="margin:0;background:#f2f5f3;font-family:Arial,Helvetica,sans-serif;color:#10201d"><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td style="padding:34px 16px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;margin:0 auto;background:#ffffff;border:1px solid #d9e2de"><tr><td style="padding:28px 34px;background:#10201d"><div style="font-size:19px;font-weight:800;letter-spacing:4px;color:#ffffff">VORLEN</div><div style="margin-top:5px;font-size:10px;letter-spacing:1.7px;color:#8fe3c2">UK PERMANENT RECRUITMENT</div></td></tr><tr><td style="padding:36px 34px"><h1 style="margin:0 0 22px;font-size:28px;line-height:1.15;color:#10201d">${title}</h1>${body}</td></tr><tr><td style="padding:22px 34px;border-top:1px solid #e4ebe8;color:#6a7b75;font-size:11px;line-height:1.6">Vorlen · VORLEN T/A IVY AND PEARLS LTD · Company No. 17387520<br><a href="https://www.vorlen.co.uk" style="color:#0b6b55">www.vorlen.co.uk</a> · contact@vorlen.co.uk</td></tr></table></td></tr></table></body></html>`;
 async function sha256(v:string){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 
 Deno.serve(async req=>{
@@ -57,7 +58,7 @@ Deno.serve(async req=>{
         to:[email],
         reply_to:'contact@vorlen.co.uk',
         subject:'Reset your Vorlen password',
-        html:`<p>Hello ${esc(name)},</p><p>We received a request to reset your Vorlen password.</p><p><a href="${actionLink}">Reset your password</a></p><p>This is a one-time, time-limited link. If you did not request a password reset, you can ignore this email.</p><p>Kind regards,<br>Vorlen</p>`
+        html:shell('Reset your Vorlen password',`<p style="margin:0 0 18px;font-size:15px;line-height:1.7">Hello ${esc(name)},</p><p style="margin:0 0 24px;font-size:15px;line-height:1.7">We received a request to reset the password for your Vorlen account.</p><p style="margin:26px 0"><a href="${actionLink}" style="display:inline-block;padding:13px 20px;background:#0b6b55;color:#ffffff;text-decoration:none;font-weight:700;border-radius:999px">Reset password</a></p><p style="margin:0;color:#667972;font-size:13px;line-height:1.6">This is a one-time, time-limited link. If you did not request it, you can ignore this email.</p>`)
       })
     });
     if(!mail.ok)return json(req,{error:'Password recovery email could not be sent. Please try again shortly.'},502);
