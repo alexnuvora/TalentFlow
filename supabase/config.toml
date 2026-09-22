@@ -30,3 +30,7 @@ verify_jwt = false
 enable_signup = false
 site_url = "https://www.vorlen.co.uk"
 additional_redirect_urls = ["https://www.vorlen.co.uk/**"]
+
+# Public password-recovery entry point; handler performs its own validation and rate limiting.
+[functions.password-recovery]
+verify_jwt = false
