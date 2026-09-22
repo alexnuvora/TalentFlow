@@ -3,7 +3,7 @@ import {useNavigate,useParams} from 'react-router-dom';
 import {ArrowLeft,Briefcase,FileText,MapPin,Printer,ShieldCheck} from 'lucide-react';
 import {supabase} from '../lib/supabase';
 import {Button,SkeletonCards} from '../components/Ui';
-import {noIndex,setSeo} from '../lib/seo';
+import {noIndex,setSeo} from '../lib/seo';import VorlenBrand,{VorlenMark} from '../components/VorlenBrand';
 
 const SECTION_NAMES=new Set([
   'PROFESSIONAL PROFILE','PROFILE','SUMMARY','PERSONAL PROFILE','CORE SKILLS','KEY SKILLS','SKILLS',
@@ -75,11 +75,11 @@ export default function ClientSafeCv(){
   useEffect(()=>{setSeo({title:'Client-safe CV | Vorlen',description:'Secure client-safe candidate CV.',path:'/client/cv',robots:noIndex});void load()},[submissionId]);
   const parsed=useMemo(()=>data?splitSections(data.text||'',data.candidate_name||'Candidate'):{headline:'',sections:[]},[data]);
   if(loading)return <div className="client-surface"><SkeletonCards count={2}/></div>;
-  if(error||!data)return <div className="client-surface"><main className="candidate-simple"><div className="marketing-brand"><span>V</span><strong>Vorlen</strong></div><h1>We couldn't open this CV.</h1><p>{error}</p><Button onClick={()=>nav('/client')}>Back to client workspace</Button></main></div>;
+  if(error||!data)return <div className="client-surface"><main className="candidate-simple"><VorlenBrand/><h1>We couldn't open this CV.</h1><p>{error}</p><Button onClick={()=>nav('/client')}>Back to client workspace</Button></main></div>;
 
   return <div className="client-surface safe-cv-page">
     <header className="client-header safe-cv-shell-header">
-      <div className="marketing-brand"><span>V</span><strong>Vorlen Client-Safe CV</strong></div>
+      <VorlenBrand compact/>
       <div className="safe-cv-header-status"><ShieldCheck size={16}/><span>Protected introduction</span></div>
     </header>
     <main className="safe-cv-main">
@@ -97,7 +97,7 @@ export default function ClientSafeCv(){
             {parsed.headline&&<p className="safe-cv-headline"><Briefcase size={15}/>{parsed.headline}</p>}
             <p className="safe-cv-location"><MapPin size={14}/> Location shared through Vorlen</p>
           </div>
-          <div className="safe-cv-vorlen-mark"><span>V</span><small>VORLEN</small></div>
+          <div className="safe-cv-vorlen-mark"><VorlenMark/><small>VORLEN</small></div>
         </header>
 
         <div className="safe-cv-protection">
