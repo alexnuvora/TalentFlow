@@ -134,3 +134,257 @@
   .safe-cv-section,.safe-cv-role{break-inside:avoid}
   .safe-cv-footer{margin-top:24px}
 }
+
+
+/* =========================================================
+   VORLEN BRAND SYSTEM — 2026
+   Precision + connection + forward movement.
+   ========================================================= */
+:root{
+  --vorlen-ink:#10201d;
+  --vorlen-ink-2:#18342e;
+  --vorlen-green:#0b6b55;
+  --vorlen-green-2:#0e8065;
+  --vorlen-mint:#8fe3c2;
+  --vorlen-mint-soft:#dff6ed;
+  --vorlen-paper:#f4f1ea;
+  --vorlen-paper-2:#faf8f4;
+  --vorlen-white:#ffffff;
+  --vorlen-line:#d9e2de;
+  --vorlen-muted:#657770;
+  --vorlen-warm:#c99356;
+  --vorlen-danger:#a83b32;
+  --vorlen-shadow:0 24px 70px rgba(16,32,29,.09);
+  --vorlen-radius:16px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--vorlen-paper-2);color:var(--vorlen-ink);font-family:"Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;text-rendering:optimizeLegibility}
+::selection{background:var(--vorlen-mint);color:var(--vorlen-ink)}
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid rgba(14,128,101,.28);outline-offset:3px}
+
+/* Brand */
+.vorlen-brand{display:inline-flex;align-items:center;gap:11px;color:var(--vorlen-ink);text-decoration:none;line-height:1}
+.vorlen-brand.compact{gap:9px}
+.vorlen-wordmark{font-size:16px;font-weight:900;letter-spacing:.17em}
+.vorlen-mark{position:relative;display:inline-block;width:31px;height:31px;flex:0 0 31px}
+.vorlen-mark-left,.vorlen-mark-right{position:absolute;display:block;top:2px;width:10px;height:27px;background:var(--vorlen-green);transform-origin:center bottom}
+.vorlen-mark-left{left:6px;transform:skewX(22deg)}
+.vorlen-mark-right{right:6px;transform:skewX(-22deg);background:var(--vorlen-ink)}
+.vorlen-mark-right::after{content:"";position:absolute;right:-1px;bottom:0;width:8px;height:8px;background:var(--vorlen-mint);clip-path:polygon(0 100%,100% 0,100% 100%)}
+.sidebar .vorlen-mark{width:34px;height:34px;flex-basis:34px}
+.sidebar .vorlen-mark-left,.sidebar .vorlen-mark-right{height:30px}
+
+/* Shared marketing */
+.vorlen-site{min-height:100vh;background:var(--vorlen-paper-2)}
+.vorlen-nav{position:sticky;top:0;z-index:50;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:36px;min-height:78px;padding:0 clamp(20px,4vw,64px);border-bottom:1px solid rgba(16,32,29,.09);background:rgba(250,248,244,.94);backdrop-filter:blur(18px)}
+.vorlen-nav nav{display:flex;justify-content:center;gap:28px}
+.vorlen-nav nav a,.vorlen-text-link{color:#40554e;text-decoration:none;font-size:13px;font-weight:700}
+.vorlen-nav nav a:hover,.vorlen-text-link:hover{color:var(--vorlen-green)}
+.vorlen-nav-actions{display:flex;align-items:center;gap:18px}
+.vorlen-button{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:0 20px;border:1px solid var(--vorlen-ink);border-radius:999px;background:var(--vorlen-ink);color:#fff;text-decoration:none;font-weight:800;font-size:13px;letter-spacing:.01em;transition:transform .18s ease,background .18s ease,border-color .18s ease}
+.vorlen-button:hover{transform:translateY(-1px);background:var(--vorlen-green);border-color:var(--vorlen-green)}
+.vorlen-button.small{min-height:40px;padding:0 16px}
+.vorlen-button.secondary{background:transparent;color:var(--vorlen-ink);border-color:#b9c7c2}
+.vorlen-button.secondary:hover{background:#fff;border-color:var(--vorlen-ink)}
+.vorlen-button.light{background:#fff;color:var(--vorlen-ink);border-color:#fff}
+.vorlen-button.light:hover{background:var(--vorlen-mint);border-color:var(--vorlen-mint)}
+.vorlen-eyebrow{margin:0 0 17px;color:var(--vorlen-green);font-size:10px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}
+.vorlen-eyebrow.light{color:var(--vorlen-mint)}
+
+.vorlen-hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(330px,.72fr);gap:clamp(38px,7vw,104px);align-items:center;max-width:1440px;margin:0 auto;padding:clamp(72px,9vw,132px) clamp(22px,5vw,76px) clamp(68px,8vw,110px)}
+.vorlen-hero-copy h1{max-width:840px;margin:0;font-size:clamp(54px,7.7vw,116px);line-height:.89;letter-spacing:-.062em;font-weight:760;color:var(--vorlen-ink)}
+.vorlen-hero-copy h1 em{color:var(--vorlen-green);font-family:Georgia,"Times New Roman",serif;font-weight:400}
+.vorlen-hero-lead{max-width:700px;margin:34px 0 0;color:#465d55;font-size:clamp(17px,1.55vw,22px);line-height:1.6}
+.vorlen-hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:32px}
+.vorlen-trust-line{display:flex;gap:20px;flex-wrap:wrap;margin-top:31px;color:#62766f;font-size:11px;font-weight:700}
+.vorlen-trust-line span{display:inline-flex;align-items:center;gap:7px}
+.vorlen-trust-line svg{color:var(--vorlen-green)}
+.vorlen-standard{position:relative;border:1px solid #cbd8d3;background:#fff;padding:26px 26px 22px;box-shadow:var(--vorlen-shadow)}
+.vorlen-standard::before{content:"";position:absolute;top:-1px;left:-1px;width:82px;height:5px;background:var(--vorlen-green)}
+.vorlen-standard-top{display:flex;justify-content:space-between;align-items:center;color:var(--vorlen-green);font-size:9px;font-weight:900;letter-spacing:.16em}
+.vorlen-standard blockquote{margin:36px 0 38px;font-family:Georgia,"Times New Roman",serif;font-size:clamp(25px,2.8vw,39px);line-height:1.15;letter-spacing:-.03em;color:var(--vorlen-ink)}
+.vorlen-standard-list{display:grid}
+.vorlen-standard-list>div{display:grid;grid-template-columns:34px 1fr;gap:12px;padding:15px 0;border-top:1px solid #e5ebe8}
+.vorlen-standard-list span{font-size:10px;font-weight:900;color:var(--vorlen-green)}
+.vorlen-standard-list p{margin:0;color:#62736d;font-size:12px;line-height:1.5}
+.vorlen-standard-list strong{color:var(--vorlen-ink)}
+
+.vorlen-signal-strip{display:flex;align-items:center;justify-content:center;gap:21px;min-height:72px;padding:0 20px;background:var(--vorlen-ink);color:#e7f6f0;font-size:9px;font-weight:900;letter-spacing:.2em;overflow:hidden}
+.vorlen-signal-strip i{width:4px;height:4px;border-radius:50%;background:var(--vorlen-mint)}
+
+.vorlen-section{max-width:1440px;margin:0 auto;padding:clamp(76px,9vw,128px) clamp(22px,5vw,76px)}
+.vorlen-section-head{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(300px,.65fr);column-gap:clamp(42px,8vw,120px);align-items:end;margin-bottom:58px}
+.vorlen-section-head .vorlen-eyebrow{grid-column:1/-1}
+.vorlen-section-head h2{max-width:780px;margin:0;font-size:clamp(38px,5vw,68px);line-height:.98;letter-spacing:-.045em}
+.vorlen-section-head>p:last-child{margin:0;color:#61746d;font-size:15px;line-height:1.75}
+.vorlen-section-head.compact{grid-template-columns:1fr;max-width:800px}
+.vorlen-process{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid #bdcbc6;border-bottom:1px solid #bdcbc6}
+.vorlen-process article{min-height:260px;padding:26px 28px 28px 0;border-right:1px solid #bdcbc6}
+.vorlen-process article:not(:first-child){padding-left:28px}
+.vorlen-process article:last-child{border-right:0}
+.vorlen-process article>span{display:block;margin-bottom:65px;color:var(--vorlen-green);font-size:11px;font-weight:900}
+.vorlen-process h3{margin:0 0 12px;font-size:20px;letter-spacing:-.02em}
+.vorlen-process p{margin:0;color:#667972;font-size:13px;line-height:1.62}
+.vorlen-wide-cta{display:flex;justify-content:space-between;gap:36px;align-items:center;margin-top:48px;padding:33px 36px;background:var(--vorlen-green);color:#fff}
+.vorlen-wide-cta h3{margin:0 0 6px;font-size:30px}
+.vorlen-wide-cta p{margin:0;color:#d9f4ea}
+.vorlen-wide-cta .vorlen-eyebrow{color:var(--vorlen-mint);margin-bottom:8px}
+
+.vorlen-dark-section{display:grid;grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr);gap:clamp(50px,9vw,140px);padding:clamp(80px,9vw,124px) max(22px,calc((100vw - 1290px)/2));background:#0b1c19;color:#fff}
+.vorlen-dark-copy h2{margin:0 0 25px;font-size:clamp(40px,5vw,72px);line-height:.98;letter-spacing:-.046em}
+.vorlen-dark-copy>p:last-child{max-width:590px;color:#a9bbb5;line-height:1.72}
+.vorlen-dark-grid{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #2d4941;border-left:1px solid #2d4941}
+.vorlen-dark-grid article{min-height:225px;padding:27px;border-right:1px solid #2d4941;border-bottom:1px solid #2d4941}
+.vorlen-dark-grid strong{color:var(--vorlen-mint);font-size:10px;letter-spacing:.14em}
+.vorlen-dark-grid h3{margin:62px 0 9px;font-size:19px}
+.vorlen-dark-grid p{margin:0;color:#9fb1ab;font-size:12px;line-height:1.6}
+
+.vorlen-path-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.vorlen-path-grid article{position:relative;min-height:360px;padding:30px;border:1px solid #ccd8d4;background:#fff;transition:transform .2s ease,border-color .2s ease}
+.vorlen-path-grid article:hover{transform:translateY(-4px);border-color:#91b8aa}
+.vorlen-path-icon{display:grid;place-items:center;width:46px;height:46px;margin-bottom:72px;background:var(--vorlen-ink);color:var(--vorlen-mint)}
+.vorlen-path-grid h3{margin:0 0 12px;font-size:30px;letter-spacing:-.035em}
+.vorlen-path-grid>article>p:not(.vorlen-eyebrow){color:#667871;line-height:1.65;font-size:13px}
+.vorlen-path-grid a{position:absolute;bottom:28px;left:30px;display:inline-flex;gap:7px;align-items:center;color:var(--vorlen-green);font-size:12px;font-weight:900;text-decoration:none}
+
+.vorlen-partner-section{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.62fr);gap:clamp(50px,9vw,140px);padding:clamp(76px,8vw,116px) max(22px,calc((100vw - 1290px)/2));background:var(--vorlen-green);color:#fff}
+.vorlen-partner-section h2{max-width:800px;margin:0;font-size:clamp(40px,5.7vw,78px);line-height:.95;letter-spacing:-.05em}
+.vorlen-partner-copy{display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start}
+.vorlen-partner-copy p{margin:0 0 27px;color:#d7f2e8;line-height:1.75}
+.vorlen-faq-list{border-top:1px solid #bdcbc6}
+.vorlen-faq-list details{border-bottom:1px solid #bdcbc6}
+.vorlen-faq-list summary{display:flex;justify-content:space-between;gap:22px;align-items:center;padding:24px 0;cursor:pointer;list-style:none;font-size:17px;font-weight:800}
+.vorlen-faq-list summary::-webkit-details-marker{display:none}
+.vorlen-faq-list summary span{color:var(--vorlen-green);font-size:23px;font-weight:400}
+.vorlen-faq-list details p{max-width:800px;margin:0;padding:0 0 25px;color:#63766f;line-height:1.7}
+
+.vorlen-footer{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:42px;padding:62px max(22px,calc((100vw - 1290px)/2)) 28px;background:#091714;color:#d5e2de}
+.vorlen-footer .vorlen-brand{color:#fff}
+.vorlen-footer .vorlen-mark-left{background:var(--vorlen-mint)}
+.vorlen-footer .vorlen-mark-right{background:#fff}
+.vorlen-footer-brand p{margin:18px 0 0;color:#8fa49d;font-family:Georgia,"Times New Roman",serif;font-size:17px}
+.vorlen-footer>div:not(.vorlen-footer-brand):not(.vorlen-footer-bottom){display:flex;flex-direction:column;gap:10px}
+.vorlen-footer strong{color:#fff;font-size:11px;letter-spacing:.08em}
+.vorlen-footer a,.vorlen-footer span{color:#91a59e;text-decoration:none;font-size:11px;line-height:1.5}
+.vorlen-footer a:hover{color:var(--vorlen-mint)}
+.vorlen-footer-bottom{grid-column:1/-1;display:flex;justify-content:space-between;margin-top:20px;padding-top:22px;border-top:1px solid #20332e}
+
+/* Careers — same brand, more candidate-facing warmth */
+.careers-site{background:var(--vorlen-paper-2);color:var(--vorlen-ink)}
+.careers-nav{min-height:76px;padding:0 clamp(20px,4.4vw,68px);border-bottom:1px solid #dbe3df;background:rgba(250,248,244,.96);backdrop-filter:blur(15px)}
+.careers-nav .vorlen-brand{margin-right:auto}
+.careers-nav nav{gap:24px}
+.careers-nav nav a{color:#52665f;font-size:12px;font-weight:750}
+.careers-hero{max-width:1360px;margin:0 auto;padding:clamp(70px,8vw,112px) clamp(22px,5vw,70px);gap:clamp(40px,7vw,105px)}
+.careers-hero-copy h1{font-size:clamp(50px,7vw,96px);line-height:.92;letter-spacing:-.055em}
+.careers-hero-copy h1 em{color:var(--vorlen-green);font-family:Georgia,"Times New Roman",serif;font-weight:400}
+.careers-kicker{color:var(--vorlen-green);letter-spacing:.16em}
+.journey-card{border:1px solid #cbd7d3;border-radius:0;background:#fff;box-shadow:var(--vorlen-shadow)}
+.journey-label{color:var(--vorlen-green)}
+.opportunity-section{max-width:1360px;margin:0 auto;padding:70px clamp(22px,5vw,70px) 110px}
+.opportunity-search{border-radius:0;border:1px solid #ced9d5;background:#fff;box-shadow:none}
+.opportunity-card{border-radius:0;border-color:#d7e0dc;box-shadow:none}
+.opportunity-card:hover{border-color:#8eb4a7;transform:translateY(-2px)}
+.job-mark{border-radius:0;background:var(--vorlen-ink);color:var(--vorlen-mint)}
+.careers-footer{background:#091714;color:#d8e4e0;border-top:0}
+.careers-footer .vorlen-brand{color:#fff}
+.careers-footer .vorlen-mark-left{background:var(--vorlen-mint)}
+.careers-footer .vorlen-mark-right{background:#fff}
+.careers-footer a{color:#99aaa5}
+
+/* Secure customer portals */
+.client-surface,.candidate-surface{min-height:100vh;background:#eef2ef;color:var(--vorlen-ink)}
+.client-header,.candidate-surface>header{border-bottom:1px solid #d5dfdb;background:#fff}
+.client-header .vorlen-brand,.candidate-surface>header .vorlen-brand{color:var(--vorlen-ink)}
+.client-intro,.candidate-welcome{background:var(--vorlen-ink);color:#fff;border-radius:0;padding:clamp(28px,4vw,48px)}
+.client-intro .eyebrow,.candidate-welcome .eyebrow{color:var(--vorlen-mint)}
+.client-intro p,.candidate-welcome p{color:#b9c8c3}
+.client-count,.candidate-stat{border-color:#36524a;background:#132a25}
+.client-submission{border-radius:0;border:1px solid #d6e0dc;box-shadow:none;background:#fff}
+.client-submission-head{border-bottom:1px solid #e4eae7;padding-bottom:20px}
+.client-summary{border-radius:0;background:#f7f9f8;border:1px solid #e0e7e4}
+.client-feedback textarea{border-radius:0}
+.candidate-list article,.candidate-interview,.candidate-privacy{border-radius:0;border-color:#d9e1de;background:#fff}
+.candidate-status{border-radius:999px;background:#eaf7f1;color:var(--vorlen-green)}
+.candidate-privacy button{color:var(--vorlen-green)}
+
+/* Auth */
+.vorlen-auth .auth-story{background:#0b1c19}
+.vorlen-auth .auth-story .vorlen-brand{color:#fff}
+.vorlen-auth .auth-story .vorlen-mark-left{background:var(--vorlen-mint)}
+.vorlen-auth .auth-story .vorlen-mark-right{background:#fff}
+.vorlen-auth .auth-story-copy small{color:var(--vorlen-mint)}
+.vorlen-auth .auth-story-copy h2{font-size:clamp(38px,4vw,58px);letter-spacing:-.045em;line-height:.98}
+.vorlen-auth .auth-proof>div{border-color:#2b4840}
+.vorlen-auth .auth-panel{background:var(--vorlen-paper-2)}
+.vorlen-auth .customer-form input{border-radius:0;border-color:#cbd8d3;background:#fff}
+.vorlen-auth .customer-primary{border-radius:999px;background:var(--vorlen-ink)}
+.vorlen-auth .customer-primary:hover{background:var(--vorlen-green)}
+
+/* App workspace */
+.app-shell{background:#f2f5f3}
+.sidebar{background:#0c1d1a;color:#d8e4e0;border-right:0}
+.sidebar .brand{border-bottom:1px solid #263b35}
+.sidebar .brand strong{letter-spacing:.14em;color:#fff}
+.sidebar .brand span{color:#82958f}
+.sidebar nav a,.sidebar .nav-btn{color:#a8b8b3}
+.sidebar nav a.active,.sidebar .nav-btn.active{background:#17302a;color:#fff}
+.sidebar nav a.active svg,.sidebar .nav-btn.active svg{color:var(--vorlen-mint)}
+.sidebar-bottom{border-top:1px solid #263b35}
+.main{background:#f4f6f5}
+.topbar{background:rgba(255,255,255,.96);border-bottom:1px solid #dfe6e3}
+.topbar-product span{color:var(--vorlen-green);font-weight:900;letter-spacing:.16em}
+.card{border-color:#dbe3e0;box-shadow:0 8px 28px rgba(16,32,29,.035)}
+.btn,.customer-primary,button.btn{border-radius:999px}
+.badge{letter-spacing:.04em}
+.page h1,.page h2,.page-actions h2{letter-spacing:-.025em}
+
+/* Partner onboarding and work surfaces */
+.partner-page>.tabs{background:#e8eeeb;border-color:#d8e2de}
+.partner-page>.tabs button.active{color:var(--vorlen-green)}
+.partner-page .card,.workspace-grid .card{border-color:#d7e1dd;box-shadow:none}
+.partner-page .quick-prompts button{border-radius:999px}
+
+/* Existing brand aliases inherit the real identity */
+.marketing-brand{color:var(--vorlen-ink)}
+.marketing-brand>span:not(.vorlen-mark){background:var(--vorlen-ink)!important;color:var(--vorlen-mint)!important;border-radius:0!important}
+.brand-mark{background:var(--vorlen-ink)!important;color:var(--vorlen-mint)!important;border-radius:0!important}
+
+/* Responsive */
+@media(max-width:1000px){
+  .vorlen-nav{grid-template-columns:auto auto}
+  .vorlen-nav>nav{display:none}
+  .vorlen-hero{grid-template-columns:1fr}
+  .vorlen-standard{max-width:670px}
+  .vorlen-section-head,.vorlen-dark-section,.vorlen-partner-section{grid-template-columns:1fr}
+  .vorlen-process{grid-template-columns:1fr 1fr}
+  .vorlen-process article:nth-child(2){border-right:0}
+  .vorlen-process article:nth-child(-n+2){border-bottom:1px solid #bdcbc6}
+  .vorlen-dark-grid{max-width:900px}
+  .vorlen-footer{grid-template-columns:1.3fr 1fr 1fr}
+  .vorlen-footer>div:nth-child(4){grid-column:2/-1}
+}
+@media(max-width:720px){
+  .vorlen-nav{min-height:68px;padding:0 16px}
+  .vorlen-nav-actions .vorlen-text-link{display:none}
+  .vorlen-wordmark{font-size:14px}
+  .vorlen-hero{padding-top:58px}
+  .vorlen-hero-copy h1{font-size:clamp(50px,15vw,72px)}
+  .vorlen-standard{padding:22px}
+  .vorlen-signal-strip{justify-content:flex-start;overflow-x:auto}
+  .vorlen-section-head{margin-bottom:38px}
+  .vorlen-process{grid-template-columns:1fr}
+  .vorlen-process article,.vorlen-process article:not(:first-child){min-height:0;padding:24px 0;border-right:0;border-bottom:1px solid #bdcbc6}
+  .vorlen-process article>span{margin-bottom:28px}
+  .vorlen-wide-cta{align-items:flex-start;flex-direction:column;padding:27px 24px}
+  .vorlen-dark-grid{grid-template-columns:1fr}
+  .vorlen-path-grid{grid-template-columns:1fr}
+  .vorlen-path-grid article{min-height:300px}
+  .vorlen-footer{grid-template-columns:1fr 1fr;padding-top:46px}
+  .vorlen-footer-brand,.vorlen-footer>div:nth-child(4){grid-column:1/-1}
+  .careers-nav nav a:nth-child(2){display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
+}
