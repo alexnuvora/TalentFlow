@@ -20,9 +20,9 @@ const employerPoints=[
 ];
 
 const paths=[
-  {eyebrow:'EMPLOYERS',title:'Need to hire?',copy:'Give us the brief. We will run a structured permanent recruitment search and introduce candidates who have been reviewed against the role.',cta:'Discuss a vacancy',to:'/contact',icon:BriefcaseBusiness},
-  {eyebrow:'CANDIDATES',title:'Ready for your next move?',copy:'See live opportunities, understand the role before you apply and keep track of your recruitment activity through Vorlen.',cta:'Explore opportunities',to:'/careers',icon:Users},
-  {eyebrow:'PARTNERS',title:'Build with Vorlen.',copy:'Experienced recruiters can develop UK employer relationships and deliver recruitment through Vorlen under an approved partner agreement.',cta:'Explore partnership',to:'/contact',icon:Network}
+  {eyebrow:'EMPLOYERS',title:'Need to hire?',copy:'Give us the brief. We will run a structured permanent recruitment search and introduce candidates who have been reviewed against the role.',cta:'Discuss a vacancy',to:'/employers',icon:BriefcaseBusiness},
+  {eyebrow:'CANDIDATES',title:'Ready for your next move?',copy:'See live opportunities, understand the role before you apply and keep track of your recruitment activity through Vorlen.',cta:'Explore opportunities',to:'/candidates',icon:Users},
+  {eyebrow:'PARTNERS',title:'Build with Vorlen.',copy:'Experienced recruiters can develop UK employer relationships and deliver recruitment through Vorlen under an approved partner agreement.',cta:'Explore partnership',to:'/partners',icon:Network}
 ];
 
 export default function Landing(){
@@ -45,7 +45,7 @@ export default function Landing(){
         <a href="#employers">Employers</a>
         <a href="#approach">How we work</a>
         <Link to="/careers">Careers</Link>
-        <a href="#partners">Partners</a>
+        <Link to="/partners">Partners</Link>
       </nav>
       <div className="vorlen-nav-actions">
         <Link className="vorlen-text-link" to="/login">Sign in</Link>
@@ -153,9 +153,9 @@ export default function Landing(){
 
     <footer className="vorlen-footer">
       <div className="vorlen-footer-brand"><VorlenBrand/><p>Permanent recruitment, properly run.</p></div>
-      <div><strong>For employers</strong><Link to="/contact">Discuss a vacancy</Link><Link to="/login">Client sign in</Link></div>
-      <div><strong>For candidates</strong><Link to="/careers">Open opportunities</Link><Link to="/candidate-terms">Candidate terms</Link><Link to="/privacy">Privacy</Link></div>
-      <div><strong>Vorlen</strong><Link to="/accessibility">Accessibility</Link><a href="mailto:contact@vorlen.co.uk">contact@vorlen.co.uk</a><span>VORLEN T/A IVY AND PEARLS LTD</span><span>Company No. 17387520</span></div>
+      <div><strong>For employers</strong><Link to="/employers">For employers</Link><Link to="/services/permanent-recruitment">Permanent recruitment</Link><Link to="/services/candidate-sourcing">Candidate sourcing</Link></div>
+      <div><strong>For candidates</strong><Link to="/candidates">For candidates</Link><Link to="/careers">Open opportunities</Link><Link to="/candidate-terms">Candidate terms</Link></div>
+      <div><strong>Vorlen</strong><Link to="/partners">Partner network</Link><Link to="/locations/manchester">Manchester</Link><Link to="/locations/greater-manchester">Greater Manchester</Link><a href="mailto:contact@vorlen.co.uk">contact@vorlen.co.uk</a></div>
       <div className="vorlen-footer-bottom"><span>© {new Date().getFullYear()} Vorlen</span><span>United Kingdom</span></div>
     </footer>
   </div>
