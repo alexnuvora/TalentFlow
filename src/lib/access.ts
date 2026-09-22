@@ -24,8 +24,9 @@ export function useWorkspaceAccess():WorkspaceAccess{
   const refresh=useCallback(async()=>{
     setLoading(true);setError('');
     try{
-      const{data:{user},error:userError}=await supabase.auth.getUser();
-      if(userError||!user){setRole('');setCompanyId(null);setSubscription(null);setCandidateProcessingActive(false);setCandidateDataApproved(false);setError(userError?.message||'Your session has expired. Please sign in again.');return}
+      const{data:{session},error:sessionError}=await supabase.auth.getSession();
+      const user=session?.user||null;
+      if(sessionError||!user){setRole('');setCompanyId(null);setSubscription(null);setCandidateProcessingActive(false);setCandidateDataApproved(false);setError(sessionError?.message||'Your session has expired. Please sign in again.');return}
       const p=await supabase.from('profiles').select('role,company_id').eq('id',user.id).limit(1).maybeSingle();
       if(p.error){setRole('');setCompanyId(null);setSubscription(null);setCandidateProcessingActive(false);setCandidateDataApproved(false);setError(p.error.message);return}
       if(!p.data){setRole('');setCompanyId(null);setSubscription(null);setCandidateProcessingActive(false);setCandidateDataApproved(false);setError('Your workspace profile is not available yet. Complete onboarding or contact a workspace owner.');return}
