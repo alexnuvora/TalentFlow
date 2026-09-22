@@ -9,6 +9,7 @@ export type WorkspaceAccess={
   subscription:any;
   canManageWorkspace:boolean;
   canManageBilling:boolean;
+  isOwner:boolean;
   canUseAutomations:boolean;
   canUseAiScreening:boolean;
   canUseClientPortal:boolean;
@@ -38,7 +39,8 @@ export function useWorkspaceAccess():WorkspaceAccess{
   useEffect(()=>{void refresh()},[refresh]);
   const active=['active','trialing'].includes(subscription?.status);
   const features=subscription?.features||{};
+  const isOwner=role==='owner';
   const canManageWorkspace=['owner','manager'].includes(role);
   const canAccessCandidateData=candidateProcessingActive&&candidateDataApproved;
-  return{loading,error,role,companyId,subscription,canManageWorkspace,canManageBilling:canManageWorkspace,canUseAutomations:active&&features.automations===true,canUseAiScreening:active&&features.ai_screening===true&&canAccessCandidateData,canUseClientPortal:active&&features.client_portal===true,candidateProcessingActive,candidateDataApproved,canAccessCandidateData,refresh};
+  return{loading,error,role,companyId,subscription,canManageWorkspace,canManageBilling:isOwner,isOwner,canUseAutomations:active&&features.automations===true,canUseAiScreening:active&&features.ai_screening===true&&canAccessCandidateData,canUseClientPortal:active&&features.client_portal===true,candidateProcessingActive,candidateDataApproved,canAccessCandidateData,refresh};
 }
