@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 88" role="img" aria-labelledby="t d">
-<title id="t">Vorlen</title><desc id="d">Vorlen wordmark with a geometric V symbol</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 356 88" role="img" aria-labelledby="title desc">
+<title id="title">Vorlen</title><desc id="desc">Vorlen wordmark with a precise geometric V symbol</desc>
 <g fill="none" fill-rule="evenodd">
-  <g transform="translate(4 8)">
-    <path d="M6 6h18l18 43L59 6h18L46 70H35z" fill="#0B6B55"/>
-    <path d="M46 70 59 44l11 26z" fill="#8FE3C2"/>
+  <g transform="translate(8 10)">
+    <path d="M4 2h15.5L36 42.3 52.5 2H68L42.9 66H29.1z" fill="#153B32"/>
+    <path d="M36 42.3 42.9 66H29.1z" fill="#B8E34B"/>
   </g>
-  <text x="96" y="59" fill="#10201D" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="700" letter-spacing="6">VORLEN</text>
+  <text x="101" y="60" fill="#11251F" font-family="Arial,Helvetica,sans-serif" font-size="48" font-weight="700" letter-spacing="7">VORLEN</text>
 </g></svg>
