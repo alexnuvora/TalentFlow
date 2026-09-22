@@ -6,6 +6,7 @@ const cors={
 };
 const json=(body:any,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
 const esc=(value:string)=>value.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
+const shell=(title:string,body:string)=>`<!doctype html><html><body style="margin:0;background:#f2f5f3;font-family:Arial,Helvetica,sans-serif;color:#10201d"><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td style="padding:34px 16px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;margin:0 auto;background:#fff;border:1px solid #d9e2de"><tr><td style="padding:28px 34px;background:#10201d"><div style="font-size:19px;font-weight:800;letter-spacing:4px;color:#fff">VORLEN</div><div style="margin-top:5px;font-size:10px;letter-spacing:1.7px;color:#8fe3c2">SECURE RECRUITMENT WORKSPACE</div></td></tr><tr><td style="padding:36px 34px"><h1 style="margin:0 0 22px;font-size:28px;line-height:1.15;color:#10201d">${title}</h1>${body}</td></tr><tr><td style="padding:22px 34px;border-top:1px solid #e4ebe8;color:#6a7b75;font-size:11px;line-height:1.6">Vorlen · VORLEN T/A IVY AND PEARLS LTD · Company No. 17387520<br><a href="https://www.vorlen.co.uk" style="color:#0b6b55">www.vorlen.co.uk</a> · contact@vorlen.co.uk</td></tr></table></td></tr></table></body></html>`;
 
 Deno.serve(async req=>{
   if(req.method==='OPTIONS')return new Response('ok',{headers:cors});
@@ -101,8 +102,8 @@ Deno.serve(async req=>{
 
       const subject=existingProfile?'Your Vorlen client portal access':'You have been invited to the Vorlen client portal';
       const html=existingProfile
-        ?`<p>Hello ${esc(fullName||'there')},</p><p>A fresh secure link has been generated for your Vorlen client portal.</p><p><a href="${actionLink}">Open client portal</a></p><p>If you were not expecting this email, you can ignore it.</p><p>Kind regards,<br>Vorlen</p>`
-        :`<p>Hello ${esc(fullName||'there')},</p><p>You have been invited to the Vorlen client portal.</p><p><a href="${actionLink}">Accept invitation and set your password</a></p><p>This secure link is time-limited. If it expires, ask Vorlen to send a new invitation.</p><p>Kind regards,<br>Vorlen</p>`;
+        ?shell('Your Vorlen client portal',`<p style="font-size:15px;line-height:1.7">Hello ${esc(fullName||'there')},</p><p style="font-size:15px;line-height:1.7">A fresh secure link has been generated for your client workspace.</p><p style="margin:26px 0"><a href="${actionLink}" style="display:inline-block;padding:13px 20px;background:#0b6b55;color:#fff;text-decoration:none;font-weight:700;border-radius:999px">Open client portal</a></p><p style="color:#667972;font-size:13px;line-height:1.6">If you were not expecting this email, you can ignore it.</p>`)
+        :shell('You have been invited to Vorlen',`<p style="font-size:15px;line-height:1.7">Hello ${esc(fullName||'there')},</p><p style="font-size:15px;line-height:1.7">You have been invited to a secure Vorlen client workspace.</p><p style="margin:26px 0"><a href="${actionLink}" style="display:inline-block;padding:13px 20px;background:#0b6b55;color:#fff;text-decoration:none;font-weight:700;border-radius:999px">Accept invitation</a></p><p style="color:#667972;font-size:13px;line-height:1.6">The link is time-limited. If it expires, ask your Vorlen contact for a new invitation.</p>`);
 
       const mail=await fetch('https://api.resend.com/emails',{
         method:'POST',
