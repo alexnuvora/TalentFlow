@@ -1,5 +1,162 @@
-import {useEffect} from 'react';import {Link} from 'react-router-dom';import {orgSchema,setSeo} from '../lib/seo';
-const services=[['Permanent recruitment','We work with UK employers to understand the role, search the market and introduce candidates who have been reviewed against the vacancy.'],['Candidate sourcing & screening','Our recruiters combine direct sourcing, applications and AI-assisted evidence review with mandatory human oversight before candidates progress.'],['Client-led search','Every assignment starts with a genuine hiring requirement. We record the role, terms and recruitment brief before candidate introductions are made.'],['Interview to placement','We coordinate candidate introductions, feedback and interviews, then keep the placement process connected through to the commercial outcome.']];
-const partnerSteps=[['01','Develop UK clients','Identify businesses with genuine hiring needs and build relationships under the Vorlen recruitment model.'],['02','Bring the vacancy to Vorlen','The client, role and agreed commercial terms are recorded before recruitment delivery begins.'],['03','Source & qualify','Find candidates, review job-related evidence and complete the required human suitability checks.'],['04','Place & earn','When a partner-generated placement is completed and Vorlen receives the recruitment fee, the agreed partner share becomes payable.']];
-const faqs=[['What is Vorlen?','Vorlen is a UK permanent recruitment agency supported by its own recruitment technology. We help employers find and assess candidates and manage the recruitment process through to placement.'],['Do you recruit temporary workers?','Our current recruitment service is focused on permanent employment. We do not present the current service as temporary-worker supply.'],['How does Vorlen screen candidates?','Candidate information can be supported by AI-assisted screening, but recruitment decisions and client introductions require human review and recorded suitability checks.'],['Can I apply for a vacancy through Vorlen?','Yes. Open roles are published through our careers area. Candidates receive the relevant recruitment and privacy information during the application process.'],['Can recruitment professionals partner with Vorlen?','Vorlen is building a small partner network for experienced recruiters and business-development professionals. Partner arrangements are performance based and subject to formal terms before access is activated.']];
-export default function Landing(){useEffect(()=>setSeo({title:'Vorlen | UK Permanent Recruitment Agency',description:'Vorlen is a UK permanent recruitment agency helping employers find, screen and hire candidates, supported by modern recruitment technology and experienced recruitment partners.',path:'/',jsonLd:[orgSchema(),{'@context':'https://schema.org','@type':'FAQPage',mainEntity:faqs.map(([q,a])=>({'@type':'Question',name:q,acceptedAnswer:{'@type':'Answer',text:a}}))}]}),[]);return <div className="marketing agency-marketing"><header className="marketing-nav"><Link className="marketing-brand" to="/"><span>V</span><strong>Vorlen</strong></Link><nav><a href="#employers">Employers</a><a href="#approach">How we recruit</a><a href="#partners">Partners</a><Link to="/careers">Jobs</Link></nav><div className="marketing-nav-actions"><Link className="marketing-login" to="/login">Partner sign in</Link><Link className="marketing-button small" to="/contact">Hire with Vorlen</Link></div></header><main><section className="marketing-hero agency-hero"><div className="marketing-kicker">UK PERMANENT RECRUITMENT AGENCY</div><h1>Better people.<br/>Better hires.</h1><p>Vorlen helps UK businesses find and hire the right people. We combine hands-on recruitment, structured candidate assessment and modern technology to take permanent hiring from vacancy brief to placement.</p><div className="marketing-hero-actions"><Link className="marketing-button" to="/contact">I need to hire</Link><Link className="marketing-secondary" to="/careers">I'm looking for a job</Link></div><p className="marketing-note">Permanent recruitment • UK employers • Human-reviewed candidate introductions</p></section><section className="agency-proof"><span>Employer-led vacancies</span><span>Human recruitment oversight</span><span>Structured candidate screening</span><span>UK-wide partner network</span></section><section className="marketing-section intro" id="employers"><div className="section-label">FOR EMPLOYERS</div><div className="section-split"><h2>Recruitment built around the hire, not the software.</h2><p>Tell us who you need. Vorlen turns the brief into a managed recruitment assignment: sourcing the market, reviewing applicants, qualifying suitable people and introducing candidates for your consideration. Our technology supports the process; our recruiters remain responsible for the recruitment work.</p></div><div className="feature-grid agency-services">{services.map(([title,text],i)=><article key={title}><span className="feature-number">0{i+1}</span><h3>{title}</h3><p>{text}</p></article>)}</div><div className="agency-cta-row"><div><strong>Hiring now?</strong><span>Talk to Vorlen about your vacancy and recruitment requirements.</span></div><Link className="marketing-button" to="/contact">Discuss a vacancy</Link></div></section><section className="workflow-section" id="approach"><div className="section-label light">HOW VORLEN RECRUITS</div><h2>A controlled path from vacancy to placement.</h2><div className="workflow-line">{[['01','Understand the role'],['02','Search & attract'],['03','Screen evidence'],['04','Human review'],['05','Client introduction'],['06','Interview & place']].map(([n,t])=><div key={n}><span>{n}</span><strong>{t}</strong></div>)}</div><p className="workflow-copy">AI can assist with job-related evidence, but it does not replace recruiter judgement. Candidate introductions require human review, candidate willingness and the relevant suitability checks.</p></section><section className="marketing-section agency-two-sided"><div><div className="section-label">FOR CANDIDATES</div><h2>Your next move should be handled like it matters.</h2><p>Explore open roles, apply through Vorlen and stay connected to the recruitment process. We use your information for recruitment purposes under our candidate and privacy terms, with human oversight of AI-assisted screening.</p><Link className="marketing-secondary" to="/careers">View open roles</Link></div><div className="agency-card"><small>CANDIDATE EXPERIENCE</small><strong>Clear role information. Structured review. Human decisions.</strong><p>We want candidates to understand the role they are being considered for, how their information is used and when their details may be introduced to an employer.</p><div><Link to="/candidate-terms">Candidate terms →</Link><Link to="/privacy">Privacy notice →</Link></div></div></section><section className="spotlight-section" id="partners"><div className="section-label">VORLEN PARTNER NETWORK</div><div className="section-split"><div><h2>Build a recruitment desk with Vorlen behind you.</h2><p className="spotlight-lead">We're building a selective network of experienced recruitment partners who can develop UK employer relationships, source candidates and progress genuine vacancies through the Vorlen recruitment operation.</p></div><div className="spotlight-panel"><small>PERFORMANCE-BASED PARTNERSHIP</small><strong>Recruit. Place. Share in the fee.</strong><p>Selected partners receive access to Vorlen's recruitment infrastructure and work under formal partner terms. The model is performance based rather than salaried, with commission linked to qualifying placement fees actually received by Vorlen.</p><Link className="marketing-button partner-cta" to="/contact">Discuss partnership</Link></div></div><div className="partner-journey">{partnerSteps.map(([n,t,d])=><article key={n}><span>{n}</span><h3>{t}</h3><p>{d}</p></article>)}</div></section><section className="agency-tech"><div className="section-label light">TECHNOLOGY BEHIND THE RECRUITMENT</div><div className="section-split"><h2>Modern infrastructure. Recruitment stays human.</h2><p>Vorlen's private platform connects vacancies, candidates, applications, screening evidence, interviews, client submissions, compliance records and placements. It gives our recruitment operation one controlled record while keeping human review at the centre of material decisions.</p></div><div className="agency-tech-grid"><div><small>01</small><strong>Connected recruitment record</strong></div><div><small>02</small><strong>AI-assisted, human-reviewed screening</strong></div><div><small>03</small><strong>Candidate & client workflows</strong></div><div><small>04</small><strong>Compliance & audit controls</strong></div></div></section><section className="seo-faq marketing-section"><div className="section-label">COMMON QUESTIONS</div><h2>Working with Vorlen.</h2>{faqs.map(([q,a])=><details key={q}><summary>{q}</summary><p>{a}</p></details>)}</section><section className="closing"><div><div className="section-label light">READY TO HIRE?</div><h2>Give us the vacancy. We'll help you find the person.</h2></div><Link className="marketing-button inverse" to="/contact">Talk to Vorlen</Link></section></main><footer className="marketing-footer"><div><div className="marketing-brand"><span>V</span><strong>Vorlen</strong></div><p>UK permanent recruitment, powered by modern recruitment technology.</p></div><div><strong>Recruitment</strong><Link to="/careers">Open roles</Link><Link to="/contact">Hire with Vorlen</Link><a href="#partners">Partner network</a></div><div><strong>Legal</strong><Link to="/privacy">Privacy</Link><Link to="/candidate-terms">Candidate terms</Link><Link to="/accessibility">Accessibility</Link></div><small>© {new Date().getFullYear()} Vorlen</small></footer></div>}
+import {useEffect} from 'react';
+import {Link} from 'react-router-dom';
+import {ArrowRight,BriefcaseBusiness,CheckCircle2,Network,ShieldCheck,Users} from 'lucide-react';
+import VorlenBrand from '../components/VorlenBrand';
+import {orgSchema,setSeo} from '../lib/seo';
+
+const faqs=[
+  ['What does Vorlen do?','Vorlen is a UK permanent recruitment agency. We work with employers on genuine vacancies, source and assess candidates, coordinate introductions and interviews, and support the process through to placement.'],
+  ['Is Vorlen a recruitment agency or recruitment software?','Vorlen is a recruitment business supported by its own technology. Employers and candidates deal with a recruitment team; the platform keeps vacancy, candidate, compliance, interview and placement work connected behind the scenes.'],
+  ['How are candidates assessed?','Recruiters review job-related evidence, experience and suitability. Technology and AI may assist with evidence review, but client introductions and recruitment decisions require human oversight.'],
+  ['Where does Vorlen recruit?','Vorlen supports permanent recruitment for employers across the United Kingdom.'],
+  ['Can recruiters work with Vorlen?','Vorlen operates a selective partner network for experienced recruitment and business-development professionals. Partner access is subject to formal terms, onboarding and approval.']
+];
+
+const employerPoints=[
+  ['01','Start with the vacancy','We record the role, hiring context and agreed terms before delivery begins.'],
+  ['02','Search with intent','Direct sourcing, applications and recruiter-led market work are focused on the actual brief.'],
+  ['03','Review properly','Candidate evidence is assessed and introductions require human review and candidate authority.'],
+  ['04','Keep momentum','Client feedback, interviews and placement activity remain connected instead of disappearing into email chains.']
+];
+
+const paths=[
+  {eyebrow:'EMPLOYERS',title:'Need to hire?',copy:'Give us the brief. We will run a structured permanent recruitment search and introduce candidates who have been reviewed against the role.',cta:'Discuss a vacancy',to:'/contact',icon:BriefcaseBusiness},
+  {eyebrow:'CANDIDATES',title:'Ready for your next move?',copy:'See live opportunities, understand the role before you apply and keep track of your recruitment activity through Vorlen.',cta:'Explore opportunities',to:'/careers',icon:Users},
+  {eyebrow:'PARTNERS',title:'Build with Vorlen.',copy:'Experienced recruiters can develop UK employer relationships and deliver recruitment through Vorlen under an approved partner agreement.',cta:'Explore partnership',to:'/contact',icon:Network}
+];
+
+export default function Landing(){
+  useEffect(()=>setSeo({
+    title:'Vorlen | UK Permanent Recruitment Agency',
+    description:'Vorlen is a UK permanent recruitment agency helping employers hire with structured search, human-reviewed candidate assessment and connected recruitment delivery.',
+    path:'/',
+    jsonLd:[
+      orgSchema(),
+      {'@context':'https://schema.org','@type':'Service','@id':'https://www.vorlen.co.uk/#permanent-recruitment',name:'Permanent recruitment services',provider:{'@id':'https://www.vorlen.co.uk/#organization'},areaServed:{'@type':'Country',name:'United Kingdom'},serviceType:'Permanent recruitment',description:'Employer-led permanent recruitment covering vacancy briefing, candidate sourcing, assessment, introduction, interview coordination and placement support.'},
+      {'@context':'https://schema.org','@type':'FAQPage',mainEntity:faqs.map(([q,a])=>({'@type':'Question',name:q,acceptedAnswer:{'@type':'Answer',text:a}}))}
+    ]
+  }),[]);
+
+  return <div className="vorlen-site">
+    <a className="skip-link" href="#main">Skip to content</a>
+    <header className="vorlen-nav">
+      <VorlenBrand/>
+      <nav aria-label="Primary navigation">
+        <a href="#employers">Employers</a>
+        <a href="#approach">How we work</a>
+        <Link to="/careers">Careers</Link>
+        <a href="#partners">Partners</a>
+      </nav>
+      <div className="vorlen-nav-actions">
+        <Link className="vorlen-text-link" to="/login">Sign in</Link>
+        <Link className="vorlen-button small" to="/contact">Talk to Vorlen <ArrowRight size={15}/></Link>
+      </div>
+    </header>
+
+    <main id="main">
+      <section className="vorlen-hero">
+        <div className="vorlen-hero-copy">
+          <p className="vorlen-eyebrow">UK PERMANENT RECRUITMENT</p>
+          <h1>Hiring should feel <em>decisive.</em></h1>
+          <p className="vorlen-hero-lead">Vorlen helps UK employers find, assess and hire people for permanent roles. Clear briefs, focused search, human-reviewed introductions and a recruitment process that keeps moving.</p>
+          <div className="vorlen-hero-actions">
+            <Link className="vorlen-button" to="/contact">I need to hire <ArrowRight size={17}/></Link>
+            <Link className="vorlen-button secondary" to="/careers">I'm looking for a role</Link>
+          </div>
+          <div className="vorlen-trust-line">
+            <span><CheckCircle2 size={15}/> Permanent recruitment</span>
+            <span><CheckCircle2 size={15}/> UK employers</span>
+            <span><CheckCircle2 size={15}/> Human-reviewed introductions</span>
+          </div>
+        </div>
+        <aside className="vorlen-standard" aria-label="The Vorlen standard">
+          <div className="vorlen-standard-top"><span>THE VORLEN STANDARD</span><ShieldCheck size={20}/></div>
+          <blockquote>“Technology should make recruitment clearer. It should never replace judgement.”</blockquote>
+          <div className="vorlen-standard-list">
+            <div><span>01</span><p><strong>Real vacancies first.</strong> Recruitment starts with a genuine employer requirement.</p></div>
+            <div><span>02</span><p><strong>Evidence over noise.</strong> Candidate review stays focused on the role.</p></div>
+            <div><span>03</span><p><strong>Humans make the call.</strong> Recruiters remain accountable for progression and introductions.</p></div>
+          </div>
+        </aside>
+      </section>
+
+      <section className="vorlen-signal-strip" aria-label="Vorlen recruitment principles">
+        <span>BRIEF</span><i/>
+        <span>SEARCH</span><i/>
+        <span>ASSESS</span><i/>
+        <span>INTRODUCE</span><i/>
+        <span>INTERVIEW</span><i/>
+        <span>PLACE</span>
+      </section>
+
+      <section className="vorlen-section vorlen-intro" id="employers">
+        <div className="vorlen-section-head">
+          <p className="vorlen-eyebrow">FOR EMPLOYERS</p>
+          <h2>A recruitment partner that stays close to the work.</h2>
+          <p>You should know what is happening with your vacancy without chasing a chain of emails. Vorlen keeps the brief, candidate review, feedback and interview activity connected while recruiters focus on finding the right people.</p>
+        </div>
+        <div className="vorlen-process">
+          {employerPoints.map(([n,t,d])=><article key={n}><span>{n}</span><h3>{t}</h3><p>{d}</p></article>)}
+        </div>
+        <div className="vorlen-wide-cta">
+          <div><p className="vorlen-eyebrow">HIRING NOW?</p><h3>Tell us who you need.</h3><p>We will start with the vacancy and work backwards from the hire.</p></div>
+          <Link className="vorlen-button light" to="/contact">Discuss your vacancy <ArrowRight size={17}/></Link>
+        </div>
+      </section>
+
+      <section className="vorlen-dark-section" id="approach">
+        <div className="vorlen-dark-copy">
+          <p className="vorlen-eyebrow light">HOW VORLEN WORKS</p>
+          <h2>Structured enough to be reliable. Human enough to be useful.</h2>
+          <p>Our technology connects the operational detail — candidate records, screening evidence, client submissions, interviews and placements. The recruitment judgement stays with people.</p>
+        </div>
+        <div className="vorlen-dark-grid">
+          <article><strong>01</strong><h3>Commercial clarity</h3><p>Client terms and the vacancy are recorded before candidate introductions begin.</p></article>
+          <article><strong>02</strong><h3>Candidate control</h3><p>Candidate information is handled through defined recruitment and privacy processes.</p></article>
+          <article><strong>03</strong><h3>Review before introduction</h3><p>Suitability evidence and candidate willingness are recorded before a profile goes to a client.</p></article>
+          <article><strong>04</strong><h3>One connected process</h3><p>Feedback, interviews and placement outcomes remain attached to the work that produced them.</p></article>
+        </div>
+      </section>
+
+      <section className="vorlen-section vorlen-audiences">
+        <div className="vorlen-section-head compact">
+          <p className="vorlen-eyebrow">WORK WITH VORLEN</p>
+          <h2>One brand. Three ways in.</h2>
+        </div>
+        <div className="vorlen-path-grid">
+          {paths.map(({eyebrow,title,copy,cta,to,icon:Icon})=><article key={eyebrow}>
+            <div className="vorlen-path-icon"><Icon size={20}/></div>
+            <p className="vorlen-eyebrow">{eyebrow}</p>
+            <h3>{title}</h3>
+            <p>{copy}</p>
+            <Link to={to}>{cta} <ArrowRight size={15}/></Link>
+          </article>)}
+        </div>
+      </section>
+
+      <section className="vorlen-partner-section" id="partners">
+        <div>
+          <p className="vorlen-eyebrow light">VORLEN PARTNER NETWORK</p>
+          <h2>Experienced recruiters. Independent drive. Vorlen behind the operation.</h2>
+        </div>
+        <div className="vorlen-partner-copy">
+          <p>Selected partners can develop UK clients, bring genuine vacancies into Vorlen, source candidates and progress recruitment activity through the platform. The model is performance based and governed by formal partner terms.</p>
+          <Link className="vorlen-button light" to="/contact">Talk about partnership <ArrowRight size={16}/></Link>
+        </div>
+      </section>
+
+      <section className="vorlen-section vorlen-faq">
+        <div className="vorlen-section-head compact"><p className="vorlen-eyebrow">QUESTIONS</p><h2>What people usually want to know.</h2></div>
+        <div className="vorlen-faq-list">{faqs.map(([q,a])=><details key={q}><summary>{q}<span>+</span></summary><p>{a}</p></details>)}</div>
+      </section>
+    </main>
+
+    <footer className="vorlen-footer">
+      <div className="vorlen-footer-brand"><VorlenBrand/><p>Permanent recruitment, properly run.</p></div>
+      <div><strong>For employers</strong><Link to="/contact">Discuss a vacancy</Link><Link to="/login">Client sign in</Link></div>
+      <div><strong>For candidates</strong><Link to="/careers">Open opportunities</Link><Link to="/candidate-terms">Candidate terms</Link><Link to="/privacy">Privacy</Link></div>
+      <div><strong>Vorlen</strong><Link to="/accessibility">Accessibility</Link><a href="mailto:contact@vorlen.co.uk">contact@vorlen.co.uk</a><span>VORLEN T/A IVY AND PEARLS LTD</span><span>Company No. 17387520</span></div>
+      <div className="vorlen-footer-bottom"><span>© {new Date().getFullYear()} Vorlen</span><span>United Kingdom</span></div>
+    </footer>
+  </div>
+}
