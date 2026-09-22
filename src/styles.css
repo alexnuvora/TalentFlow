@@ -388,3 +388,66 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
   html{scroll-behavior:auto}
   *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
 }
+
+
+/* Vorlen contact */
+.vorlen-contact-page{min-height:100vh;background:var(--vorlen-paper-2)}
+.vorlen-contact-main{display:grid;grid-template-columns:minmax(0,.85fr) minmax(420px,1fr);gap:clamp(50px,8vw,120px);max-width:1260px;margin:0 auto;padding:clamp(70px,8vw,110px) clamp(22px,5vw,64px)}
+.vorlen-contact-intro h1{max-width:620px;margin:0 0 25px;font-size:clamp(50px,6.6vw,88px);line-height:.92;letter-spacing:-.055em}
+.vorlen-contact-intro>p:not(.vorlen-eyebrow){max-width:600px;margin:0;color:#5c7169;font-size:17px;line-height:1.7}
+.vorlen-contact-direct{display:grid;gap:5px;margin-top:42px;padding-top:23px;border-top:1px solid #cbd7d3}
+.vorlen-contact-direct span{color:#7b8d87;font-size:10px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}
+.vorlen-contact-direct a{color:var(--vorlen-green);font-size:20px;font-weight:800;text-decoration:none}
+.vorlen-contact-card{align-self:start;padding:32px;background:#fff;border:1px solid #d4ded9;box-shadow:var(--vorlen-shadow)}
+.vorlen-contact-card fieldset{padding:0;margin:0 0 28px;border:0}
+.vorlen-contact-card legend{margin-bottom:12px;font-size:12px;font-weight:900;color:var(--vorlen-ink)}
+.vorlen-reason-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.vorlen-reason-grid label{display:flex;flex-direction:column;align-items:flex-start;gap:12px;min-height:118px;padding:16px;border:1px solid #dce4e1;background:#fafcfb;cursor:pointer;transition:.18s ease}
+.vorlen-reason-grid label:hover,.vorlen-reason-grid label.active{border-color:var(--vorlen-green);background:#f1f8f5}
+.vorlen-reason-grid input{position:absolute;opacity:0;pointer-events:none}
+.vorlen-reason-grid svg{color:var(--vorlen-green)}
+.vorlen-reason-grid span{font-size:11px;font-weight:800;line-height:1.4}
+.vorlen-contact-fields{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.vorlen-contact-fields label{display:grid;gap:7px;color:#425750;font-size:11px;font-weight:800}
+.vorlen-contact-fields label span{color:#899792;font-weight:500}
+.vorlen-contact-fields .full{grid-column:1/-1}
+.vorlen-contact-fields input,.vorlen-contact-fields textarea{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid #ccd8d3;border-radius:0;background:#fff;color:var(--vorlen-ink);font:inherit;resize:vertical}
+.vorlen-contact-card .vorlen-button{margin-top:22px}
+.vorlen-contact-note{margin:16px 0 0;color:#7b8d87;font-size:10px;line-height:1.5}
+.vorlen-contact-note a,.vorlen-contact-success a{color:var(--vorlen-green)}
+.vorlen-contact-success{padding:18px}
+.vorlen-contact-success strong{display:block;margin-bottom:8px;font-size:24px}
+.vorlen-contact-success p{color:#62766f;line-height:1.6}
+
+/* Public legal / policy surfaces */
+.legal-public{min-height:100vh;background:var(--vorlen-paper-2);color:var(--vorlen-ink)}
+.legal-public>header{display:flex;justify-content:space-between;align-items:center;min-height:76px;padding:0 clamp(20px,4.5vw,66px);border-bottom:1px solid #d9e1de;background:#fff}
+.legal-public>header>a:not(.vorlen-brand){color:#51665f;font-size:12px;font-weight:750;text-decoration:none}
+.legal-public>main{max-width:900px;margin:0 auto;padding:clamp(65px,8vw,105px) 24px 110px}
+.legal-kicker{margin-bottom:15px;color:var(--vorlen-green);font-size:10px;font-weight:900;letter-spacing:.17em}
+.legal-public h1{max-width:800px;margin:0 0 26px;font-size:clamp(45px,6vw,74px);line-height:.98;letter-spacing:-.045em}
+.legal-lead{margin:0 0 52px;padding-bottom:34px;border-bottom:1px solid #cbd7d3;color:#536a62;font-size:17px;line-height:1.75}
+.legal-public section{display:grid;grid-template-columns:230px 1fr;gap:30px;padding:27px 0;border-bottom:1px solid #dde5e2}
+.legal-public section h2{margin:0;font-size:17px;letter-spacing:-.015em}
+.legal-public section p{margin:0;color:#5d7069;line-height:1.72}
+.legal-public section a{color:var(--vorlen-green)}
+.legal-note{margin-top:34px;padding:18px 20px;border-left:3px solid var(--vorlen-green);background:#eef6f3;color:#4c625a}
+
+/* Client safe CV logo compatibility */
+.safe-cv-vorlen-mark>.vorlen-mark{width:54px;height:54px;background:transparent;border-radius:0;box-shadow:none}
+.safe-cv-vorlen-mark>.vorlen-mark .vorlen-mark-left,.safe-cv-vorlen-mark>.vorlen-mark .vorlen-mark-right{top:4px;height:46px;width:15px}
+.safe-cv-vorlen-mark>.vorlen-mark .vorlen-mark-left{left:11px}
+.safe-cv-vorlen-mark>.vorlen-mark .vorlen-mark-right{right:11px}
+.safe-cv-vorlen-mark small{margin-top:2px}
+
+@media(max-width:820px){
+  .vorlen-contact-main{grid-template-columns:1fr}
+  .vorlen-reason-grid{grid-template-columns:1fr}
+  .vorlen-reason-grid label{min-height:0;flex-direction:row;align-items:center}
+  .legal-public section{grid-template-columns:1fr;gap:10px}
+}
+@media(max-width:580px){
+  .vorlen-contact-card{padding:22px}
+  .vorlen-contact-fields{grid-template-columns:1fr}
+  .vorlen-contact-fields .full{grid-column:auto}
+}
