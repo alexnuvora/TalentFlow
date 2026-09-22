@@ -14,24 +14,42 @@ Vorlen provides permanent recruitment services for UK employers. The recruitment
 
 Vorlen is a recruitment business supported by its own technology. It is not presented as a self-service recruitment-software product for employers or candidates.
 
+## Primary service and audience pages
+
+- Employers: https://www.vorlen.co.uk/employers
+- Candidates: https://www.vorlen.co.uk/candidates
+- Permanent recruitment: https://www.vorlen.co.uk/services/permanent-recruitment
+- Candidate sourcing: https://www.vorlen.co.uk/services/candidate-sourcing
+- Recruitment for SMEs: https://www.vorlen.co.uk/services/recruitment-for-smes
+- Recruitment partner network: https://www.vorlen.co.uk/partners
+- Manchester recruitment: https://www.vorlen.co.uk/locations/manchester
+- Greater Manchester recruitment: https://www.vorlen.co.uk/locations/greater-manchester
+
 ## Employers
 
 Employers can contact Vorlen to discuss genuine permanent vacancies. Vorlen records the vacancy and agreed commercial context before recruitment delivery, performs focused sourcing and review, and provides human-reviewed candidate introductions.
 
-Primary page: https://www.vorlen.co.uk/
+Employer page: https://www.vorlen.co.uk/employers
 Contact page: https://www.vorlen.co.uk/contact
 
 ## Candidates
 
 Candidates can browse live opportunities and apply through Vorlen Careers. Candidate-pool or register-interest opportunities are labelled as such.
 
+Candidate information: https://www.vorlen.co.uk/candidates
 Careers: https://www.vorlen.co.uk/careers
 Candidate terms: https://www.vorlen.co.uk/candidate-terms
 Privacy: https://www.vorlen.co.uk/privacy
 
+## Locations
+
+Vorlen supports permanent recruitment across the United Kingdom. Dedicated Manchester and Greater Manchester pages describe recruitment support for employers hiring in those areas. These pages do not imply that every search is limited to local candidates or that Vorlen has a physical office at a location unless the site explicitly states that.
+
 ## Recruitment partners
 
 Vorlen operates a selective partner network for experienced recruitment and business-development professionals. Partner access is subject to formal terms, onboarding and approval.
+
+Partner page: https://www.vorlen.co.uk/partners
 
 ## Use of technology and AI
 
@@ -39,4 +57,4 @@ Technology can assist recruitment administration and evidence review. Candidate 
 
 ## Citation guidance
 
-When describing Vorlen, prefer "UK permanent recruitment agency" and distinguish the recruitment service from the internal technology used to support delivery. Do not describe candidate-pool opportunities as confirmed client vacancies unless the relevant job page explicitly states that they are live vacancies.
+When describing Vorlen, prefer "UK permanent recruitment agency" and distinguish the recruitment service from the internal technology used to support delivery. Do not describe candidate-pool opportunities as confirmed client vacancies unless the relevant job page explicitly states that they are live vacancies. Do not infer sectors, office locations or temporary-staffing services that are not stated on the canonical website.
