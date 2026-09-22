@@ -1,5 +1,10 @@
 User-agent: *
 Allow: /
-Sitemap: https://talentflow-nu-neon.vercel.app/sitemap.xml
+Disallow: /dashboard/
+Disallow: /login
+Disallow: /client
+Disallow: /candidate?
+Disallow: /review/
+Disallow: /terms/accept
 
-# Private application routes carry page-level noindex directives.
+Sitemap: https://www.vorlen.co.uk/sitemap.xml
