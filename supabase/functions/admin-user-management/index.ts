@@ -64,13 +64,15 @@ Deno.serve(async req=>{
 
       let invitedUser:any=existing||null;
       let actionLink='';
+      const vorlenConfirm=(link:any,type:string,next:string)=>{const raw=link?.properties?.hashed_token||(()=>{try{return new URL(link?.properties?.action_link||'').searchParams.get('token')||''}catch{return''}})();if(!raw)return'';return `${base}/auth/confirm?token_hash=${encodeURIComponent(raw)}&type=${encodeURIComponent(type)}&next=${encodeURIComponent(next)}`};
       let created=false;
       let message='Client portal invitation sent.';
 
       if(existing&&existingProfile){
         const{data:link,error:linkError}=await db.auth.admin.generateLink({type:'magiclink',email,options:{redirectTo:`${base}/client`}});
         if(linkError||!link?.properties?.action_link)return json({error:linkError?.message||'Could not generate a secure client access link.'},400);
-        actionLink=link.properties.action_link;
+        actionLink=vorlenConfirm(link,'email','/client');
+        if(!actionLink)return json({error:'Could not create a secure Vorlen client access link.'},500);
         message='Client portal access link sent.';
       }else{
         const{data:link,error:linkError}=await db.auth.admin.generateLink({
@@ -80,7 +82,8 @@ Deno.serve(async req=>{
         });
         if(linkError||!link?.user||!link?.properties?.action_link)return json({error:linkError?.message||'Could not generate client invitation.'},400);
         invitedUser=link.user;
-        actionLink=link.properties.action_link;
+        actionLink=vorlenConfirm(link,'invite','/reset-password');
+        if(!actionLink){await db.auth.admin.deleteUser(link.user.id);return json({error:'Could not create a secure Vorlen invitation link.'},500)}
         created=true;
 
         const{error:profileError}=await db.from('profiles').upsert({
