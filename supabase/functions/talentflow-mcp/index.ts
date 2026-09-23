@@ -57,7 +57,7 @@ Deno.serve(async(req)=>{
  if(req.method!=='POST')return new Response(JSON.stringify({name:'Vorlen MCP',status:'ok',oauth:true,resource_metadata:resourceMetadata}),{status:200,headers});
  let body:any={};try{body=await req.json()}catch{return err(null,-32700,'Parse error',400)}
  const id=body.id??null,method=body.method;
- if(method==='initialize')return rpc(id,{protocolVersion:body?.params?.protocolVersion||'2025-11-25',capabilities:{tools:{listChanged:false}},serverInfo:{name:'talentflow',version:'1.0.0'}});
+ if(method==='initialize')return rpc(id,{protocolVersion:body?.params?.protocolVersion||'2025-11-25',capabilities:{tools:{listChanged:true}},serverInfo:{name:'vorlen',version:'2.0.0'}});
  if(method==='notifications/initialized')return new Response(null,{status:202});
  if(method==='tools/list')return rpc(id,{tools});
  if(method!=='tools/call')return err(id,-32601,'Method not found');
