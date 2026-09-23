@@ -14,7 +14,10 @@ const tools=[
  {name:'create_client',description:'Create a client/prospect. Requires owner or manager role.',inputSchema:{type:'object',required:['company_name'],properties:{company_name:{type:'string'},contact_name:{type:'string'},email:{type:'string'},phone:{type:'string'},website:{type:'string'},status:{type:'string'}},additionalProperties:false}},
  {name:'create_candidate',description:'Create a candidate record in Vorlen.',inputSchema:{type:'object',required:['full_name'],properties:{full_name:{type:'string'},email:{type:'string'},phone:{type:'string'},location:{type:'string'},source:{type:'string'},recruiter_summary:{type:'string'}},additionalProperties:false}},
  {name:'create_application',description:'Attach a candidate to a job as an application.',inputSchema:{type:'object',required:['candidate_id','job_id'],properties:{candidate_id:{type:'string'},job_id:{type:'string'},status:{type:'string'}},additionalProperties:false}},
- {name:'record_activity',description:'Record an audited Vorlen activity/note.',inputSchema:{type:'object',required:['detail'],properties:{detail:{type:'string'},event_type:{type:'string'},candidate_id:{type:'string'},job_id:{type:'string'}},additionalProperties:false}}
+ {name:'record_activity',description:'Record an audited Vorlen activity/note.',inputSchema:{type:'object',required:['detail'],properties:{detail:{type:'string'},event_type:{type:'string'},candidate_id:{type:'string'},job_id:{type:'string'}},additionalProperties:false}},
+ {name:'request_call',description:'Create an approved outbound call request for the paired Vorlen phone gateway. Requires owner or manager role and an active user-approved calling session on the handset before it will dial.',inputSchema:{type:'object',required:['phone_number'],properties:{phone_number:{type:'string'},device_code:{type:'string'}},additionalProperties:false}},
+ {name:'hangup_call',description:'Request the paired Vorlen phone gateway to end the active call.',inputSchema:{type:'object',properties:{request_id:{type:'string'},device_code:{type:'string'}},additionalProperties:false}},
+ {name:'get_call_state',description:'Get recent Vorlen phone gateway requests, commands and call-state events.',inputSchema:{type:'object',properties:{request_id:{type:'string'},device_code:{type:'string'}},additionalProperties:false}}
 ];
 
 Deno.serve(async(req)=>{
@@ -47,6 +50,36 @@ Deno.serve(async(req)=>{
   if(name==='create_client'){if(!['owner','manager'].includes(profile.role))return err(id,-32003,'Manager access required',403);const payload={company_id,company_name:clean(a.company_name,200),contact_name:clean(a.contact_name,200)||null,email:clean(a.email,320)||null,phone:clean(a.phone,80)||null,website:clean(a.website,500)||null,status:clean(a.status,50)||'prospect'};if(!payload.company_name)return err(id,-32602,'company_name required');const {data,error}=await db.from('clients').insert(payload).select().single();if(error)throw error;await audit(`create_client:${data.id}`);return done(data)}
   if(name==='create_candidate'){if(candidateAllowed!==true)return err(id,-32003,'Candidate processing is disabled',409);const payload={company_id,full_name:clean(a.full_name,200),email:clean(a.email,320)||null,phone:clean(a.phone,80)||null,location:clean(a.location,200)||null,source:clean(a.source,100)||'mcp',recruiter_summary:clean(a.recruiter_summary,1000)||null};if(!payload.full_name)return err(id,-32602,'full_name required');const {data,error}=await db.from('candidates').insert(payload).select().single();if(error)throw error;await audit(`create_candidate:${data.id}`);return done(data)}
   if(name==='create_application'){if(candidateAllowed!==true)return err(id,-32003,'Candidate processing is disabled',409);if(!uuid(a.candidate_id)||!uuid(a.job_id))return err(id,-32602,'valid candidate_id and job_id required');const {data:job}=await db.from('jobs').select('id').eq('id',a.job_id).eq('company_id',company_id).maybeSingle();const {data:candidate}=await db.from('candidates').select('id').eq('id',a.candidate_id).eq('company_id',company_id).maybeSingle();if(!job||!candidate)return err(id,-32602,'Job or candidate not found');const {data,error}=await db.from('applications').insert({company_id,job_id:job.id,candidate_id:candidate.id,status:clean(a.status,50)||'applied',source:'mcp'}).select().single();if(error)throw error;await audit(`create_application:${data.id}`);return done(data)}
+  if(name==='request_call'){
+   if(!['owner','manager'].includes(profile.role))return err(id,-32003,'Manager access required',403);
+   const phone=clean(a.phone_number,30),digits=phone.replace(/\D/g,'');
+   if(!/^\+?[0-9]{7,15}$/.test(phone)||['999','112','911','000'].includes(digits))return err(id,-32602,'valid non-emergency phone_number required');
+   const deviceCode=clean(a.device_code,80)||'s24fe-primary';
+   const {data:device,error:de}=await db.from('call_gateway_devices').select('id,device_code,enabled,paired_at').eq('company_id',company_id).eq('device_code',deviceCode).maybeSingle();
+   if(de)throw de;if(!device?.enabled||!device.paired_at)return err(id,-32602,'Paired call gateway device not available');
+   const {data,error}=await db.from('call_gateway_requests').insert({company_id,device_id:device.id,phone_number:phone,status:'approved',requested_by:user.id,approved_by:user.id,approved_at:new Date().toISOString()}).select('id,phone_number,status,created_at,expires_at').single();
+   if(error)throw error;await audit(`request_call:${data.id}:${deviceCode}`);return done(data);
+  }
+  if(name==='hangup_call'){
+   if(!['owner','manager'].includes(profile.role))return err(id,-32003,'Manager access required',403);
+   const deviceCode=clean(a.device_code,80)||'s24fe-primary';
+   const {data:device,error:de}=await db.from('call_gateway_devices').select('id,device_code,enabled').eq('company_id',company_id).eq('device_code',deviceCode).maybeSingle();
+   if(de)throw de;if(!device?.enabled)return err(id,-32602,'Call gateway device not available');
+   let requestId:string|null=null;
+   if(uuid(a.request_id))requestId=a.request_id;
+   else {const {data:r}=await db.from('call_gateway_requests').select('id').eq('company_id',company_id).eq('device_id',device.id).in('status',['claimed','approved']).order('created_at',{ascending:false}).limit(1).maybeSingle();requestId=r?.id||null;}
+   const {data,error}=await db.from('call_gateway_commands').insert({company_id,device_id:device.id,request_id:requestId,action:'hangup'}).select('id,request_id,action,status,created_at,expires_at').single();
+   if(error)throw error;await audit(`hangup_call:${data.id}:${deviceCode}`);return done(data);
+  }
+  if(name==='get_call_state'){
+   const deviceCode=clean(a.device_code,80)||'s24fe-primary';
+   const {data:device,error:de}=await db.from('call_gateway_devices').select('id,device_code,enabled,last_seen_at').eq('company_id',company_id).eq('device_code',deviceCode).maybeSingle();
+   if(de)throw de;if(!device)return err(id,-32602,'Call gateway device not found');
+   let rq=db.from('call_gateway_requests').select('id,phone_number,status,created_at,claimed_at,completed_at,error').eq('company_id',company_id).eq('device_id',device.id).order('created_at',{ascending:false}).limit(10);
+   if(uuid(a.request_id))rq=rq.eq('id',a.request_id);
+   const [{data:requests,error:re},{data:commands,error:ce},{data:events,error:ee}]=await Promise.all([rq,db.from('call_gateway_commands').select('id,request_id,action,status,created_at,completed_at,error').eq('company_id',company_id).eq('device_id',device.id).order('created_at',{ascending:false}).limit(10),db.from('call_gateway_events').select('request_id,event_type,call_state,created_at').eq('company_id',company_id).eq('device_id',device.id).order('created_at',{ascending:false}).limit(20)]);
+   if(re)throw re;if(ce)throw ce;if(ee)throw ee;return done({device,requests:requests||[],commands:commands||[],events:events||[]});
+  }
   if(name==='record_activity'){const detail=clean(a.detail,1000);if(!detail)return err(id,-32602,'detail required');const payload:any={company_id,actor_id:user.id,event_type:clean(a.event_type,80)||'mcp_note',detail};if(uuid(a.candidate_id))payload.candidate_id=a.candidate_id;if(uuid(a.job_id))payload.job_id=a.job_id;const {data,error}=await db.from('activity_log').insert(payload).select().single();if(error)throw error;return done(data)}
   return err(id,-32602,'Unknown tool');
  }catch(e){console.error('talentflow-mcp',e);return err(id,-32603,e instanceof Error?e.message:'Tool failed',500)}
