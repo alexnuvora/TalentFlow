@@ -46,7 +46,10 @@ const tools=[
  {name:'request_call',description:'Create an approved outbound call request for the paired Vorlen phone gateway. Requires owner or manager role and an active user-approved calling session on the handset before it will dial.',inputSchema:{type:'object',required:['phone_number'],properties:{phone_number:{type:'string'},device_code:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
  {name:'hangup_call',description:'Request the paired Vorlen phone gateway to end the active call.',inputSchema:{type:'object',properties:{request_id:{type:'string'},device_code:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
  {name:'get_call_state',description:'Get recent Vorlen phone gateway requests, commands and call-state events.',inputSchema:{type:'object',properties:{request_id:{type:'string'},device_code:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta}
-];
+
+ {name:'start_call_transcript',description:'Start or resume the transcript for a real Vorlen call. Link it to the active call request so every spoken turn can be persisted.',inputSchema:{type:'object',required:['call_request_id'],properties:{call_request_id:{type:'string'},client_id:{type:'string'},campaign_id:{type:'string'},dialer_item_id:{type:'string'},source:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
+ {name:'append_call_transcript_turn',description:'Append one exact spoken turn to an in-progress Vorlen call transcript. Save Alex and prospect turns in chronological order during the call.',inputSchema:{type:'object',required:['transcript_id','speaker','text'],properties:{transcript_id:{type:'string'},speaker:{type:'string',enum:['alex','prospect','unknown']},text:{type:'string'},spoken_at:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
+ {name:'complete_call_transcript',description:'Finalize a Vorlen call transcript after the call ends, storing the assembled transcript and optional factual summary.',inputSchema:{type:'object',required:['transcript_id'],properties:{transcript_id:{type:'string'},status:{type:'string',enum:['completed','partial','failed']},summary:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},];
 
 Deno.serve(async(req)=>{
  const u=new URL(req.url);
@@ -239,6 +242,28 @@ Deno.serve(async(req)=>{
    if(uuid(a.request_id))rq=rq.eq('id',a.request_id);
    const [{data:requests,error:re},{data:commands,error:ce},{data:events,error:ee}]=await Promise.all([rq,db.from('call_gateway_commands').select('id,request_id,action,status,created_at,completed_at,error').eq('company_id',company_id).eq('device_id',device.id).order('created_at',{ascending:false}).limit(10),db.from('call_gateway_events').select('request_id,event_type,call_state,created_at').eq('company_id',company_id).eq('device_id',device.id).order('created_at',{ascending:false}).limit(20)]);
    if(re)throw re;if(ce)throw ce;if(ee)throw ee;return done({device,requests:requests||[],commands:commands||[],events:events||[]});
+  }
+  if(name==='start_call_transcript'){
+   if(!uuid(a.call_request_id))return err(id,-32602,'valid call_request_id required');
+   const {data:reqRow,error:re}=await db.from('call_gateway_requests').select('id,company_id,created_at').eq('id',a.call_request_id).eq('company_id',company_id).maybeSingle();if(re)throw re;if(!reqRow)return err(id,-32602,'Call request not found');
+   let clientId=uuid(a.client_id)?a.client_id:null,campaignId=uuid(a.campaign_id)?a.campaign_id:null,itemId=uuid(a.dialer_item_id)?a.dialer_item_id:null;
+   if(!itemId){const {data:item}=await db.from('ai_dialer_items').select('id,client_id,campaign_id').eq('company_id',company_id).eq('call_request_id',reqRow.id).maybeSingle();if(item){itemId=item.id;clientId=clientId||item.client_id;campaignId=campaignId||item.campaign_id;}}
+   if(clientId){const {data:c}=await db.from('clients').select('id').eq('id',clientId).eq('company_id',company_id).maybeSingle();if(!c)return err(id,-32602,'Client not found in workspace');}
+   const payload={company_id,client_id:clientId,campaign_id:campaignId,dialer_item_id:itemId,call_request_id:reqRow.id,source:clean(a.source,80)||'chatgpt_voice',status:'in_progress',started_at:reqRow.created_at||new Date().toISOString(),updated_at:new Date().toISOString()};
+   const {data,error}=await db.from('ai_call_transcripts').upsert(payload,{onConflict:'call_request_id'}).select().single();if(error)throw error;await audit(`start_call_transcript:${data.id}:${reqRow.id}`);return done(data);
+  }
+  if(name==='append_call_transcript_turn'){
+   if(!uuid(a.transcript_id))return err(id,-32602,'valid transcript_id required');const speaker=clean(a.speaker,20),turnText=clean(a.text,12000);if(!['alex','prospect','unknown'].includes(speaker)||!turnText)return err(id,-32602,'valid speaker and text required');
+   const {data:t}=await db.from('ai_call_transcripts').select('id,status').eq('id',a.transcript_id).eq('company_id',company_id).maybeSingle();if(!t)return err(id,-32602,'Transcript not found');if(t.status!=='in_progress')return err(id,-32602,'Transcript is not in progress');
+   const {data:last}=await db.from('ai_call_transcript_turns').select('sequence_no').eq('transcript_id',t.id).order('sequence_no',{ascending:false}).limit(1).maybeSingle();const sequence=(last?.sequence_no||0)+1;
+   const spoken=clean(a.spoken_at,80);const {data,error}=await db.from('ai_call_transcript_turns').insert({transcript_id:t.id,sequence_no:sequence,speaker,text:turnText,spoken_at:spoken||new Date().toISOString()}).select().single();if(error)throw error;await db.from('ai_call_transcripts').update({updated_at:new Date().toISOString()}).eq('id',t.id);return done(data);
+  }
+  if(name==='complete_call_transcript'){
+   if(!uuid(a.transcript_id))return err(id,-32602,'valid transcript_id required');const finalStatus=clean(a.status,20)||'completed';if(!['completed','partial','failed'].includes(finalStatus))return err(id,-32602,'invalid transcript status');
+   const {data:t}=await db.from('ai_call_transcripts').select('id').eq('id',a.transcript_id).eq('company_id',company_id).maybeSingle();if(!t)return err(id,-32602,'Transcript not found');
+   const {data:turns,error:te}=await db.from('ai_call_transcript_turns').select('sequence_no,speaker,text,spoken_at').eq('transcript_id',t.id).order('sequence_no');if(te)throw te;
+   const transcript=(turns||[]).map(x=>`${x.speaker==='alex'?'Alex':x.speaker==='prospect'?'Prospect':'Unknown'}: ${x.text}`).join('\n');
+   const {data,error}=await db.from('ai_call_transcripts').update({status:finalStatus,ended_at:new Date().toISOString(),transcript_text:transcript,summary:clean(a.summary,8000)||null,updated_at:new Date().toISOString()}).eq('id',t.id).eq('company_id',company_id).select().single();if(error)throw error;await audit(`complete_call_transcript:${t.id}:${finalStatus}:${(turns||[]).length}`);return done({...data,turn_count:(turns||[]).length});
   }
   if(name==='record_activity'){const detail=clean(a.detail,1000);if(!detail)return err(id,-32602,'detail required');const payload:any={company_id,actor_id:user.id,event_type:clean(a.event_type,80)||'mcp_note',detail};if(uuid(a.candidate_id))payload.candidate_id=a.candidate_id;if(uuid(a.job_id))payload.job_id=a.job_id;const {data,error}=await db.from('activity_log').insert(payload).select().single();if(error)throw error;return done(data)}
   return err(id,-32602,'Unknown tool');
