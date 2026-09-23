@@ -1,27 +1,47 @@
 import {createClient} from 'npm:@supabase/supabase-js@2.95.0';
 
-const headers={'Content-Type':'application/json','Cache-Control':'no-store'};
+const headers={'Content-Type':'application/json','Cache-Control':'no-store','Access-Control-Allow-Origin':'*'};
+const resource='https://mzkaodoruhklzluikagy.supabase.co/functions/v1/talentflow-mcp';
+const resourceMetadata=resource+'/oauth-protected-resource';
+const authorizationServer='https://mzkaodoruhklzluikagy.supabase.co/auth/v1';
+const oauthScheme=[{type:'oauth2',scopes:['openid','email','profile']}];
+const toolMeta={securitySchemes:oauthScheme,ui:{visibility:['model','app']}};
+const outputSchema={type:'object',properties:{data:{}},required:['data'],additionalProperties:false};
+const authChallenge='Bearer resource_metadata="'+resourceMetadata+'", error="invalid_token", error_description="Sign in with Vorlen to continue"';
 const rpc=(id:unknown,result:unknown,status=200)=>new Response(JSON.stringify({jsonrpc:'2.0',id,result}),{status,headers});
 const err=(id:unknown,code:number,message:string,status=200)=>new Response(JSON.stringify({jsonrpc:'2.0',id,error:{code,message}}),{status,headers});
 const clean=(v:unknown,n=500)=>typeof v==='string'?v.trim().slice(0,n):'';
 const safe=(v:string)=>v.replace(/[%_,()]/g,'');
 const uuid=(v:unknown)=>typeof v==='string'&&/^[-0-9a-f]{36}$/i.test(v);
+const normPhone=(v:unknown)=>{const x=clean(v,40);if(!x)return '';const d=x.replace(/\D/g,'');return d.startsWith('00')?'+'+d.slice(2):x.startsWith('+')?'+'+d:d};
+const arr=(v:unknown,n=20)=>Array.isArray(v)?v.map(x=>clean(x,300)).filter(Boolean).slice(0,n):[];
+const num=(v:unknown)=>typeof v==='number'&&Number.isFinite(v)?v:null;
 
 const tools=[
- {name:'search_clients',description:'Search Vorlen clients and prospects in the authenticated workspace.',inputSchema:{type:'object',properties:{query:{type:'string'}},additionalProperties:false}},
- {name:'search_jobs',description:'Search jobs in the authenticated Vorlen workspace.',inputSchema:{type:'object',properties:{query:{type:'string'}},additionalProperties:false}},
- {name:'search_candidates',description:'Search candidates in the authenticated Vorlen workspace.',inputSchema:{type:'object',properties:{query:{type:'string'}},additionalProperties:false}},
- {name:'create_client',description:'Create a client/prospect. Requires owner or manager role.',inputSchema:{type:'object',required:['company_name'],properties:{company_name:{type:'string'},contact_name:{type:'string'},email:{type:'string'},phone:{type:'string'},website:{type:'string'},status:{type:'string'}},additionalProperties:false}},
- {name:'create_candidate',description:'Create a candidate record in Vorlen.',inputSchema:{type:'object',required:['full_name'],properties:{full_name:{type:'string'},email:{type:'string'},phone:{type:'string'},location:{type:'string'},source:{type:'string'},recruiter_summary:{type:'string'}},additionalProperties:false}},
- {name:'create_application',description:'Attach a candidate to a job as an application.',inputSchema:{type:'object',required:['candidate_id','job_id'],properties:{candidate_id:{type:'string'},job_id:{type:'string'},status:{type:'string'}},additionalProperties:false}},
- {name:'record_activity',description:'Record an audited Vorlen activity/note.',inputSchema:{type:'object',required:['detail'],properties:{detail:{type:'string'},event_type:{type:'string'},candidate_id:{type:'string'},job_id:{type:'string'}},additionalProperties:false}},
- {name:'request_call',description:'Create an approved outbound call request for the paired Vorlen phone gateway. Requires owner or manager role and an active user-approved calling session on the handset before it will dial.',inputSchema:{type:'object',required:['phone_number'],properties:{phone_number:{type:'string'},device_code:{type:'string'}},additionalProperties:false}},
- {name:'hangup_call',description:'Request the paired Vorlen phone gateway to end the active call.',inputSchema:{type:'object',properties:{request_id:{type:'string'},device_code:{type:'string'}},additionalProperties:false}},
- {name:'get_call_state',description:'Get recent Vorlen phone gateway requests, commands and call-state events.',inputSchema:{type:'object',properties:{request_id:{type:'string'},device_code:{type:'string'}},additionalProperties:false}}
+ {name:'search_clients',description:'Search Vorlen clients and prospects in the authenticated workspace.',inputSchema:{type:'object',properties:{query:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
+ {name:'search_jobs',description:'Search jobs in the authenticated Vorlen workspace.',inputSchema:{type:'object',properties:{query:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
+ {name:'search_candidates',description:'Search candidates in the authenticated Vorlen workspace.',inputSchema:{type:'object',properties:{query:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
+ {name:'create_client',description:'Create a client/prospect. Requires owner or manager role.',inputSchema:{type:'object',required:['company_name'],properties:{company_name:{type:'string'},contact_name:{type:'string'},email:{type:'string'},phone:{type:'string'},website:{type:'string'},status:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
+ {name:'update_client',description:'Update verified contact or commercial fields on an existing Vorlen client/prospect. Requires owner or manager role.',inputSchema:{type:'object',required:['client_id'],properties:{client_id:{type:'string'},contact_name:{type:'string'},email:{type:'string'},phone:{type:'string'},website:{type:'string'},status:{type:'string'},business_nature:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
+ {name:'create_job',description:'Capture a genuine client vacancy as a DRAFT job from a live recruitment conversation. Requires owner or manager role. Draft status prevents incomplete call notes being published as an advert.',inputSchema:{type:'object',required:['client_id','title'],properties:{client_id:{type:'string'},title:{type:'string'},description:{type:'string'},employment_type:{type:'string'},location:{type:'string'},salary_min:{type:'number'},salary_max:{type:'number'},requirements:{type:'array',items:{type:'string'}},start_date:{type:'string'},duties:{type:'string'},work_days_hours:{type:'string'},required_qualifications:{type:'string'},pay_interval:{type:'string'},notice_period:{type:'string'},client_instruction_reference:{type:'string'},genuine_vacancy_confirmed:{type:'boolean'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
+ {name:'check_contact_eligibility',description:'Check whether a phone/email/client is suppressed from B2B outreach before calling or following up.',inputSchema:{type:'object',properties:{phone:{type:'string'},email:{type:'string'},client_id:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
+ {name:'suppress_contact',description:'Immediately record a do-not-contact/opt-out request for a phone, email or client. Use when a prospect asks not to be contacted.',inputSchema:{type:'object',properties:{phone:{type:'string'},email:{type:'string'},client_id:{type:'string'},reason:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
+ {name:'get_commercial_terms',description:'Read verified Vorlen commercial terms. Returns configured=false for anything not explicitly configured; never infer missing terms.',inputSchema:{type:'object',properties:{client_id:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
+ {name:'set_commercial_terms',description:'Set workspace default commercial terms. Owner only. Values are authoritative for future calls until changed.',inputSchema:{type:'object',properties:{recruitment_fee_percent:{type:'number'},payment_terms_days:{type:'integer'},rebate_terms:{type:'string'},guarantee_terms:{type:'string'},exclusivity_terms:{type:'string'},negotiation_authority:{type:'string'},terms_version:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
+ {name:'record_call_outcome',description:'Record a structured B2B call outcome with provenance after a real call.',inputSchema:{type:'object',required:['outcome'],properties:{client_id:{type:'string'},job_id:{type:'string'},request_id:{type:'string'},outcome:{type:'string'},decision_maker_reached:{type:'boolean'},hiring_status:{type:'string'},objections:{type:'array',items:{type:'string'}},commitments:{type:'array',items:{type:'string'}},next_action:{type:'string'},follow_up_at:{type:'string'},prospect_stated_facts:{type:'array',items:{type:'string'}},alex_inferences:{type:'array',items:{type:'string'}}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
+ {name:'create_candidate',description:'Create a candidate record in Vorlen.',inputSchema:{type:'object',required:['full_name'],properties:{full_name:{type:'string'},email:{type:'string'},phone:{type:'string'},location:{type:'string'},source:{type:'string'},recruiter_summary:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
+ {name:'create_application',description:'Attach a candidate to a job as an application.',inputSchema:{type:'object',required:['candidate_id','job_id'],properties:{candidate_id:{type:'string'},job_id:{type:'string'},status:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
+ {name:'record_activity',description:'Record an audited Vorlen activity/note.',inputSchema:{type:'object',required:['detail'],properties:{detail:{type:'string'},event_type:{type:'string'},candidate_id:{type:'string'},job_id:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
+ {name:'request_call',description:'Create an approved outbound call request for the paired Vorlen phone gateway. Requires owner or manager role and an active user-approved calling session on the handset before it will dial.',inputSchema:{type:'object',required:['phone_number'],properties:{phone_number:{type:'string'},device_code:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
+ {name:'hangup_call',description:'Request the paired Vorlen phone gateway to end the active call.',inputSchema:{type:'object',properties:{request_id:{type:'string'},device_code:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
+ {name:'get_call_state',description:'Get recent Vorlen phone gateway requests, commands and call-state events.',inputSchema:{type:'object',properties:{request_id:{type:'string'},device_code:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta}
 ];
 
 Deno.serve(async(req)=>{
- if(req.method!=='POST')return new Response(JSON.stringify({name:'Vorlen MCP',status:'ok'}),{status:200,headers});
+ const u=new URL(req.url);
+ if(req.method==='OPTIONS')return new Response(null,{status:204,headers:{...headers,'Access-Control-Allow-Headers':'authorization,content-type','Access-Control-Allow-Methods':'GET,POST,OPTIONS'}});
+ if(req.method==='GET'&&u.pathname.endsWith('/oauth-protected-resource'))return new Response(JSON.stringify({resource,authorization_servers:[authorizationServer],bearer_methods_supported:['header'],scopes_supported:['openid','email','profile'],resource_documentation:'https://www.vorlen.co.uk/privacy'}),{status:200,headers});
+ if(req.method!=='POST')return new Response(JSON.stringify({name:'Vorlen MCP',status:'ok',oauth:true,resource_metadata:resourceMetadata}),{status:200,headers});
  let body:any={};try{body=await req.json()}catch{return err(null,-32700,'Parse error',400)}
  const id=body.id??null,method=body.method;
  if(method==='initialize')return rpc(id,{protocolVersion:body?.params?.protocolVersion||'2025-11-25',capabilities:{tools:{listChanged:false}},serverInfo:{name:'talentflow',version:'1.0.0'}});
@@ -30,12 +50,12 @@ Deno.serve(async(req)=>{
  if(method!=='tools/call')return err(id,-32601,'Method not found');
 
  const auth=req.headers.get('Authorization');
- if(!auth?.startsWith('Bearer '))return err(id,-32001,'Authentication required',401);
+ if(!auth?.startsWith('Bearer '))return new Response(JSON.stringify({jsonrpc:'2.0',id,error:{code:-32001,message:'Authentication required'},result:{content:[{type:'text',text:'Authentication required.'}],isError:true,_meta:{'mcp/www_authenticate':[authChallenge]}}}),{status:401,headers:{...headers,'WWW-Authenticate':authChallenge}});
  const url=Deno.env.get('SUPABASE_URL'),anon=Deno.env.get('SUPABASE_ANON_KEY'),service=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
  if(!url||!anon||!service)return err(id,-32603,'Server configuration error',503);
  const userDb=createClient(url,anon,{global:{headers:{Authorization:auth}}});
  const {data:{user},error:ue}=await userDb.auth.getUser();
- if(ue||!user)return err(id,-32001,'Authentication required',401);
+ if(ue||!user)return new Response(JSON.stringify({jsonrpc:'2.0',id,error:{code:-32001,message:'Authentication required'}}),{status:401,headers:{...headers,'WWW-Authenticate':authChallenge}});
  const db=createClient(url,service);
  const {data:profile}=await db.from('profiles').select('company_id,role').eq('id',user.id).maybeSingle();
  if(!profile?.company_id||!['owner','manager','recruiter'].includes(profile.role))return err(id,-32003,'Staff access required',403);
@@ -48,12 +68,61 @@ Deno.serve(async(req)=>{
   if(name==='search_jobs'){const q=clean(a.query,120);let x=db.from('jobs').select('id,client_id,title,description,employment_type,location,salary_min,salary_max,status,requirements,created_at').eq('company_id',company_id).limit(25);if(q)x=x.ilike('title',`%${safe(q)}%`);const {data,error}=await x;if(error)throw error;return done(data||[])}
   if(name==='search_candidates'){if(candidateAllowed!==true)return err(id,-32003,'Candidate processing is disabled',409);const q=clean(a.query,120);let x=db.from('candidates').select('id,full_name,email,phone,location,stage,score,source,recruiter_summary,next_action,next_action_at,created_at').eq('company_id',company_id).is('erased_at',null).limit(25);if(q)x=x.or(`full_name.ilike.%${safe(q)}%,email.ilike.%${safe(q)}%`);const {data,error}=await x;if(error)throw error;return done(data||[])}
   if(name==='create_client'){if(!['owner','manager'].includes(profile.role))return err(id,-32003,'Manager access required',403);const payload={company_id,company_name:clean(a.company_name,200),contact_name:clean(a.contact_name,200)||null,email:clean(a.email,320)||null,phone:clean(a.phone,80)||null,website:clean(a.website,500)||null,status:clean(a.status,50)||'prospect'};if(!payload.company_name)return err(id,-32602,'company_name required');const {data,error}=await db.from('clients').insert(payload).select().single();if(error)throw error;await audit(`create_client:${data.id}`);return done(data)}
+  if(name==='update_client'){
+   if(!['owner','manager'].includes(profile.role))return err(id,-32003,'Manager access required',403);
+   if(!uuid(a.client_id))return err(id,-32602,'valid client_id required');
+   const {data:existing}=await db.from('clients').select('id').eq('id',a.client_id).eq('company_id',company_id).maybeSingle();if(!existing)return err(id,-32602,'Client not found');
+   const p:any={}; for(const k of ['contact_name','email','phone','website','business_nature'])if(a[k]!==undefined)p[k]=clean(a[k],k==='website'?500:320);
+   if(a.status!==undefined){const st=clean(a.status,30);if(!['prospect','active','paused','closed'].includes(st))return err(id,-32602,'invalid client status');p.status=st;}
+   if(!Object.keys(p).length)return err(id,-32602,'No update fields supplied');
+   const {data,error}=await db.from('clients').update(p).eq('id',a.client_id).eq('company_id',company_id).select().single();if(error)throw error;await audit(`update_client:${data.id}`);return done(data);
+  }
+  if(name==='create_job'){
+   if(!['owner','manager'].includes(profile.role))return err(id,-32003,'Manager access required',403);
+   if(!uuid(a.client_id))return err(id,-32602,'valid client_id required');const title=clean(a.title,200);if(!title)return err(id,-32602,'title required');
+   const {data:client}=await db.from('clients').select('id,company_name').eq('id',a.client_id).eq('company_id',company_id).maybeSingle();if(!client)return err(id,-32602,'Client not found');
+   const slug=(title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,60)||'vacancy')+'-'+crypto.randomUUID().slice(0,8);
+   const p:any={company_id,client_id:client.id,title,slug,description:clean(a.description,5000)||title,employment_type:clean(a.employment_type,80)||'Permanent',location:clean(a.location,200)||'UK',status:'draft',requirements:arr(a.requirements),duties:clean(a.duties,5000)||null,work_days_hours:clean(a.work_days_hours,1000)||null,required_qualifications:clean(a.required_qualifications,2000)||null,pay_interval:clean(a.pay_interval,80)||null,notice_period:clean(a.notice_period,500)||null,client_instruction_reference:clean(a.client_instruction_reference,500)||null};
+   if(num(a.salary_min)!==null)p.salary_min=num(a.salary_min);if(num(a.salary_max)!==null)p.salary_max=num(a.salary_max);if(clean(a.start_date,20))p.start_date=clean(a.start_date,20);if(a.genuine_vacancy_confirmed===true)p.genuine_vacancy_confirmed_at=new Date().toISOString();
+   const {data,error}=await db.from('jobs').insert(p).select().single();if(error)throw error;await audit(`create_job:${data.id}:draft`);return done(data);
+  }
+  if(name==='check_contact_eligibility'){
+   const phone=normPhone(a.phone)||null,email=clean(a.email,320).toLowerCase()||null,clientId=uuid(a.client_id)?a.client_id:null;if(!phone&&!email&&!clientId)return err(id,-32602,'phone, email or client_id required');
+   let q=db.from('b2b_call_suppressions').select('id,phone_normalized,email_normalized,client_id,reason,requested_at').eq('company_id',company_id);const ors=[];if(phone)ors.push(`phone_normalized.eq.${phone}`);if(email)ors.push(`email_normalized.eq.${email}`);if(clientId)ors.push(`client_id.eq.${clientId}`);q=q.or(ors.join(','));
+   const {data,error}=await q.limit(20);if(error)throw error;return done({eligible:!(data&&data.length),suppressed:(data||[])});
+  }
+  if(name==='suppress_contact'){
+   const phone=normPhone(a.phone)||null,email=clean(a.email,320).toLowerCase()||null,clientId=uuid(a.client_id)?a.client_id:null;if(!phone&&!email&&!clientId)return err(id,-32602,'phone, email or client_id required');
+   const p={company_id,phone_normalized:phone,email_normalized:email,client_id:clientId,reason:clean(a.reason,500)||'do_not_contact',source:'mcp',requested_by:user.id};
+   const {data,error}=await db.from('b2b_call_suppressions').insert(p).select().single();if(error&&error.code!=='23505')throw error;if(error?.code==='23505'){const {data:existing}=await db.from('b2b_call_suppressions').select().eq('company_id',company_id).or([phone?`phone_normalized.eq.${phone}`:'',email?`email_normalized.eq.${email}`:'',clientId?`client_id.eq.${clientId}`:''].filter(Boolean).join(',')).limit(1).single();return done(existing);}
+   await audit(`suppress_contact:${data.id}`);return done(data);
+  }
+  if(name==='get_commercial_terms'){
+   let clientTerms:any=null;if(uuid(a.client_id)){const {data:c}=await db.from('clients').select('id,recruitment_fee_percent,payment_terms_days,rebate_terms,terms_version,terms_accepted_at').eq('id',a.client_id).eq('company_id',company_id).maybeSingle();clientTerms=c||null;}
+   const {data:defaults,error}=await db.from('b2b_commercial_settings').select('recruitment_fee_percent,payment_terms_days,rebate_terms,guarantee_terms,exclusivity_terms,negotiation_authority,terms_version,updated_at').eq('company_id',company_id).maybeSingle();if(error)throw error;
+   const effective={recruitment_fee_percent:clientTerms?.recruitment_fee_percent??defaults?.recruitment_fee_percent??null,payment_terms_days:clientTerms?.payment_terms_days??defaults?.payment_terms_days??null,rebate_terms:clientTerms?.rebate_terms??defaults?.rebate_terms??null,guarantee_terms:defaults?.guarantee_terms??null,exclusivity_terms:defaults?.exclusivity_terms??null,negotiation_authority:defaults?.negotiation_authority??null,terms_version:clientTerms?.terms_version??defaults?.terms_version??null};
+   return done({configured:Object.values(effective).some(v=>v!==null),effective,client_override:clientTerms,workspace_defaults:defaults||null});
+  }
+  if(name==='set_commercial_terms'){
+   if(profile.role!=='owner')return err(id,-32003,'Owner access required',403);
+   const p:any={company_id,updated_by:user.id,updated_at:new Date().toISOString()};if(num(a.recruitment_fee_percent)!==null)p.recruitment_fee_percent=num(a.recruitment_fee_percent);if(Number.isInteger(a.payment_terms_days))p.payment_terms_days=a.payment_terms_days;
+   for(const k of ['rebate_terms','guarantee_terms','exclusivity_terms','negotiation_authority','terms_version'])if(a[k]!==undefined)p[k]=clean(a[k],2000)||null;
+   const {data,error}=await db.from('b2b_commercial_settings').upsert(p,{onConflict:'company_id'}).select().single();if(error)throw error;await audit('set_commercial_terms');return done(data);
+  }
+  if(name==='record_call_outcome'){
+   const outcome=clean(a.outcome,120);if(!outcome)return err(id,-32602,'outcome required');
+   const metadata:any={source:'live_b2b_call',request_id:uuid(a.request_id)?a.request_id:null,decision_maker_reached:a.decision_maker_reached===true,hiring_status:clean(a.hiring_status,200)||null,objections:arr(a.objections),commitments:arr(a.commitments),next_action:clean(a.next_action,1000)||null,follow_up_at:clean(a.follow_up_at,80)||null,prospect_stated_facts:arr(a.prospect_stated_facts),alex_inferences:arr(a.alex_inferences)};
+   const payload:any={company_id,actor_id:user.id,event_type:'b2b_call_outcome',detail:outcome,metadata};if(uuid(a.job_id))payload.job_id=a.job_id;
+   const {data,error}=await db.from('activity_log').insert(payload).select().single();if(error)throw error;await audit(`record_call_outcome:${data.id}`);return done(data);
+  }
   if(name==='create_candidate'){if(candidateAllowed!==true)return err(id,-32003,'Candidate processing is disabled',409);const payload={company_id,full_name:clean(a.full_name,200),email:clean(a.email,320)||null,phone:clean(a.phone,80)||null,location:clean(a.location,200)||null,source:clean(a.source,100)||'mcp',recruiter_summary:clean(a.recruiter_summary,1000)||null};if(!payload.full_name)return err(id,-32602,'full_name required');const {data,error}=await db.from('candidates').insert(payload).select().single();if(error)throw error;await audit(`create_candidate:${data.id}`);return done(data)}
   if(name==='create_application'){if(candidateAllowed!==true)return err(id,-32003,'Candidate processing is disabled',409);if(!uuid(a.candidate_id)||!uuid(a.job_id))return err(id,-32602,'valid candidate_id and job_id required');const {data:job}=await db.from('jobs').select('id').eq('id',a.job_id).eq('company_id',company_id).maybeSingle();const {data:candidate}=await db.from('candidates').select('id').eq('id',a.candidate_id).eq('company_id',company_id).maybeSingle();if(!job||!candidate)return err(id,-32602,'Job or candidate not found');const {data,error}=await db.from('applications').insert({company_id,job_id:job.id,candidate_id:candidate.id,status:clean(a.status,50)||'applied',source:'mcp'}).select().single();if(error)throw error;await audit(`create_application:${data.id}`);return done(data)}
   if(name==='request_call'){
    if(!['owner','manager'].includes(profile.role))return err(id,-32003,'Manager access required',403);
    const phone=clean(a.phone_number,30),digits=phone.replace(/\D/g,'');
    if(!/^\+?[0-9]{7,15}$/.test(phone)||['999','112','911','000'].includes(digits))return err(id,-32602,'valid non-emergency phone_number required');
+   const normalizedPhone=normPhone(phone);
+   const {data:suppressed,error:se}=await db.from('b2b_call_suppressions').select('id,reason,requested_at').eq('company_id',company_id).eq('phone_normalized',normalizedPhone).limit(1);if(se)throw se;if(suppressed?.length)return err(id,-32003,'Call blocked: contact is suppressed/do-not-contact',409);
    const deviceCode=clean(a.device_code,80)||'s24fe-primary';
    const {data:device,error:de}=await db.from('call_gateway_devices').select('id,device_code,enabled,paired_at').eq('company_id',company_id).eq('device_code',deviceCode).maybeSingle();
    if(de)throw de;if(!device?.enabled||!device.paired_at)return err(id,-32602,'Paired call gateway device not available');
@@ -66,7 +135,7 @@ Deno.serve(async(req)=>{
    const {data:device,error:de}=await db.from('call_gateway_devices').select('id,device_code,enabled').eq('company_id',company_id).eq('device_code',deviceCode).maybeSingle();
    if(de)throw de;if(!device?.enabled)return err(id,-32602,'Call gateway device not available');
    let requestId:string|null=null;
-   if(uuid(a.request_id))requestId=a.request_id;
+   if(uuid(a.request_id)){const {data:r,error:vre}=await db.from('call_gateway_requests').select('id').eq('id',a.request_id).eq('company_id',company_id).eq('device_id',device.id).in('status',['claimed','approved']).maybeSingle();if(vre)throw vre;if(!r)return err(id,-32602,'Active call request not found for this device');requestId=r.id;}
    else {const {data:r}=await db.from('call_gateway_requests').select('id').eq('company_id',company_id).eq('device_id',device.id).in('status',['claimed','approved']).order('created_at',{ascending:false}).limit(1).maybeSingle();requestId=r?.id||null;}
    const {data,error}=await db.from('call_gateway_commands').insert({company_id,device_id:device.id,request_id:requestId,action:'hangup'}).select('id,request_id,action,status,created_at,expires_at').single();
    if(error)throw error;await audit(`hangup_call:${data.id}:${deviceCode}`);return done(data);
