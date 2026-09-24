@@ -15,7 +15,7 @@ export default function PartnerProfile(){
  const[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const[user,setUser]=useState<any>(null),[profile,setProfile]=useState<any>(null),[partnerProfile,setPartnerProfile]=useState<any>(null),[onboarding,setOnboarding]=useState<any>(null),[agreement,setAgreement]=useState<any>(null);
  const[stats,setStats]=useState({clients:0,jobs:0,candidates:0,placements:0,paid:0});
- const[form,setForm]=useState({display_name:'',phone:'',country:'',address:'',trading_name:'',linkedin_url:'',timezone:'UTC',sectors:'',regions:'',role_types:'',availability_hours:'',profile_photo_url:'',payment_method:'',payment_account_name:'',payment_currency:'GBP',payment_details_reference:''});
+ const[form,setForm]=useState({display_name:'',legal_name:'',phone:'',country:'',address:'',trading_name:'',linkedin_url:'',timezone:'UTC',sectors:'',regions:'',role_types:'',availability_hours:'',profile_photo_url:'',payment_method:'',payment_account_name:'',payment_currency:'GBP',payment_details_reference:''});
 
  async function load(){
   setLoading(true);setError('');
@@ -42,7 +42,7 @@ export default function PartnerProfile(){
    paid:(comm||[]).filter((x:any)=>x.status==='paid').reduce((n:number,x:any)=>n+Number(x.amount||0),0)
   });
   setForm({
-   display_name:pp?.display_name||p?.full_name||o?.legal_name||'',
+   display_name:pp?.display_name||p?.full_name||o?.legal_name||'',legal_name:o?.legal_name||'',
    phone:o?.phone||'',country:o?.country||'',address:o?.address||'',trading_name:o?.trading_name||'',
    linkedin_url:pp?.linkedin_url||'',timezone:pp?.timezone||'UTC',
    sectors:(pp?.sectors||[]).join(', '),regions:(pp?.regions||[]).join(', '),role_types:(pp?.role_types||[]).join(', '),
@@ -57,12 +57,14 @@ export default function PartnerProfile(){
  async function save(e:any){
   e.preventDefault();setBusy(true);setError('');
   const{error:er}=await supabase.rpc('update_partner_self_profile',{
-   p_display_name:form.display_name,p_phone:form.phone,p_country:form.country,p_address:form.address,
-   p_trading_name:form.trading_name||null,p_linkedin_url:form.linkedin_url||null,p_timezone:form.timezone,
+   p_display_name:form.display_name,p_linkedin_url:form.linkedin_url||'',p_timezone:form.timezone||'UTC',
    p_sectors:split(form.sectors),p_regions:split(form.regions),p_role_types:split(form.role_types),
-   p_availability_hours:form.availability_hours||null,p_profile_photo_url:form.profile_photo_url||null,
-   p_payment_method:form.payment_method||null,p_payment_account_name:form.payment_account_name||null,
-   p_payment_currency:form.payment_currency||'GBP',p_payment_details_reference:form.payment_details_reference||null
+   p_availability_hours:form.availability_hours||'',p_profile_photo_url:form.profile_photo_url||'',
+   p_legal_name:form.legal_name,p_trading_name:form.trading_name||'',p_country:form.country,p_address:form.address,p_phone:form.phone,
+   p_business_type:onboarding?.business_type||'',p_company_registration_number:onboarding?.company_registration_number||'',
+   p_vat_number:onboarding?.vat_number||'',p_tax_reference:onboarding?.tax_reference||'',
+   p_payment_method:form.payment_method||'',p_payment_account_name:form.payment_account_name||'',
+   p_payment_currency:form.payment_currency||'GBP',p_payment_details_reference:form.payment_details_reference||''
   });
   setBusy(false);if(er)return setError(er.message);
   toast('Partner profile updated.');await load();
@@ -120,6 +122,7 @@ export default function PartnerProfile(){
    <div className="card-head"><div><h3>Personal details & recruitment preferences</h3><p>These are your partner-operating details. Legal agreement fields and permissions are controlled separately by Vorlen.</p></div></div>
    {active?<form className="form-grid" onSubmit={save}>
     <label>Display name<input required value={form.display_name} onChange={e=>setForm({...form,display_name:e.target.value})}/></label>
+    <label>Full legal name<input required value={form.legal_name} onChange={e=>setForm({...form,legal_name:e.target.value})}/></label>
     <label>Email<input value={user?.email||''} disabled/></label>
     <label>Phone<input required value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})}/></label>
     <label>Country<input required value={form.country} onChange={e=>setForm({...form,country:e.target.value})}/></label>
@@ -142,7 +145,7 @@ export default function PartnerProfile(){
   </Card>
 
   <div className="grid two">
-   <Card><h3>Legal & business record</h3><p className="muted">Read-only partnership administration. Changes to legal identity should be reviewed by Vorlen rather than silently changing an accepted agreement.</p>
+   <Card><h3>Legal & business record</h3><p className="muted">Business registration and tax details are read-only here. Updating your current legal name above does not alter the name or terms captured on an already accepted agreement.</p>
     <div className="list-row"><div><strong>Legal name</strong><span>{onboarding.legal_name||'Not recorded'}</span></div></div>
     <div className="list-row"><div><strong>Business type</strong><span>{onboarding.business_type||'Not recorded'}</span></div></div>
     <div className="list-row"><div><strong>Company registration</strong><span>{onboarding.company_registration_number||'Not recorded'}</span></div></div>
