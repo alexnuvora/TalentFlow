@@ -13,7 +13,7 @@ const pipelineStages=['sourced','contacted','screening','qualified','recommended
 
 export default function PartnerOperations({section}:{section:PartnerOpsSection}){
  const access=useWorkspaceAccess(),toast=useToast();
- const[params]=useSearchParams();
+ const[params,setParams]=useSearchParams();
  const[active,setActive]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState('');
  const[clients,setClients]=useState<any[]>([]),[prospects,setProspects]=useState<any[]>([]),[jobs,setJobs]=useState<any[]>([]),[candidates,setCandidates]=useState<any[]>([]),[pipeline,setPipeline]=useState<any[]>([]),[handoffs,setHandoffs]=useState<any[]>([]),[placements,setPlacements]=useState<any[]>([]),[commissions,setCommissions]=useState<any[]>([]),[agreement,setAgreement]=useState<any>(null);
  const[search,setSearch]=useState(''),[busy,setBusy]=useState(false),[editing,setEditing]=useState<any>(null),[handoffFormOpen,setHandoffFormOpen]=useState(false),[selectedJob,setSelectedJob]=useState<any>(null),[newPipeline,setNewPipeline]=useState({candidate_id:'',job_id:''});
@@ -42,7 +42,7 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
   setClients(c||[]);setProspects(pr||[]);setJobs(j||[]);setCandidates(ca||[]);setPipeline(pi||[]);setHandoffs(h||[]);setPlacements(p||[]);setCommissions(co||[]);setAgreement(a||null);setLoading(false);
  }
  useEffect(()=>{void load()},[access.loading,access.role]);
- useEffect(()=>{if(section!=='handoffs'||loading)return;const prospectId=params.get('prospect');if(!prospectId)return;const p=prospects.find(x=>x.id===prospectId);if(!p)return;setEditing(null);setHandoffFormOpen(true);setForm({...blank,prospect_id:p.id,prospect_company:p.company_name,contact_name:p.contact_name||'',contact_email:p.contact_email||'',contact_phone:p.contact_phone||'',hiring_need:p.hiring_need||''})},[section,loading,prospects,params]);
+ useEffect(()=>{if(section!=='handoffs'||loading)return;const prospectId=params.get('prospect');if(prospectId){const p=prospects.find(x=>x.id===prospectId);if(!p)return;setEditing(null);setHandoffFormOpen(true);setForm({...blank,prospect_id:p.id,prospect_company:p.company_name,contact_name:p.contact_name||'',contact_email:p.contact_email||'',contact_phone:p.contact_phone||'',hiring_need:p.hiring_need||''});setParams({}, {replace:true});return}if(params.get('new')==='1'){setEditing(null);setHandoffFormOpen(true);setForm(blank);setParams({}, {replace:true})}},[section,loading,prospects,params,setParams]);
 
  const clientsById=useMemo(()=>new Map(clients.map(x=>[x.id,x])),[clients]);
  const jobsById=useMemo(()=>new Map(jobs.map(x=>[x.id,x])),[jobs]);
@@ -91,7 +91,7 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
  if(!active)return <div className="page"><Card><h2>Partner activation required</h2><p>Your operational workspace unlocks after agreement acceptance and Vorlen approval.</p></Card></div>;
 
  if(section==='vacancies')return <div className="page partner-page">
-  <div className="page-actions"><div><div className="eyebrow">MY VACANCIES</div><h2>Vacancy workspace</h2><p>Work only the genuine vacancies assigned to you by Vorlen. New opportunities start as a commercial handoff.</p></div><Button onClick={()=>location.assign('/dashboard/partner/handoffs')}><Plus size={15}/> Submit hiring opportunity</Button></div>
+  <div className="page-actions"><div><div className="eyebrow">MY VACANCIES</div><h2>Vacancy workspace</h2><p>Work only the genuine vacancies assigned to you by Vorlen. New opportunities start as a commercial handoff.</p></div><Button onClick={()=>location.assign('/dashboard/partner/handoffs?new=1')}><Plus size={15}/> Submit hiring opportunity</Button></div>
   {error&&<div className="notice error">{error}</div>}
   <div className="notice"><strong>Commercial control:</strong> An opportunity is not a live Vorlen vacancy until client terms are approved and a manager creates or links the authorised job record.</div>
   <Card><div className="card-head"><div><h3>Assigned live work</h3><p>{jobs.length} vacancy record{jobs.length===1?'':'s'} currently visible in your portfolio.</p></div><div className="search"><Search size={14}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search vacancies"/></div></div>
