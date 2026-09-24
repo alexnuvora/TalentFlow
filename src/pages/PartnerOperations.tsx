@@ -16,7 +16,7 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
  const[params]=useSearchParams();
  const[active,setActive]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState('');
  const[clients,setClients]=useState<any[]>([]),[prospects,setProspects]=useState<any[]>([]),[jobs,setJobs]=useState<any[]>([]),[candidates,setCandidates]=useState<any[]>([]),[pipeline,setPipeline]=useState<any[]>([]),[handoffs,setHandoffs]=useState<any[]>([]),[placements,setPlacements]=useState<any[]>([]),[commissions,setCommissions]=useState<any[]>([]),[agreement,setAgreement]=useState<any>(null);
- const[search,setSearch]=useState(''),[busy,setBusy]=useState(false),[editing,setEditing]=useState<any>(null),[selectedJob,setSelectedJob]=useState<any>(null),[newPipeline,setNewPipeline]=useState({candidate_id:'',job_id:''});
+ const[search,setSearch]=useState(''),[busy,setBusy]=useState(false),[editing,setEditing]=useState<any>(null),[handoffFormOpen,setHandoffFormOpen]=useState(false),[selectedJob,setSelectedJob]=useState<any>(null),[newPipeline,setNewPipeline]=useState({candidate_id:'',job_id:''});
  const blank={client_id:'',prospect_id:'',prospect_company:'',contact_name:'',contact_email:'',contact_phone:'',vacancy_title:'',vacancy_location:'',salary_context:'',hiring_need:'',commercial_request:''};
  const[form,setForm]=useState<any>(blank);
 
@@ -42,7 +42,7 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
   setClients(c||[]);setProspects(pr||[]);setJobs(j||[]);setCandidates(ca||[]);setPipeline(pi||[]);setHandoffs(h||[]);setPlacements(p||[]);setCommissions(co||[]);setAgreement(a||null);setLoading(false);
  }
  useEffect(()=>{void load()},[access.loading,access.role]);
- useEffect(()=>{if(section!=='handoffs'||loading)return;const prospectId=params.get('prospect');if(!prospectId)return;const p=prospects.find(x=>x.id===prospectId);if(!p)return;setEditing(null);setForm({...blank,prospect_id:p.id,prospect_company:p.company_name,contact_name:p.contact_name||'',contact_email:p.contact_email||'',contact_phone:p.contact_phone||'',hiring_need:p.hiring_need||''})},[section,loading,prospects,params]);
+ useEffect(()=>{if(section!=='handoffs'||loading)return;const prospectId=params.get('prospect');if(!prospectId)return;const p=prospects.find(x=>x.id===prospectId);if(!p)return;setEditing(null);setHandoffFormOpen(true);setForm({...blank,prospect_id:p.id,prospect_company:p.company_name,contact_name:p.contact_name||'',contact_email:p.contact_email||'',contact_phone:p.contact_phone||'',hiring_need:p.hiring_need||''})},[section,loading,prospects,params]);
 
  const clientsById=useMemo(()=>new Map(clients.map(x=>[x.id,x])),[clients]);
  const jobsById=useMemo(()=>new Map(jobs.map(x=>[x.id,x])),[jobs]);
@@ -53,7 +53,7 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
  const accrued=commissions.filter(x=>x.status!=='void').reduce((n,x)=>n+Number(x.amount||0),0);
  const paid=commissions.filter(x=>x.status==='paid').reduce((n,x)=>n+Number(x.amount||0),0);
 
- function startHandoff(h?:any){setEditing(h||null);setForm(h?Object.fromEntries(Object.keys(blank).map(k=>[k,h[k]||''])):blank);setError('')}
+ function startHandoff(h?:any){setEditing(h||null);setHandoffFormOpen(true);setForm(h?Object.fromEntries(Object.keys(blank).map(k=>[k,h[k]||''])):blank);setError('')}
  async function saveHandoff(status:'draft'|'submitted'){
   if(!form.vacancy_title.trim()||!form.hiring_need.trim())return setError('Vacancy title and hiring need are required.');
   if(!form.client_id&&!form.prospect_id&&!form.prospect_company.trim())return setError('Choose an assigned client, select one of your prospects, or enter a prospect company.');
@@ -62,7 +62,7 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
   const q=editing?supabase.from('partner_commercial_handoffs').update(payload).eq('id',editing.id):supabase.from('partner_commercial_handoffs').insert(payload);
   const{error:e}=await q;setBusy(false);if(e)return setError(e.message);
   toast(status==='submitted'?'Commercial handoff submitted to Vorlen and locked for review.':'Draft saved.');
-  setEditing(null);setForm(blank);await load();
+  setEditing(null);setHandoffFormOpen(false);setForm(blank);await load();
  }
  async function addPipeline(e:any){
   e.preventDefault();if(!access.companyId||!newPipeline.candidate_id||!newPipeline.job_id)return;
@@ -112,7 +112,7 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
   <div className="page-actions"><div><div className="eyebrow">COMMERCIAL HANDOFFS</div><h2>Take an opportunity to Vorlen review</h2><p>Capture the hiring need and any commercial request. Vorlen management approves the binding terms.</p></div><Button onClick={()=>startHandoff()}><Plus size={15}/> New handoff</Button></div>
   {error&&<div className="notice error">{error}</div>}
   <div className="notice"><strong>Do not agree terms yourself.</strong> Record what the employer asks for, including fee or payment expectations, without accepting them on Vorlen's behalf. Once submitted, the handoff is locked for Vorlen review.</div>
-  {(editing!==null||form.vacancy_title||form.prospect_company)&&<Card><div className="card-head"><div><h3>{editing?'Edit draft':'New commercial handoff'}</h3><p>Save as a draft or submit it to Vorlen management.</p></div><button className="close" onClick={()=>{setEditing(null);setForm(blank)}}>×</button></div><div className="form-grid">
+  {handoffFormOpen&&<Card><div className="card-head"><div><h3>{editing?'Edit draft':'New commercial handoff'}</h3><p>Save as a draft or submit it to Vorlen management.</p></div><button className="close" onClick={()=>{setEditing(null);setHandoffFormOpen(false);setForm(blank)}}>×</button></div><div className="form-grid">
    <label>Assigned client<select value={form.client_id} onChange={e=>setForm({...form,client_id:e.target.value,prospect_id:e.target.value?'':'',prospect_company:e.target.value?'':form.prospect_company})}><option value="">No assigned client</option>{clients.map(c=><option key={c.id} value={c.id}>{c.company_name}</option>)}</select></label>
    {!form.client_id&&<label>My prospect<select value={form.prospect_id} onChange={e=>{const p=prospects.find(x=>x.id===e.target.value);setForm({...form,prospect_id:e.target.value,prospect_company:p?.company_name||'',contact_name:p?.contact_name||'',contact_email:p?.contact_email||'',contact_phone:p?.contact_phone||'',hiring_need:p?.hiring_need||form.hiring_need})}}><option value="">Enter another prospect manually</option>{prospects.filter(p=>!['declined','do_not_contact'].includes(p.status)).map(p=><option key={p.id} value={p.id}>{p.company_name}</option>)}</select></label>}
    {!form.client_id&&!form.prospect_id&&<label>Prospect company<input required value={form.prospect_company} onChange={e=>setForm({...form,prospect_company:e.target.value})}/></label>}
