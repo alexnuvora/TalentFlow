@@ -70,14 +70,14 @@ Deno.serve(async req=>{
       const workspaceTarget=role==='viewer'?'/client':role==='partner'?'/dashboard/partner-onboarding':'/dashboard';
       const vorlenConfirm=(link:any,type:string,next:string)=>{const raw=link?.properties?.hashed_token||(()=>{try{return new URL(link?.properties?.action_link||'').searchParams.get('token')||''}catch{return''}})();if(!raw)return'';return `${base}/auth/confirm?token_hash=${encodeURIComponent(raw)}&type=${encodeURIComponent(type)}&next=${encodeURIComponent(next)}`};
       let created=false;
-      let message='Client portal invitation sent.';
+      let message=role==='partner'?'Partner invitation sent.':role==='viewer'?'Client portal invitation sent.':'Workspace invitation sent.';
 
       if(existing&&existingProfile){
         const{data:link,error:linkError}=await db.auth.admin.generateLink({type:'magiclink',email,options:{redirectTo:`${base}${workspaceTarget}`}});
-        if(linkError||!link?.properties?.action_link)return json({error:linkError?.message||'Could not generate a secure client access link.'},400);
+        if(linkError||!link?.properties?.action_link)return json({error:linkError?.message||'Could not generate a secure Vorlen access link.'},400);
         actionLink=vorlenConfirm(link,'email',workspaceTarget);
-        if(!actionLink)return json({error:'Could not create a secure Vorlen client access link.'},500);
-        message='Client portal access link sent.';
+        if(!actionLink)return json({error:'Could not create a secure Vorlen access link.'},500);
+        message=role==='partner'?'Partner workspace access link sent.':role==='viewer'?'Client portal access link sent.':'Workspace access link sent.';
       }else{
         const{data:link,error:linkError}=await db.auth.admin.generateLink({
           type:'invite',
@@ -152,7 +152,7 @@ Deno.serve(async req=>{
           await db.from('profiles').delete().eq('id',invitedUser.id).eq('company_id',me.company_id);
           await db.auth.admin.deleteUser(invitedUser.id);
         }
-        return json({error:'Unable to send the client portal invitation.',detail:mailBody?.message||mailBody?.name||'Email provider rejected the request'},mail.status>=400&&mail.status<500?424:502);
+        return json({error:'Unable to send the Vorlen invitation.',detail:mailBody?.message||mailBody?.name||'Email provider rejected the request'},mail.status>=400&&mail.status<500?424:502);
       }
 
       return json({ok:true,user_id:invitedUser.id,message,email_id:mailBody?.id||null,access_link_resent:!!existingProfile});
@@ -186,7 +186,7 @@ Deno.serve(async req=>{
         const{error:initError}=await db.rpc('service_initialise_partner_onboarding',{
           p_company:me.company_id,
           p_partner:b.user_id,
-          p_specialism:'b2b_advisor'
+          p_specialism:partnerSpecialism
         });
         if(initError){
           await db.from('profiles').update({role:target.role,client_id:null}).eq('id',b.user_id).eq('company_id',me.company_id);
