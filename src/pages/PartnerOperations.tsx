@@ -91,7 +91,7 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
  if(!active)return <div className="page"><Card><h2>Partner activation required</h2><p>Your operational workspace unlocks after agreement acceptance and Vorlen approval.</p></Card></div>;
 
  if(section==='vacancies')return <div className="page partner-page">
-  <div className="page-actions"><div><div className="eyebrow">MY VACANCIES</div><h2>Vacancy workspace</h2><p>Work only the genuine vacancies assigned to you by Vorlen. New opportunities start as a commercial handoff.</p></div><Button onClick={()=>location.assign('/dashboard/partner/handoffs')}><Plus size={15}/> Submit new opportunity</Button></div>
+  <div className="page-actions"><div><div className="eyebrow">MY VACANCIES</div><h2>Vacancy workspace</h2><p>Work only the genuine vacancies assigned to you by Vorlen. New opportunities start as a commercial handoff.</p></div><Button onClick={()=>location.assign('/dashboard/partner/handoffs')}><Plus size={15}/> Submit hiring opportunity</Button></div>
   {error&&<div className="notice error">{error}</div>}
   <div className="notice"><strong>Commercial control:</strong> An opportunity is not a live Vorlen vacancy until client terms are approved and a manager creates or links the authorised job record.</div>
   <Card><div className="card-head"><div><h3>Assigned live work</h3><p>{jobs.length} vacancy record{jobs.length===1?'':'s'} currently visible in your portfolio.</p></div><div className="search"><Search size={14}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search vacancies"/></div></div>
