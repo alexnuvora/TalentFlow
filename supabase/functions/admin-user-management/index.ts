@@ -38,6 +38,8 @@ Deno.serve(async req=>{
       const email=String(b.email||'').trim().toLowerCase();
       const role=String(b.role||'recruiter');
       const fullName=String(b.full_name||'').trim();
+      const partnerSpecialism=String(b.partner_specialism||'b2b_advisor');
+      if(role==='partner'&&!['b2b_advisor','lead_closer','candidate_sourcer','hybrid'].includes(partnerSpecialism))return json({error:'Valid partner specialism required'},400);
       if(!/^\S+@\S+\.\S+$/.test(email)||!['owner','manager','recruiter','partner','viewer'].includes(role))return json({error:'Valid email and role required'},400);
       if(role==='owner'&&me.role!=='owner')return json({error:'Only an owner can invite another owner'},403);
       if(role==='viewer'&&!b.client_id)return json({error:'Client required'},400);
@@ -105,7 +107,7 @@ Deno.serve(async req=>{
         const{error:partnerInitError}=await db.rpc('service_initialise_partner_onboarding',{
           p_company:me.company_id,
           p_partner:invitedUser.id,
-          p_specialism:'b2b_advisor'
+          p_specialism:partnerSpecialism
         });
         if(partnerInitError){
           if(created&&invitedUser?.id){
@@ -158,6 +160,8 @@ Deno.serve(async req=>{
 
     if(b.action==='role'){
       if(!['owner','manager','recruiter','partner','viewer'].includes(b.role))return json({error:'Invalid role'},400);
+      const partnerSpecialism=String(b.partner_specialism||'b2b_advisor');
+      if(b.role==='partner'&&!['b2b_advisor','lead_closer','candidate_sourcer','hybrid'].includes(partnerSpecialism))return json({error:'Valid partner specialism required'},400);
       const{data:target}=await db.from('profiles').select('id,role').eq('id',b.user_id).eq('company_id',me.company_id).maybeSingle();
       if(!target)return json({error:'Workspace user not found'},404);
       if(target.role==='owner'&&me.role!=='owner')return json({error:'Only an owner can change an owner account'},403);
