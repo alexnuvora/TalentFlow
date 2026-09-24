@@ -104,17 +104,20 @@ Deno.serve(async req=>{
       }
 
       if(role==='partner'){
-        const{error:partnerInitError}=await db.rpc('service_initialise_partner_onboarding',{
-          p_company:me.company_id,
-          p_partner:invitedUser.id,
-          p_specialism:partnerSpecialism
-        });
-        if(partnerInitError){
-          if(created&&invitedUser?.id){
-            await db.from('profiles').delete().eq('id',invitedUser.id).eq('company_id',me.company_id);
-            await db.auth.admin.deleteUser(invitedUser.id);
+        const{data:existingOnboarding}=await db.from('partner_onboarding').select('partner_id').eq('partner_id',invitedUser.id).eq('company_id',me.company_id).maybeSingle();
+        if(!existingOnboarding){
+          const{error:partnerInitError}=await db.rpc('service_initialise_partner_onboarding',{
+            p_company:me.company_id,
+            p_partner:invitedUser.id,
+            p_specialism:partnerSpecialism
+          });
+          if(partnerInitError){
+            if(created&&invitedUser?.id){
+              await db.from('profiles').delete().eq('id',invitedUser.id).eq('company_id',me.company_id);
+              await db.auth.admin.deleteUser(invitedUser.id);
+            }
+            return json({error:'Partner onboarding could not be initialised.',detail:partnerInitError.message},500);
           }
-          return json({error:'Partner onboarding could not be initialised.',detail:partnerInitError.message},500);
         }
       }
 
@@ -162,7 +165,7 @@ Deno.serve(async req=>{
       if(!['owner','manager','recruiter','partner','viewer'].includes(b.role))return json({error:'Invalid role'},400);
       const partnerSpecialism=String(b.partner_specialism||'b2b_advisor');
       if(b.role==='partner'&&!['b2b_advisor','lead_closer','candidate_sourcer','hybrid'].includes(partnerSpecialism))return json({error:'Valid partner specialism required'},400);
-      const{data:target}=await db.from('profiles').select('id,role').eq('id',b.user_id).eq('company_id',me.company_id).maybeSingle();
+      const{data:target}=await db.from('profiles').select('id,role,client_id').eq('id',b.user_id).eq('company_id',me.company_id).maybeSingle();
       if(!target)return json({error:'Workspace user not found'},404);
       if(target.role==='owner'&&me.role!=='owner')return json({error:'Only an owner can change an owner account'},403);
       if(b.role==='owner'&&me.role!=='owner')return json({error:'Only an owner can assign the owner role'},403);
@@ -178,6 +181,12 @@ Deno.serve(async req=>{
           return json({error:'Terminate the partner relationship in Partner Management before changing this account to another role.'},409);
         }
       }
+      if(target.role!=='partner'&&b.role==='partner'){
+        const{data:oldPartner}=await db.from('partner_onboarding').select('status').eq('partner_id',target.id).eq('company_id',me.company_id).maybeSingle();
+        if(oldPartner?.status==='terminated'){
+          return json({error:'This account has a terminated partner relationship. Create and approve a new partner engagement before restoring partner access.'},409);
+        }
+      }
 
       const{error}=await db.from('profiles').update({role:b.role,client_id:b.role==='viewer'?b.client_id:null}).eq('id',b.user_id).eq('company_id',me.company_id);
       if(error)return json({error:error.message},400);
@@ -189,7 +198,7 @@ Deno.serve(async req=>{
           p_specialism:partnerSpecialism
         });
         if(initError){
-          await db.from('profiles').update({role:target.role,client_id:null}).eq('id',b.user_id).eq('company_id',me.company_id);
+          await db.from('profiles').update({role:target.role,client_id:target.client_id||null}).eq('id',b.user_id).eq('company_id',me.company_id);
           return json({error:'Partner onboarding could not be initialised.',detail:initError.message},500);
         }
       }
