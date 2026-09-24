@@ -15,7 +15,7 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
  const access=useWorkspaceAccess(),toast=useToast();
  const[params,setParams]=useSearchParams();
  const[active,setActive]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState('');
- const[clients,setClients]=useState<any[]>([]),[prospects,setProspects]=useState<any[]>([]),[jobs,setJobs]=useState<any[]>([]),[candidates,setCandidates]=useState<any[]>([]),[pipeline,setPipeline]=useState<any[]>([]),[handoffs,setHandoffs]=useState<any[]>([]),[placements,setPlacements]=useState<any[]>([]),[commissions,setCommissions]=useState<any[]>([]),[agreement,setAgreement]=useState<any>(null);
+ const[clients,setClients]=useState<any[]>([]),[prospects,setProspects]=useState<any[]>([]),[jobs,setJobs]=useState<any[]>([]),[candidates,setCandidates]=useState<any[]>([]),[pipeline,setPipeline]=useState<any[]>([]),[handoffs,setHandoffs]=useState<any[]>([]),[placements,setPlacements]=useState<any[]>([]),[commissions,setCommissions]=useState<any[]>([]),[commissionAdjustments,setCommissionAdjustments]=useState<any[]>([]),[agreement,setAgreement]=useState<any>(null);
  const[search,setSearch]=useState(''),[busy,setBusy]=useState(false),[editing,setEditing]=useState<any>(null),[handoffFormOpen,setHandoffFormOpen]=useState(false),[selectedJob,setSelectedJob]=useState<any>(null),[newPipeline,setNewPipeline]=useState({candidate_id:'',job_id:''});
  const blank={client_id:'',prospect_id:'',prospect_company:'',contact_name:'',contact_email:'',contact_phone:'',vacancy_title:'',vacancy_location:'',salary_context:'',hiring_need:'',commercial_request:''};
  const[form,setForm]=useState<any>(blank);
@@ -25,7 +25,7 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
   setLoading(true);setError('');
   const{data:{user}}=await supabase.auth.getUser();
   if(!user){setError('Session expired. Please sign in again.');setLoading(false);return}
-  const [{data:isActive},{data:c,error:ce},{data:pr,error:pre},{data:j,error:je},{data:ca,error:cae},{data:pi,error:pie},{data:h,error:he},{data:p,error:pe},{data:co,error:coe},{data:a}]=await Promise.all([
+  const [{data:isActive},{data:c,error:ce},{data:pr,error:pre},{data:j,error:je},{data:ca,error:cae},{data:pi,error:pie},{data:h,error:he},{data:p,error:pe},{data:co,error:coe},{data:adj,error:adje},{data:a}]=await Promise.all([
    supabase.rpc('partner_is_active'),
    supabase.from('clients').select('id,company_name,contact_name,email,phone,status').order('company_name'),
    supabase.from('partner_prospects').select('*').order('updated_at',{ascending:false}),
@@ -35,11 +35,12 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
    supabase.from('partner_commercial_handoffs').select('*').order('updated_at',{ascending:false}),
    supabase.from('placements').select('id,client_id,job_id,candidate_id,fee_amount,currency,invoice_status,start_date,paid_at,created_at').order('created_at',{ascending:false}),
    supabase.from('partner_commissions').select('id,placement_id,rate,amount,status,eligible_fee_received,paid_at,payment_reference,created_at').eq('partner_user_id',user.id).order('created_at',{ascending:false}),
+   supabase.from('partner_commission_adjustments').select('id,base_commission_id,placement_id,eligible_fee_delta,amount,status,reason,paid_at,payment_reference,created_at').eq('partner_user_id',user.id).order('created_at',{ascending:false}),
    supabase.from('partner_agreements').select('commission_percent,status,version').eq('partner_id',user.id).eq('status','accepted').order('created_at',{ascending:false}).limit(1).maybeSingle()
   ]);
   setActive(isActive===true);
-  const first=ce||pre||je||cae||pie||he||pe||coe;if(first)setError(first.message);
-  setClients(c||[]);setProspects(pr||[]);setJobs(j||[]);setCandidates(ca||[]);setPipeline(pi||[]);setHandoffs(h||[]);setPlacements(p||[]);setCommissions(co||[]);setAgreement(a||null);setLoading(false);
+  const first=ce||pre||je||cae||pie||he||pe||coe||adje;if(first)setError(first.message);
+  setClients(c||[]);setProspects(pr||[]);setJobs(j||[]);setCandidates(ca||[]);setPipeline(pi||[]);setHandoffs(h||[]);setPlacements(p||[]);setCommissions(co||[]);setCommissionAdjustments(adj||[]);setAgreement(a||null);setLoading(false);
  }
  useEffect(()=>{void load()},[access.loading,access.role]);
  useEffect(()=>{if(section!=='handoffs'||loading)return;const prospectId=params.get('prospect');if(prospectId){const p=prospects.find(x=>x.id===prospectId);if(!p)return;setEditing(null);setHandoffFormOpen(true);setForm({...blank,prospect_id:p.id,prospect_company:p.company_name,contact_name:p.contact_name||'',contact_email:p.contact_email||'',contact_phone:p.contact_phone||'',hiring_need:p.hiring_need||''});setParams({}, {replace:true});return}if(params.get('new')==='1'){setEditing(null);setHandoffFormOpen(true);setForm(blank);setParams({}, {replace:true})}},[section,loading,prospects,params,setParams]);
@@ -50,8 +51,8 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
  const filteredJobs=jobs.filter(j=>`${j.title} ${j.location||''} ${clientsById.get(j.client_id)?.company_name||''}`.toLowerCase().includes(search.toLowerCase()));
  const expectedRate=Number(agreement?.commission_percent||30)/100;
  const expected=placements.reduce((n,p)=>n+Number(p.fee_amount||0)*expectedRate,0);
- const accrued=commissions.filter(x=>x.status!=='void').reduce((n,x)=>n+Number(x.amount||0),0);
- const paid=commissions.filter(x=>x.status==='paid').reduce((n,x)=>n+Number(x.amount||0),0);
+ const accrued=commissions.filter(x=>x.status!=='void').reduce((n,x)=>n+Number(x.amount||0),0)+commissionAdjustments.filter(x=>x.status!=='void').reduce((n,x)=>n+Number(x.amount||0),0);
+ const paid=commissions.filter(x=>x.status==='paid').reduce((n,x)=>n+Number(x.amount||0),0)+commissionAdjustments.filter(x=>x.status==='paid').reduce((n,x)=>n+Number(x.amount||0),0);
 
  function startHandoff(h?:any){setEditing(h||null);setHandoffFormOpen(true);setForm(h?Object.fromEntries(Object.keys(blank).map(k=>[k,h[k]||''])):blank);setError('')}
  async function saveHandoff(status:'draft'|'submitted'){
@@ -131,7 +132,7 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
   {error&&<div className="notice error">{error}</div>}
   <div className="grid three"><Card><span className="muted">Expected share</span><h2>{money(expected)}</h2><p>{Number(expectedRate*100).toFixed(0)}% of attributed placement fees</p></Card><Card><span className="muted">Earned / accrued</span><h2>{money(accrued)}</h2><p>after qualifying fees received</p></Card><Card><span className="muted">Paid</span><h2>{money(paid)}</h2><p>commission marked paid by Vorlen</p></Card></div>
   <Card><h3>Attributed placements</h3>{placements.map(p=><div className="list-row" key={p.id}><div><strong>{candidateById.get(p.candidate_id)?.full_name||'Candidate'} · {jobsById.get(p.job_id)?.title||'Placement'}</strong><span>{clientsById.get(p.client_id)?.company_name||'Client'} · fee {money(p.fee_amount,p.currency)} · expected share {money(Number(p.fee_amount||0)*expectedRate,p.currency)}</span></div><Badge tone={p.invoice_status==='paid'?'green':'neutral'}>{String(p.invoice_status).replaceAll('_',' ')}</Badge></div>)}{!placements.length&&<p className="muted">No attributed placements yet.</p>}</Card>
-  <Card><h3>Commission ledger</h3>{commissions.map(c=><div className="list-row" key={c.id}><div><strong>{money(c.amount)}</strong><span>Eligible fee received {money(c.eligible_fee_received)} · {(Number(c.rate||0)*100).toFixed(0)}%{c.payment_reference?' · '+c.payment_reference:''}</span></div><Badge tone={c.status==='paid'?'green':'neutral'}>{c.status}</Badge></div>)}{!commissions.length&&<p className="muted">No commission entries yet.</p>}</Card>
+  <Card><h3>Commission ledger</h3>{commissions.map(c=><div className="list-row" key={c.id}><div><strong>{money(c.amount)}</strong><span>Eligible fee received {money(c.eligible_fee_received)} · {(Number(c.rate||0)*100).toFixed(0)}%{c.payment_reference?' · '+c.payment_reference:''}</span></div><Badge tone={c.status==='paid'?'green':'neutral'}>{c.status}</Badge></div>)}{commissionAdjustments.map(a=><div className="list-row" key={'adj-'+a.id}><div><strong>{Number(a.amount||0)>=0?'+':''}{money(a.amount)}</strong><span>Commission adjustment · fee change {Number(a.eligible_fee_delta||0)>=0?'+':''}{money(a.eligible_fee_delta)} · {a.reason}{a.payment_reference?' · '+a.payment_reference:''}</span></div><Badge tone={a.status==='paid'?'green':a.status==='void'?'neutral':'amber'}>{a.status}</Badge></div>)}{!commissions.length&&!commissionAdjustments.length&&<p className="muted">No commission entries yet.</p>}</Card>
  </div>;
 
  return <div className="page partner-page">
