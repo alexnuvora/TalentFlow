@@ -22,16 +22,17 @@ export default function PartnerProfile(){
   const{data:{user:u},error:ue}=await supabase.auth.getUser();
   if(ue||!u){setError(ue?.message||'Your session has expired.');setLoading(false);return}
   setUser(u);
-  const[{data:p,error:pe},{data:pp,error:ppe},{data:o,error:oe},{data:a,error:ae},{data:assign,error:ase},{data:attrs,error:ate},{data:comm,error:ce}]=await Promise.all([
+  const[{data:p,error:pe},{data:pp,error:ppe},{data:o,error:oe},{data:a,error:ae},{data:assign,error:ase},{data:attrs,error:ate},{data:comm,error:ce},{data:adj,error:adje}]=await Promise.all([
    supabase.from('profiles').select('id,full_name,role,created_at').eq('id',u.id).maybeSingle(),
    supabase.from('partner_profiles').select('*').eq('user_id',u.id).maybeSingle(),
    supabase.from('partner_onboarding').select('*').eq('partner_id',u.id).maybeSingle(),
    supabase.from('partner_agreements').select('*').eq('partner_id',u.id).order('created_at',{ascending:false}).limit(1).maybeSingle(),
    supabase.from('partner_assignments').select('client_id,job_id,candidate_id,completed_at').eq('partner_id',u.id),
    supabase.from('partner_attributions').select('placement_id').eq('partner_id',u.id).eq('attribution_type','placement_owner').eq('status','active'),
-   supabase.from('partner_commissions').select('amount,status').eq('partner_user_id',u.id)
+   supabase.from('partner_commissions').select('amount,status').eq('partner_user_id',u.id),
+   supabase.from('partner_commission_adjustments').select('amount,status').eq('partner_user_id',u.id)
   ]);
-  const first=pe||ppe||oe||ae||ase||ate||ce;if(first)setError(first.message);
+  const first=pe||ppe||oe||ae||ase||ate||ce||adje;if(first)setError(first.message);
   setProfile(p);setPartnerProfile(pp);setOnboarding(o);setAgreement(a);
   const active=(assign||[]).filter((x:any)=>!x.completed_at);
   setStats({
@@ -39,7 +40,7 @@ export default function PartnerProfile(){
    jobs:new Set(active.map((x:any)=>x.job_id).filter(Boolean)).size,
    candidates:new Set(active.map((x:any)=>x.candidate_id).filter(Boolean)).size,
    placements:new Set((attrs||[]).map((x:any)=>x.placement_id).filter(Boolean)).size,
-   paid:(comm||[]).filter((x:any)=>x.status==='paid').reduce((n:number,x:any)=>n+Number(x.amount||0),0)
+   paid:(comm||[]).filter((x:any)=>x.status==='paid').reduce((n:number,x:any)=>n+Number(x.amount||0),0)+(adj||[]).filter((x:any)=>x.status==='paid').reduce((n:number,x:any)=>n+Number(x.amount||0),0)
   });
   setForm({
    display_name:pp?.display_name||p?.full_name||o?.legal_name||'',
