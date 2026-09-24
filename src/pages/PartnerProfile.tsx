@@ -8,7 +8,7 @@ import {BriefcaseBusiness,CheckCircle2,Circle,ExternalLink,FileText,LifeBuoy,Loc
 const split=(value:string)=>value.split(',').map(x=>x.trim()).filter(Boolean);
 const money=(v:any)=>new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'}).format(Number(v||0));
 const specialismLabel=(v:string)=>({b2b_advisor:'B2B Advisor',candidate_sourcer:'Candidate Sourcer',hybrid:'Hybrid Partner'} as Record<string,string>)[v]||v?.replaceAll('_',' ')||'Partner';
-const statusTone=(v:boolean)=>v?'green':'neutral';
+const statusTone=(v:boolean):'green'|'neutral'=>v?'green':'neutral';
 
 export default function PartnerProfile(){
  const access=useWorkspaceAccess(),toast=useToast(),navigate=useNavigate();
@@ -161,8 +161,8 @@ export default function PartnerProfile(){
   </div>
 
   <div className="grid two">
-   <Card><LockKeyhole size={20}/><h3>Security & account</h3><div className="list-row"><div><strong>Account email</strong><span>{user?.email}</span></div></div><div className="list-row"><div><strong>Last sign-in</strong><span>{user?.last_sign_in_at?new Date(user.last_sign_in_at).toLocaleString('en-GB'):'Not available'}</span></div></div><div className="button-row"><Link className="button ghost" to="/forgot-password">Reset password</Link><Button variant="ghost" onClick={async()=>{await supabase.auth.signOut();navigate('/login')}}>Sign out</Button></div></Card>
-   <Card><ShieldCheck size={20}/><h3>Support & compliance</h3><p>Use only approved Vorlen systems for client and candidate records. Escalate contractual terms, complaints, data-rights requests and unusual compliance issues to Vorlen management.</p><div className="button-row"><Link className="button ghost" to="/dashboard/partner/resources"><LifeBuoy size={14}/> Partner resources</Link><Link className="button ghost" to="/privacy"><FileText size={14}/> Privacy</Link>{form.linkedin_url&&<a className="button ghost" href={form.linkedin_url} target="_blank" rel="noreferrer">LinkedIn <ExternalLink size={14}/></a>}</div></Card>
+   <Card><LockKeyhole size={20}/><h3>Security & account</h3><div className="list-row"><div><strong>Account email</strong><span>{user?.email}</span></div></div><div className="list-row"><div><strong>Last sign-in</strong><span>{user?.last_sign_in_at?new Date(user.last_sign_in_at).toLocaleString('en-GB'):'Not available'}</span></div></div><div className="button-row"><Link className="btn ghost" to="/forgot-password">Reset password</Link><Button variant="ghost" onClick={async()=>{await supabase.auth.signOut();navigate('/login')}}>Sign out</Button></div></Card>
+   <Card><ShieldCheck size={20}/><h3>Support & compliance</h3><p>Use only approved Vorlen systems for client and candidate records. Escalate contractual terms, complaints, data-rights requests and unusual compliance issues to Vorlen management.</p><div className="button-row"><Link className="btn ghost" to="/dashboard/partner/resources"><LifeBuoy size={14}/> Partner resources</Link><Link className="btn ghost" to="/privacy"><FileText size={14}/> Privacy</Link>{form.linkedin_url&&<a className="btn ghost" href={form.linkedin_url} target="_blank" rel="noreferrer">LinkedIn <ExternalLink size={14}/></a>}</div></Card>
   </div>
  </div>
 }
