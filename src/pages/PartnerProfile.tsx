@@ -74,6 +74,7 @@ export default function PartnerProfile(){
  const paymentComplete=Boolean(onboarding?.payment_method);
  const reviewed=Boolean(onboarding?.reviewed_at);
  const active=onboarding?.status==='active';
+ const activatedOnce=Boolean(onboarding?.activated_at);
  const candidateAssigned=['candidate_sourcer','hybrid'].includes(partnerProfile?.specialism);
  const clientDevelopment=access.partnerCanDevelopClients;
  const joined=onboarding?.activated_at||partnerProfile?.created_at||profile?.created_at;
@@ -83,7 +84,7 @@ export default function PartnerProfile(){
   ['Personal details complete',personalComplete],
   ['Payment administration complete',paymentComplete],
   ['Vorlen management review complete',reviewed],
-  ['Partner account activated',active]
+  ['Initial partner activation completed',activatedOnce]
  ] as const;
 
  if(loading||access.loading)return <div className="page"><SkeletonRows rows={8}/></div>;
