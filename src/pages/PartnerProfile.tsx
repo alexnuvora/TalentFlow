@@ -3,7 +3,7 @@ import {Link,useNavigate} from 'react-router-dom';
 import {Badge,Button,Card,SkeletonRows,useToast} from '../components/Ui';
 import {useWorkspaceAccess} from '../lib/access';
 import {supabase} from '../lib/supabase';
-import {BriefcaseBusiness,CheckCircle2,FileCheck2,LifeBuoy,LockKeyhole,Receipt,ShieldCheck,UserRound,Users} from 'lucide-react';
+import {BriefcaseBusiness,CheckCircle2,FileCheck2,LifeBuoy,LockKeyhole,Receipt,UserRound} from 'lucide-react';
 
 const listText=(v:any)=>Array.isArray(v)?v.join(', '):'';
 const splitList=(v:string)=>[...new Set(v.split(',').map(x=>x.trim()).filter(Boolean))].slice(0,20);
