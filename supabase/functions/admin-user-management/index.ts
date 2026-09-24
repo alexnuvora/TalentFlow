@@ -161,6 +161,41 @@ Deno.serve(async req=>{
       return json({ok:true,user_id:invitedUser.id,message,email_id:mailBody?.id||null,access_link_resent:!!existingProfile});
     }
 
+    if(b.action==='delete'){
+      if(me.role!=='owner')return json({error:'Only the CEO/owner can delete workspace users'},403);
+      const targetId=String(b.user_id||'').trim();
+      if(!targetId)return json({error:'user_id required'},400);
+      if(targetId===user.id)return json({error:'You cannot delete your own CEO/owner account'},409);
+
+      const{data:target,error:targetError}=await db.from('profiles')
+        .select('id,full_name,role,client_id')
+        .eq('id',targetId)
+        .eq('company_id',me.company_id)
+        .maybeSingle();
+      if(targetError)return json({error:targetError.message},400);
+      if(!target)return json({error:'Workspace user not found'},404);
+
+      if(target.role==='owner'){
+        const{count}=await db.from('profiles').select('id',{count:'exact',head:true}).eq('company_id',me.company_id).eq('role','owner');
+        if((count||0)<=1)return json({error:'The workspace must keep at least one owner'},409);
+      }
+
+      if(target.role==='partner'){
+        const{data:onboarding}=await db.from('partner_onboarding').select('status').eq('partner_id',target.id).eq('company_id',me.company_id).maybeSingle();
+        if(onboarding&&onboarding.status!=='terminated'){
+          return json({error:'Terminate the partner relationship in Partner Management before deleting this user.'},409);
+        }
+      }
+
+      const{error:authDeleteError}=await db.auth.admin.deleteUser(target.id);
+      if(authDeleteError)return json({error:'Authentication account could not be deleted.',detail:authDeleteError.message},400);
+
+      const{error:profileDeleteError}=await db.from('profiles').delete().eq('id',target.id).eq('company_id',me.company_id);
+      if(profileDeleteError)return json({error:'Authentication account was deleted, but the workspace profile could not be removed.',detail:profileDeleteError.message},500);
+
+      return json({ok:true,user_id:target.id,message:`Deleted ${target.full_name||'workspace user'}`});
+    }
+
     if(b.action==='role'){
       if(!['owner','manager','recruiter','partner','viewer'].includes(b.role))return json({error:'Invalid role'},400);
       const partnerSpecialism=String(b.partner_specialism||'b2b_advisor');
