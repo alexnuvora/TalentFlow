@@ -1,4 +1,5 @@
 import {useEffect,useMemo,useState} from 'react';
+import {useSearchParams} from 'react-router-dom';
 import {Badge,Button,Card,SkeletonRows,useToast} from '../components/Ui';
 import {supabase} from '../lib/supabase';
 import {useWorkspaceAccess} from '../lib/access';
@@ -12,10 +13,11 @@ const pipelineStages=['sourced','contacted','screening','qualified','recommended
 
 export default function PartnerOperations({section}:{section:PartnerOpsSection}){
  const access=useWorkspaceAccess(),toast=useToast();
+ const[params]=useSearchParams();
  const[active,setActive]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState('');
- const[clients,setClients]=useState<any[]>([]),[jobs,setJobs]=useState<any[]>([]),[candidates,setCandidates]=useState<any[]>([]),[pipeline,setPipeline]=useState<any[]>([]),[handoffs,setHandoffs]=useState<any[]>([]),[placements,setPlacements]=useState<any[]>([]),[commissions,setCommissions]=useState<any[]>([]),[agreement,setAgreement]=useState<any>(null);
+ const[clients,setClients]=useState<any[]>([]),[prospects,setProspects]=useState<any[]>([]),[jobs,setJobs]=useState<any[]>([]),[candidates,setCandidates]=useState<any[]>([]),[pipeline,setPipeline]=useState<any[]>([]),[handoffs,setHandoffs]=useState<any[]>([]),[placements,setPlacements]=useState<any[]>([]),[commissions,setCommissions]=useState<any[]>([]),[agreement,setAgreement]=useState<any>(null);
  const[search,setSearch]=useState(''),[busy,setBusy]=useState(false),[editing,setEditing]=useState<any>(null),[selectedJob,setSelectedJob]=useState<any>(null),[newPipeline,setNewPipeline]=useState({candidate_id:'',job_id:''});
- const blank={client_id:'',prospect_company:'',contact_name:'',contact_email:'',contact_phone:'',vacancy_title:'',vacancy_location:'',salary_context:'',hiring_need:'',commercial_request:''};
+ const blank={client_id:'',prospect_id:'',prospect_company:'',contact_name:'',contact_email:'',contact_phone:'',vacancy_title:'',vacancy_location:'',salary_context:'',hiring_need:'',commercial_request:''};
  const[form,setForm]=useState<any>(blank);
 
  async function load(){
@@ -23,9 +25,10 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
   setLoading(true);setError('');
   const{data:{user}}=await supabase.auth.getUser();
   if(!user){setError('Session expired. Please sign in again.');setLoading(false);return}
-  const [{data:isActive},{data:c,error:ce},{data:j,error:je},{data:ca,error:cae},{data:pi,error:pie},{data:h,error:he},{data:p,error:pe},{data:co,error:coe},{data:a}]=await Promise.all([
+  const [{data:isActive},{data:c,error:ce},{data:pr,error:pre},{data:j,error:je},{data:ca,error:cae},{data:pi,error:pie},{data:h,error:he},{data:p,error:pe},{data:co,error:coe},{data:a}]=await Promise.all([
    supabase.rpc('partner_is_active'),
    supabase.from('clients').select('id,company_name,contact_name,email,phone,status').order('company_name'),
+   supabase.from('partner_prospects').select('*').order('updated_at',{ascending:false}),
    supabase.from('jobs').select('id,client_id,title,status,location,salary_min,salary_max,employment_type,application_mode,description,requirements,duties,required_qualifications,work_days_hours,start_date,duration_text,minimum_remuneration_text,notice_period,created_at').order('created_at',{ascending:false}),
    supabase.from('candidates').select('id,full_name,email,phone,location,stage,next_action,next_action_at,work_seeker_terms_agreed_at,created_at').order('created_at',{ascending:false}),
    supabase.from('partner_candidate_pipeline').select('*').order('updated_at',{ascending:false}),
@@ -35,10 +38,11 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
    supabase.from('partner_agreements').select('commission_percent,status,version').eq('partner_id',user.id).eq('status','accepted').order('created_at',{ascending:false}).limit(1).maybeSingle()
   ]);
   setActive(isActive===true);
-  const first=ce||je||cae||pie||he||pe||coe;if(first)setError(first.message);
-  setClients(c||[]);setJobs(j||[]);setCandidates(ca||[]);setPipeline(pi||[]);setHandoffs(h||[]);setPlacements(p||[]);setCommissions(co||[]);setAgreement(a||null);setLoading(false);
+  const first=ce||pre||je||cae||pie||he||pe||coe;if(first)setError(first.message);
+  setClients(c||[]);setProspects(pr||[]);setJobs(j||[]);setCandidates(ca||[]);setPipeline(pi||[]);setHandoffs(h||[]);setPlacements(p||[]);setCommissions(co||[]);setAgreement(a||null);setLoading(false);
  }
  useEffect(()=>{void load()},[access.loading,access.role]);
+ useEffect(()=>{if(section!=='handoffs'||loading)return;const prospectId=params.get('prospect');if(!prospectId)return;const p=prospects.find(x=>x.id===prospectId);if(!p)return;setEditing(null);setForm({...blank,prospect_id:p.id,prospect_company:p.company_name,contact_name:p.contact_name||'',contact_email:p.contact_email||'',contact_phone:p.contact_phone||'',hiring_need:p.hiring_need||''})},[section,loading,prospects,params]);
 
  const clientsById=useMemo(()=>new Map(clients.map(x=>[x.id,x])),[clients]);
  const jobsById=useMemo(()=>new Map(jobs.map(x=>[x.id,x])),[jobs]);
@@ -52,9 +56,9 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
  function startHandoff(h?:any){setEditing(h||null);setForm(h?Object.fromEntries(Object.keys(blank).map(k=>[k,h[k]||''])):blank);setError('')}
  async function saveHandoff(status:'draft'|'submitted'){
   if(!form.vacancy_title.trim()||!form.hiring_need.trim())return setError('Vacancy title and hiring need are required.');
-  if(!form.client_id&&!form.prospect_company.trim())return setError('Choose an assigned client or enter the prospect company.');
+  if(!form.client_id&&!form.prospect_id&&!form.prospect_company.trim())return setError('Choose an assigned client, select one of your prospects, or enter a prospect company.');
   setBusy(true);setError('');
-  const payload={...form,client_id:form.client_id||null,prospect_company:form.client_id?null:form.prospect_company.trim(),vacancy_title:form.vacancy_title.trim(),hiring_need:form.hiring_need.trim(),status};
+  const payload={...form,client_id:form.client_id||null,prospect_id:form.prospect_id||null,prospect_company:form.client_id?null:form.prospect_company.trim(),vacancy_title:form.vacancy_title.trim(),hiring_need:form.hiring_need.trim(),status};
   const q=editing?supabase.from('partner_commercial_handoffs').update(payload).eq('id',editing.id):supabase.from('partner_commercial_handoffs').insert(payload);
   const{error:e}=await q;setBusy(false);if(e)return setError(e.message);
   toast(status==='submitted'?'Commercial handoff submitted to Vorlen and locked for review.':'Draft saved.');
@@ -109,8 +113,9 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
   {error&&<div className="notice error">{error}</div>}
   <div className="notice"><strong>Do not agree terms yourself.</strong> Record what the employer asks for, including fee or payment expectations, without accepting them on Vorlen's behalf. Once submitted, the handoff is locked for Vorlen review.</div>
   {(editing!==null||form.vacancy_title||form.prospect_company)&&<Card><div className="card-head"><div><h3>{editing?'Edit draft':'New commercial handoff'}</h3><p>Save as a draft or submit it to Vorlen management.</p></div><button className="close" onClick={()=>{setEditing(null);setForm(blank)}}>×</button></div><div className="form-grid">
-   <label>Assigned client<select value={form.client_id} onChange={e=>setForm({...form,client_id:e.target.value,prospect_company:e.target.value?'':form.prospect_company})}><option value="">New / unassigned prospect</option>{clients.map(c=><option key={c.id} value={c.id}>{c.company_name}</option>)}</select></label>
-   {!form.client_id&&<label>Prospect company<input required value={form.prospect_company} onChange={e=>setForm({...form,prospect_company:e.target.value})}/></label>}
+   <label>Assigned client<select value={form.client_id} onChange={e=>setForm({...form,client_id:e.target.value,prospect_id:e.target.value?'':'',prospect_company:e.target.value?'':form.prospect_company})}><option value="">No assigned client</option>{clients.map(c=><option key={c.id} value={c.id}>{c.company_name}</option>)}</select></label>
+   {!form.client_id&&<label>My prospect<select value={form.prospect_id} onChange={e=>{const p=prospects.find(x=>x.id===e.target.value);setForm({...form,prospect_id:e.target.value,prospect_company:p?.company_name||'',contact_name:p?.contact_name||'',contact_email:p?.contact_email||'',contact_phone:p?.contact_phone||'',hiring_need:p?.hiring_need||form.hiring_need})}}><option value="">Enter another prospect manually</option>{prospects.filter(p=>!['declined','do_not_contact'].includes(p.status)).map(p=><option key={p.id} value={p.id}>{p.company_name}</option>)}</select></label>}
+   {!form.client_id&&!form.prospect_id&&<label>Prospect company<input required value={form.prospect_company} onChange={e=>setForm({...form,prospect_company:e.target.value})}/></label>}
    <label>Contact name<input value={form.contact_name} onChange={e=>setForm({...form,contact_name:e.target.value})}/></label><label>Contact email<input type="email" value={form.contact_email} onChange={e=>setForm({...form,contact_email:e.target.value})}/></label>
    <label>Contact phone<input value={form.contact_phone} onChange={e=>setForm({...form,contact_phone:e.target.value})}/></label><label>Vacancy title<input required value={form.vacancy_title} onChange={e=>setForm({...form,vacancy_title:e.target.value})}/></label>
    <label>Vacancy location<input value={form.vacancy_location} onChange={e=>setForm({...form,vacancy_location:e.target.value})}/></label><label>Salary / package context<input value={form.salary_context} onChange={e=>setForm({...form,salary_context:e.target.value})} placeholder="What the employer stated"/></label>
@@ -118,7 +123,7 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
    <label className="full">Commercial request / expectations<textarea rows={3} value={form.commercial_request} onChange={e=>setForm({...form,commercial_request:e.target.value})} placeholder="Record what the employer requested. Do not agree it."/></label>
    <div className="button-row full"><Button variant="ghost" disabled={busy} onClick={()=>saveHandoff('draft')}>Save draft</Button><Button disabled={busy} onClick={()=>saveHandoff('submitted')}><Send size={14}/> Submit to Vorlen</Button></div>
   </div></Card>}
-  <Card><h3>My handoffs</h3>{handoffs.map(h=><div className="list-row" key={h.id}><div><strong>{h.vacancy_title}</strong><span>{h.client_id?clientsById.get(h.client_id)?.company_name:h.prospect_company} · {h.vacancy_location||'Location not stated'}</span>{h.manager_notes&&<span>Vorlen: {h.manager_notes}</span>}{h.approved_job_id&&<span>Live vacancy linked: {jobsById.get(h.approved_job_id)?.title||h.approved_job_id}</span>}</div><div className="button-row"><Badge tone={handoffTone(h.status) as any}>{handoffLabel(h.status)}</Badge>{h.status==='draft'&&<Button variant="ghost" onClick={()=>startHandoff(h)}>Edit</Button>}</div></div>)}{!handoffs.length&&<p className="muted">No handoffs yet.</p>}</Card>
+  <Card><h3>My handoffs</h3>{handoffs.map(h=><div className="list-row" key={h.id}><div><strong>{h.vacancy_title}</strong><span>{h.client_id?clientsById.get(h.client_id)?.company_name:(h.prospect_id?prospects.find(p=>p.id===h.prospect_id)?.company_name:h.prospect_company)} · {h.vacancy_location||'Location not stated'}</span>{h.manager_notes&&<span>Vorlen: {h.manager_notes}</span>}{h.approved_job_id&&<span>Live vacancy linked: {jobsById.get(h.approved_job_id)?.title||h.approved_job_id}</span>}</div><div className="button-row"><Badge tone={handoffTone(h.status) as any}>{handoffLabel(h.status)}</Badge>{h.status==='draft'&&<Button variant="ghost" onClick={()=>startHandoff(h)}>Edit</Button>}</div></div>)}{!handoffs.length&&<p className="muted">No handoffs yet.</p>}</Card>
  </div>;
 
  if(section==='earnings')return <div className="page partner-page">
