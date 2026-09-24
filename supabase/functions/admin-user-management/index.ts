@@ -38,6 +38,8 @@ Deno.serve(async req=>{
       const email=String(b.email||'').trim().toLowerCase();
       const role=String(b.role||'recruiter');
       const fullName=String(b.full_name||'').trim();
+      const partnerSpecialism=String(b.partner_specialism||'b2b_advisor');
+      if(role==='partner'&&!['b2b_advisor','lead_closer','candidate_sourcer','hybrid'].includes(partnerSpecialism))return json({error:'Valid partner specialism required'},400);
       if(!/^\S+@\S+\.\S+$/.test(email)||!['owner','manager','recruiter','partner','viewer'].includes(role))return json({error:'Valid email and role required'},400);
       if(role==='owner'&&me.role!=='owner')return json({error:'Only an owner can invite another owner'},403);
       if(role==='viewer'&&!b.client_id)return json({error:'Client required'},400);
@@ -65,16 +67,17 @@ Deno.serve(async req=>{
 
       let invitedUser:any=existing||null;
       let actionLink='';
+      const workspaceTarget=role==='viewer'?'/client':role==='partner'?'/dashboard/partner-onboarding':'/dashboard';
       const vorlenConfirm=(link:any,type:string,next:string)=>{const raw=link?.properties?.hashed_token||(()=>{try{return new URL(link?.properties?.action_link||'').searchParams.get('token')||''}catch{return''}})();if(!raw)return'';return `${base}/auth/confirm?token_hash=${encodeURIComponent(raw)}&type=${encodeURIComponent(type)}&next=${encodeURIComponent(next)}`};
       let created=false;
-      let message='Client portal invitation sent.';
+      let message=role==='partner'?'Partner invitation sent.':role==='viewer'?'Client portal invitation sent.':'Workspace invitation sent.';
 
       if(existing&&existingProfile){
-        const{data:link,error:linkError}=await db.auth.admin.generateLink({type:'magiclink',email,options:{redirectTo:`${base}/client`}});
-        if(linkError||!link?.properties?.action_link)return json({error:linkError?.message||'Could not generate a secure client access link.'},400);
-        actionLink=vorlenConfirm(link,'email','/client');
-        if(!actionLink)return json({error:'Could not create a secure Vorlen client access link.'},500);
-        message='Client portal access link sent.';
+        const{data:link,error:linkError}=await db.auth.admin.generateLink({type:'magiclink',email,options:{redirectTo:`${base}${workspaceTarget}`}});
+        if(linkError||!link?.properties?.action_link)return json({error:linkError?.message||'Could not generate a secure Vorlen access link.'},400);
+        actionLink=vorlenConfirm(link,'email',workspaceTarget);
+        if(!actionLink)return json({error:'Could not create a secure Vorlen access link.'},500);
+        message=role==='partner'?'Partner workspace access link sent.':role==='viewer'?'Client portal access link sent.':'Workspace access link sent.';
       }else{
         const{data:link,error:linkError}=await db.auth.admin.generateLink({
           type:'invite',
@@ -100,10 +103,40 @@ Deno.serve(async req=>{
         }
       }
 
-      const subject=existingProfile?'Your Vorlen client portal access':'You have been invited to the Vorlen client portal';
-      const html=existingProfile
-        ?shell('Your Vorlen client portal',`<p style="font-size:15px;line-height:1.7">Hello ${esc(fullName||'there')},</p><p style="font-size:15px;line-height:1.7">A fresh secure link has been generated for your client workspace.</p><p style="margin:26px 0"><a href="${actionLink}" style="display:inline-block;padding:13px 20px;background:#0b6b55;color:#fff;text-decoration:none;font-weight:700;border-radius:999px">Open client portal</a></p><p style="color:#667972;font-size:13px;line-height:1.6">If you were not expecting this email, you can ignore it.</p>`)
-        :shell('You have been invited to Vorlen',`<p style="font-size:15px;line-height:1.7">Hello ${esc(fullName||'there')},</p><p style="font-size:15px;line-height:1.7">You have been invited to a secure Vorlen client workspace.</p><p style="margin:26px 0"><a href="${actionLink}" style="display:inline-block;padding:13px 20px;background:#0b6b55;color:#fff;text-decoration:none;font-weight:700;border-radius:999px">Accept invitation</a></p><p style="color:#667972;font-size:13px;line-height:1.6">The link is time-limited. If it expires, ask your Vorlen contact for a new invitation.</p>`);
+      if(role==='partner'){
+        const{data:existingOnboarding}=await db.from('partner_onboarding').select('partner_id').eq('partner_id',invitedUser.id).eq('company_id',me.company_id).maybeSingle();
+        if(!existingOnboarding){
+          const{error:partnerInitError}=await db.rpc('service_initialise_partner_onboarding',{
+            p_company:me.company_id,
+            p_partner:invitedUser.id,
+            p_specialism:partnerSpecialism
+          });
+          if(partnerInitError){
+            if(created&&invitedUser?.id){
+              await db.from('profiles').delete().eq('id',invitedUser.id).eq('company_id',me.company_id);
+              await db.auth.admin.deleteUser(invitedUser.id);
+            }
+            return json({error:'Partner onboarding could not be initialised.',detail:partnerInitError.message},500);
+          }
+        }
+      }
+
+      const subject=role==='partner'
+        ?(existingProfile?'Your Vorlen partner workspace access':'You have been invited to the Vorlen Partner Network')
+        :role==='viewer'
+          ?(existingProfile?'Your Vorlen client portal access':'You have been invited to the Vorlen client portal')
+          :(existingProfile?'Your Vorlen workspace access':'You have been invited to Vorlen');
+      const html=role==='partner'
+        ?(existingProfile
+          ?shell('Your Vorlen partner workspace',`<p style="font-size:15px;line-height:1.7">Hello ${esc(fullName||'there')},</p><p style="font-size:15px;line-height:1.7">A fresh secure link has been generated for your Vorlen partner workspace.</p><p style="margin:26px 0"><a href="${actionLink}" style="display:inline-block;padding:13px 20px;background:#0b6b55;color:#fff;text-decoration:none;font-weight:700;border-radius:999px">Open partner workspace</a></p><p style="color:#667972;font-size:13px;line-height:1.6">If onboarding is not complete, Vorlen will take you directly to the remaining agreement and profile steps.</p>`)
+          :shell('Welcome to the Vorlen Partner Network',`<p style="font-size:15px;line-height:1.7">Hello ${esc(fullName||'there')},</p><p style="font-size:15px;line-height:1.7">You have been invited to work with Vorlen as an independent recruitment partner. Set your password, review and accept the partner agreement, complete your partner details, then Vorlen will activate your operational workspace.</p><p style="margin:26px 0"><a href="${actionLink}" style="display:inline-block;padding:13px 20px;background:#0b6b55;color:#fff;text-decoration:none;font-weight:700;border-radius:999px">Accept partner invitation</a></p><p style="color:#667972;font-size:13px;line-height:1.6">The invitation is time-limited. If it expires, ask your Vorlen contact for a new invitation.</p>`))
+        :role==='viewer'
+          ?(existingProfile
+            ?shell('Your Vorlen client portal',`<p style="font-size:15px;line-height:1.7">Hello ${esc(fullName||'there')},</p><p style="font-size:15px;line-height:1.7">A fresh secure link has been generated for your client workspace.</p><p style="margin:26px 0"><a href="${actionLink}" style="display:inline-block;padding:13px 20px;background:#0b6b55;color:#fff;text-decoration:none;font-weight:700;border-radius:999px">Open client portal</a></p>`)
+            :shell('You have been invited to Vorlen',`<p style="font-size:15px;line-height:1.7">Hello ${esc(fullName||'there')},</p><p style="font-size:15px;line-height:1.7">You have been invited to a secure Vorlen client workspace.</p><p style="margin:26px 0"><a href="${actionLink}" style="display:inline-block;padding:13px 20px;background:#0b6b55;color:#fff;text-decoration:none;font-weight:700;border-radius:999px">Accept invitation</a></p>`))
+          :(existingProfile
+            ?shell('Your Vorlen workspace',`<p style="font-size:15px;line-height:1.7">Hello ${esc(fullName||'there')},</p><p style="font-size:15px;line-height:1.7">A fresh secure link has been generated for your Vorlen workspace.</p><p style="margin:26px 0"><a href="${actionLink}" style="display:inline-block;padding:13px 20px;background:#0b6b55;color:#fff;text-decoration:none;font-weight:700;border-radius:999px">Open workspace</a></p>`)
+            :shell('You have been invited to Vorlen',`<p style="font-size:15px;line-height:1.7">Hello ${esc(fullName||'there')},</p><p style="font-size:15px;line-height:1.7">You have been invited to the secure Vorlen recruitment workspace.</p><p style="margin:26px 0"><a href="${actionLink}" style="display:inline-block;padding:13px 20px;background:#0b6b55;color:#fff;text-decoration:none;font-weight:700;border-radius:999px">Accept invitation</a></p>`));
 
       const mail=await fetch('https://api.resend.com/emails',{
         method:'POST',
@@ -122,7 +155,7 @@ Deno.serve(async req=>{
           await db.from('profiles').delete().eq('id',invitedUser.id).eq('company_id',me.company_id);
           await db.auth.admin.deleteUser(invitedUser.id);
         }
-        return json({error:'Unable to send the client portal invitation.',detail:mailBody?.message||mailBody?.name||'Email provider rejected the request'},mail.status>=400&&mail.status<500?424:502);
+        return json({error:'Unable to send the Vorlen invitation.',detail:mailBody?.message||mailBody?.name||'Email provider rejected the request'},mail.status>=400&&mail.status<500?424:502);
       }
 
       return json({ok:true,user_id:invitedUser.id,message,email_id:mailBody?.id||null,access_link_resent:!!existingProfile});
@@ -130,7 +163,9 @@ Deno.serve(async req=>{
 
     if(b.action==='role'){
       if(!['owner','manager','recruiter','partner','viewer'].includes(b.role))return json({error:'Invalid role'},400);
-      const{data:target}=await db.from('profiles').select('id,role').eq('id',b.user_id).eq('company_id',me.company_id).maybeSingle();
+      const partnerSpecialism=String(b.partner_specialism||'b2b_advisor');
+      if(b.role==='partner'&&!['b2b_advisor','lead_closer','candidate_sourcer','hybrid'].includes(partnerSpecialism))return json({error:'Valid partner specialism required'},400);
+      const{data:target}=await db.from('profiles').select('id,role,client_id').eq('id',b.user_id).eq('company_id',me.company_id).maybeSingle();
       if(!target)return json({error:'Workspace user not found'},404);
       if(target.role==='owner'&&me.role!=='owner')return json({error:'Only an owner can change an owner account'},403);
       if(b.role==='owner'&&me.role!=='owner')return json({error:'Only an owner can assign the owner role'},403);
@@ -139,8 +174,34 @@ Deno.serve(async req=>{
         if((count||0)<=1)return json({error:'The workspace must keep at least one owner'},409);
       }
       if(b.role==='viewer'&&!b.client_id)return json({error:'Client required for viewer access'},400);
+
+      if(target.role==='partner'&&b.role!=='partner'){
+        const{data:onboarding}=await db.from('partner_onboarding').select('status').eq('partner_id',target.id).eq('company_id',me.company_id).maybeSingle();
+        if(onboarding&&onboarding.status!=='terminated'){
+          return json({error:'Terminate the partner relationship in Partner Management before changing this account to another role.'},409);
+        }
+      }
+      if(target.role!=='partner'&&b.role==='partner'){
+        const{data:oldPartner}=await db.from('partner_onboarding').select('status').eq('partner_id',target.id).eq('company_id',me.company_id).maybeSingle();
+        if(oldPartner?.status==='terminated'){
+          return json({error:'This account has a terminated partner relationship. Create and approve a new partner engagement before restoring partner access.'},409);
+        }
+      }
+
       const{error}=await db.from('profiles').update({role:b.role,client_id:b.role==='viewer'?b.client_id:null}).eq('id',b.user_id).eq('company_id',me.company_id);
       if(error)return json({error:error.message},400);
+
+      if(b.role==='partner'&&target.role!=='partner'){
+        const{error:initError}=await db.rpc('service_initialise_partner_onboarding',{
+          p_company:me.company_id,
+          p_partner:b.user_id,
+          p_specialism:partnerSpecialism
+        });
+        if(initError){
+          await db.from('profiles').update({role:target.role,client_id:target.client_id||null}).eq('id',b.user_id).eq('company_id',me.company_id);
+          return json({error:'Partner onboarding could not be initialised.',detail:initError.message},500);
+        }
+      }
       return json({ok:true});
     }
 

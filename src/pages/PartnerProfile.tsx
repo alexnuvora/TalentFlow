@@ -71,11 +71,12 @@ export default function PartnerProfile(){
 
  const accepted=agreement?.status==='accepted';
  const personalComplete=Boolean(onboarding?.legal_name&&onboarding?.country&&onboarding?.address&&onboarding?.phone);
- const paymentComplete=Boolean(onboarding?.payment_method&&onboarding?.payment_account_name);
+ const paymentComplete=Boolean(onboarding?.payment_method);
  const reviewed=Boolean(onboarding?.reviewed_at);
  const active=onboarding?.status==='active';
- const candidateEnabled=['candidate_sourcer','hybrid'].includes(partnerProfile?.specialism)&&access.candidateProcessingActive;
- const clientDevelopment=['b2b_advisor','lead_closer','hybrid'].includes(partnerProfile?.specialism);
+ const activatedOnce=Boolean(onboarding?.activated_at);
+ const candidateAssigned=['candidate_sourcer','hybrid'].includes(partnerProfile?.specialism);
+ const clientDevelopment=access.partnerCanDevelopClients;
  const joined=onboarding?.activated_at||partnerProfile?.created_at||profile?.created_at;
  const initials=(form.display_name||onboarding?.legal_name||user?.email||'VP').split(/\s+/).map((x:string)=>x[0]).join('').slice(0,2).toUpperCase();
  const checklist=[
@@ -83,7 +84,7 @@ export default function PartnerProfile(){
   ['Personal details complete',personalComplete],
   ['Payment administration complete',paymentComplete],
   ['Vorlen management review complete',reviewed],
-  ['Partner account activated',active]
+  ['Initial partner activation completed',activatedOnce]
  ] as const;
 
  if(loading||access.loading)return <div className="page"><SkeletonRows rows={8}/></div>;
@@ -97,7 +98,7 @@ export default function PartnerProfile(){
   <Card>
    <div className="profile-hero">
     <div className="profile-avatar">{partnerProfile?.profile_photo_url?<img src={partnerProfile.profile_photo_url} alt="Partner profile"/>:<span>{initials}</span>}</div>
-    <div><div className="eyebrow">VORLEN PARTNER</div><h2>{form.display_name||onboarding.legal_name||'Partner'}</h2><p>{specialismLabel(partnerProfile?.specialism)} · {active?'Active partner':'Onboarding in progress'}{joined?' · Joined '+new Date(joined).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''}</p><span className="muted">{user?.email}</span></div>
+    <div><div className="eyebrow">VORLEN PARTNER</div><h2>{form.display_name||onboarding.legal_name||'Partner'}</h2><p>{specialismLabel(partnerProfile?.specialism)} · {active?'Active partner':onboarding.status==='suspended'?'Suspended partner':onboarding.status==='terminated'?'Former partner':'Onboarding in progress'}{joined?' · Joined '+new Date(joined).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):''}</p><span className="muted">{user?.email}</span></div>
    </div>
   </Card>
 
@@ -108,11 +109,11 @@ export default function PartnerProfile(){
   </div>
 
   <div className="grid two">
-   <Card><h3>Onboarding status</h3>{checklist.map(([label,done])=><div className="list-row compact" key={label}><div className="button-row">{done?<CheckCircle2 size={17}/>:<Circle size={17}/>}<strong>{label}</strong></div><Badge tone={statusTone(done)}>{done?'Complete':'Outstanding'}</Badge></div>)}{!active&&<Button onClick={()=>navigate('/dashboard/partner-onboarding')}>Continue onboarding</Button>}</Card>
+   <Card><h3>Partner lifecycle</h3>{checklist.map(([label,done])=><div className="list-row compact" key={label}><div className="button-row">{done?<CheckCircle2 size={17}/>:<Circle size={17}/>}<strong>{label}</strong></div><Badge tone={statusTone(done)}>{done?'Complete':'Outstanding'}</Badge></div>)}{onboarding.status==='suspended'&&<div className="notice"><strong>Suspended.</strong> Operational actions are paused until Vorlen management reactivates the relationship.</div>}{onboarding.status==='terminated'&&<div className="notice"><strong>Terminated.</strong> Historical profile and agreement information remain visible, but operational access has ended.</div>}{!active&&!['suspended','terminated'].includes(onboarding.status)&&<Button onClick={()=>navigate('/dashboard/partner-onboarding')}>Continue onboarding</Button>}</Card>
    <Card><h3>Permissions & capabilities</h3>
-    <div className="list-row compact"><div><strong>Client development</strong><span>Prospecting, employer relationship development and commercial handoffs</span></div><Badge tone={statusTone(clientDevelopment)}>{clientDevelopment?'Enabled':'Not enabled'}</Badge></div>
-    <div className="list-row compact"><div><strong>Candidate sourcing</strong><span>Controlled candidate sourcing and partner pipeline</span></div><Badge tone={statusTone(candidateEnabled)}>{candidateEnabled?'Enabled':'Disabled'}</Badge></div>
-    <div className="list-row compact"><div><strong>Candidate processing phase</strong><span>Company-level compliance gate</span></div><Badge tone={statusTone(access.candidateProcessingActive)}>{access.candidateProcessingActive?'Active':'Gated'}</Badge></div>
+    <div className="list-row compact"><div><strong>Client development</strong><span>Prospecting, employer relationship development and commercial handoffs</span></div><Badge tone={statusTone(clientDevelopment)}>{clientDevelopment?'Enabled':'Not assigned'}</Badge></div>
+    <div className="list-row compact"><div><strong>Candidate sourcing permission</strong><span>Controlled candidate sourcing and partner pipeline</span></div><Badge tone={statusTone(access.partnerCanSourceCandidates)}>{candidateAssigned?(access.partnerActive?'Assigned':'Inactive'):'Not assigned'}</Badge></div>
+    <div className="list-row compact"><div><strong>Candidate processing phase</strong><span>Company-level compliance gate; both this gate and candidate-sourcing permission must be active</span></div><Badge tone={statusTone(access.candidateProcessingActive)}>{access.candidateProcessingActive?'Active':'Gated'}</Badge></div>
     <div className="list-row compact"><div><strong>Commercial approval</strong><span>Fees, terms, guarantees, exclusivity and candidate ownership</span></div><Badge tone="neutral">Manager only</Badge></div>
    </Card>
   </div>
