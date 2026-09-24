@@ -7,7 +7,7 @@ import {BriefcaseBusiness,CheckCircle2,Circle,ExternalLink,FileText,LifeBuoy,Loc
 
 const split=(value:string)=>value.split(',').map(x=>x.trim()).filter(Boolean);
 const money=(v:any)=>new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'}).format(Number(v||0));
-const specialismLabel=(v:string)=>({b2b_advisor:'B2B Advisor',candidate_sourcer:'Candidate Sourcer',hybrid:'Hybrid Partner'} as Record<string,string>)[v]||v?.replaceAll('_',' ')||'Partner';
+const specialismLabel=(v:string)=>({b2b_advisor:'B2B Advisor',lead_closer:'Lead Closer',candidate_sourcer:'Candidate Sourcer',hybrid:'Hybrid Partner'} as Record<string,string>)[v]||v?.replaceAll('_',' ')||'Partner';
 const statusTone=(v:boolean):'green'|'neutral'=>v?'green':'neutral';
 
 export default function PartnerProfile(){
@@ -22,16 +22,17 @@ export default function PartnerProfile(){
   const{data:{user:u},error:ue}=await supabase.auth.getUser();
   if(ue||!u){setError(ue?.message||'Your session has expired.');setLoading(false);return}
   setUser(u);
-  const[{data:p,error:pe},{data:pp,error:ppe},{data:o,error:oe},{data:a,error:ae},{data:assign,error:ase},{data:attrs,error:ate},{data:comm,error:ce}]=await Promise.all([
+  const[{data:p,error:pe},{data:pp,error:ppe},{data:o,error:oe},{data:a,error:ae},{data:assign,error:ase},{data:attrs,error:ate},{data:comm,error:ce},{data:adj,error:adje}]=await Promise.all([
    supabase.from('profiles').select('id,full_name,role,created_at').eq('id',u.id).maybeSingle(),
    supabase.from('partner_profiles').select('*').eq('user_id',u.id).maybeSingle(),
    supabase.from('partner_onboarding').select('*').eq('partner_id',u.id).maybeSingle(),
    supabase.from('partner_agreements').select('*').eq('partner_id',u.id).order('created_at',{ascending:false}).limit(1).maybeSingle(),
    supabase.from('partner_assignments').select('client_id,job_id,candidate_id,completed_at').eq('partner_id',u.id),
    supabase.from('partner_attributions').select('placement_id').eq('partner_id',u.id).eq('attribution_type','placement_owner').eq('status','active'),
-   supabase.from('partner_commissions').select('amount,status').eq('partner_user_id',u.id)
+   supabase.from('partner_commissions').select('amount,status').eq('partner_user_id',u.id),
+   supabase.from('partner_commission_adjustments').select('amount,status').eq('partner_user_id',u.id)
   ]);
-  const first=pe||ppe||oe||ae||ase||ate||ce;if(first)setError(first.message);
+  const first=pe||ppe||oe||ae||ase||ate||ce||adje;if(first)setError(first.message);
   setProfile(p);setPartnerProfile(pp);setOnboarding(o);setAgreement(a);
   const active=(assign||[]).filter((x:any)=>!x.completed_at);
   setStats({
@@ -39,7 +40,7 @@ export default function PartnerProfile(){
    jobs:new Set(active.map((x:any)=>x.job_id).filter(Boolean)).size,
    candidates:new Set(active.map((x:any)=>x.candidate_id).filter(Boolean)).size,
    placements:new Set((attrs||[]).map((x:any)=>x.placement_id).filter(Boolean)).size,
-   paid:(comm||[]).filter((x:any)=>x.status==='paid').reduce((n:number,x:any)=>n+Number(x.amount||0),0)
+   paid:(comm||[]).filter((x:any)=>x.status==='paid').reduce((n:number,x:any)=>n+Number(x.amount||0),0)+(adj||[]).filter((x:any)=>x.status==='paid').reduce((n:number,x:any)=>n+Number(x.amount||0),0)
   });
   setForm({
    display_name:pp?.display_name||p?.full_name||o?.legal_name||'',
@@ -74,7 +75,7 @@ export default function PartnerProfile(){
  const reviewed=Boolean(onboarding?.reviewed_at);
  const active=onboarding?.status==='active';
  const candidateEnabled=['candidate_sourcer','hybrid'].includes(partnerProfile?.specialism)&&access.candidateProcessingActive;
- const clientDevelopment=['b2b_advisor','hybrid'].includes(partnerProfile?.specialism);
+ const clientDevelopment=['b2b_advisor','lead_closer','hybrid'].includes(partnerProfile?.specialism);
  const joined=onboarding?.activated_at||partnerProfile?.created_at||profile?.created_at;
  const initials=(form.display_name||onboarding?.legal_name||user?.email||'VP').split(/\s+/).map((x:string)=>x[0]).join('').slice(0,2).toUpperCase();
  const checklist=[
