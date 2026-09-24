@@ -2,7 +2,7 @@ import {useEffect,useMemo,useState} from 'react';
 import {Badge,Button,Card,SkeletonRows,useToast} from '../components/Ui';
 import {supabase} from '../lib/supabase';
 import {useWorkspaceAccess} from '../lib/access';
-import {BriefcaseBusiness,CheckCircle2,ClipboardList,FileCheck2,Handshake,LifeBuoy,Plus,Receipt,RefreshCw,Search,Send,UserRoundCheck,Users} from 'lucide-react';
+import {ClipboardList,FileCheck2,Handshake,LifeBuoy,Plus,Receipt,Search,Send,UserRoundCheck} from 'lucide-react';
 
 export type PartnerOpsSection='vacancies'|'pipeline'|'handoffs'|'earnings'|'resources';
 const money=(v:any,c='GBP')=>new Intl.NumberFormat('en-GB',{style:'currency',currency:String(c||'GBP').trim()}).format(Number(v||0));
@@ -78,7 +78,6 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
  </div>;
 
  if(section==='pipeline'){
-  const groups=candidateStages.map(stage=>[stage,candidates.filter(c=>c.stage===stage)] as const).filter(([,rows])=>rows.length||['new','screening','submitted','interview','offer','placed'].includes(rows?.[0]?.stage||''));
   return <div className="page partner-page">
    <div className="page-actions"><div><div className="eyebrow">MY PIPELINE</div><h2>Candidate pipeline</h2><p>Your assigned/sourced candidates only. Progression remains subject to Vorlen candidate-processing controls.</p></div></div>
    {!access.candidateProcessingActive&&<div className="notice"><strong>Candidate processing is currently gated.</strong> The pipeline will become operational when Vorlen activates the candidate-processing phase.</div>}
