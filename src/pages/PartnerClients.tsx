@@ -10,13 +10,14 @@ const emailStatuses=new Set(['no_answer','busy','contacted','call_back','interes
 const label=(s:string)=>statuses.find(x=>x[0]===s)?.[1]||String(s||'').replaceAll('_',' ');
 const due=(d?:string)=>d&&new Date(d)<=new Date();
 
-export default function PartnerClients(){
+type PartnerView='overview'|'clients'|'candidates'|'tasks';
+export default function PartnerClients({defaultView='overview'}:{defaultView?:PartnerView}){
  const access=useWorkspaceAccess(),toast=useToast();
  const[params]=useSearchParams();
  const[partnerActive,setPartnerActive]=useState(false);const[clients,setClients]=useState<any[]>([]),[activity,setActivity]=useState<any[]>([]),[candidates,setCandidates]=useState<any[]>([]),[jobs,setJobs]=useState<any[]>([]),[tasks,setTasks]=useState<any[]>([]),[profile,setProfile]=useState<any>(null);
  const[selected,setSelected]=useState<any>(null),[notes,setNotes]=useState<any[]>([]),[brief,setBrief]=useState<any>(null),[detailTab,setDetailTab]=useState<'activity'|'ai'>('activity');
  const requestedView=params.get('view');
- const view:'overview'|'clients'|'candidates'|'tasks'=requestedView==='clients'||requestedView==='candidates'||requestedView==='tasks'?requestedView:'overview';
+ const view:PartnerView=requestedView==='clients'||requestedView==='candidates'||requestedView==='tasks'||requestedView==='overview'?requestedView:defaultView;
  const[search,setSearch]=useState(''),[loading,setLoading]=useState(true),[busy,setBusy]=useState(''),[note,setNote]=useState(''),[status,setStatus]=useState('not_contacted'),[callbackAt,setCallbackAt]=useState(''),[error,setError]=useState('');
  const[newTask,setNewTask]=useState({title:'',task_type:'follow_up',due_at:'',priority:'normal'});
  const[coach,setCoach]=useState<any>(null),[coachInput,setCoachInput]=useState(''),[quickNote,setQuickNote]=useState(''),[debrief,setDebrief]=useState<any>(null);
