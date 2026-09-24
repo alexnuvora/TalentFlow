@@ -475,3 +475,19 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 .partner-page .card>h3{margin-top:0}
 .partner-page .card>p{line-height:1.55}
 @media(max-width:900px){.partner-page .grid.three{grid-template-columns:1fr}.partner-pipeline{grid-template-columns:repeat(9,220px)}}
+
+/* Partner profile hub */
+.partner-page .profile-hero{display:flex;align-items:center;gap:18px}
+.partner-page .profile-avatar{width:76px;height:76px;border-radius:22px;background:#e6f2ee;border:1px solid #cfe2db;display:grid;place-items:center;overflow:hidden;flex:0 0 auto}
+.partner-page .profile-avatar img{width:100%;height:100%;object-fit:cover}
+.partner-page .profile-avatar span{font-size:24px;font-weight:850;color:#0a8063}
+.partner-page .list-row.compact{padding:10px 0}
+.partner-page .form-divider{border-top:1px solid #e5ece9;padding-top:16px;margin-top:4px}
+.partner-profile-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.partner-profile-stats .card{min-width:0}
+.partner-profile-stats .card h2{font-size:24px;margin:5px 0 0}
+.partner-page details{margin-top:14px}
+.partner-page details summary{cursor:pointer;font-weight:800;color:#29423c}
+@media(max-width:1100px){.partner-profile-stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:800px){.partner-page .profile-hero{align-items:flex-start}.partner-profile-stats{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.partner-page .profile-hero{flex-direction:column}.partner-profile-stats{grid-template-columns:1fr}}
