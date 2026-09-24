@@ -18,7 +18,10 @@ export default function PartnerClients({defaultView='overview'}:{defaultView?:Pa
  const[partnerActive,setPartnerActive]=useState(false);const[clients,setClients]=useState<any[]>([]),[activity,setActivity]=useState<any[]>([]),[candidates,setCandidates]=useState<any[]>([]),[jobs,setJobs]=useState<any[]>([]),[tasks,setTasks]=useState<any[]>([]),[handoffs,setHandoffs]=useState<any[]>([]),[prospects,setProspects]=useState<any[]>([]),[showProspect,setShowProspect]=useState(false),[editingProspectId,setEditingProspectId]=useState(''),[profile,setProfile]=useState<any>(null);
  const[selected,setSelected]=useState<any>(null),[notes,setNotes]=useState<any[]>([]),[brief,setBrief]=useState<any>(null),[detailTab,setDetailTab]=useState<'activity'|'ai'>('activity');
  const requestedView=params.get('view');
- const view:PartnerView=requestedView==='clients'||requestedView==='candidates'||requestedView==='tasks'||requestedView==='overview'?requestedView:defaultView;
+ const requestedValid=requestedView==='clients'||requestedView==='candidates'||requestedView==='tasks'||requestedView==='overview';
+ const requestedAllowed=requestedView==='clients'?access.partnerCanDevelopClients:requestedView==='candidates'?access.partnerCanSourceCandidates:true;
+ const defaultAllowed=defaultView==='clients'?access.partnerCanDevelopClients:defaultView==='candidates'?access.partnerCanSourceCandidates:true;
+ const view:PartnerView=requestedValid&&requestedAllowed?requestedView as PartnerView:defaultAllowed?defaultView:'overview';
  const[search,setSearch]=useState(''),[loading,setLoading]=useState(true),[busy,setBusy]=useState(''),[note,setNote]=useState(''),[status,setStatus]=useState('not_contacted'),[callbackAt,setCallbackAt]=useState(''),[error,setError]=useState('');
  const[newTask,setNewTask]=useState({title:'',task_type:'follow_up',due_at:'',priority:'normal',client_id:'',candidate_id:'',job_id:''});
  const[prospectForm,setProspectForm]=useState({company_name:'',website:'',contact_name:'',contact_email:'',contact_phone:'',business_nature:'',hiring_need:'',notes:''});
