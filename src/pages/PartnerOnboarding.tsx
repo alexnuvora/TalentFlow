@@ -1,22 +1,82 @@
-import {useEffect,useState} from 'react';import {Card,Button,Badge,useToast} from '../components/Ui';import {supabase} from '../lib/supabase';
-const TERMS_VERSION='partner-2026-09-24';
-const TERMS=`Vorlen Recruitment Partner Agreement
-1. Appointment. The partner acts as an independent recruitment/business-development partner and is not an employee, agent with authority to bind Vorlen, or authorised to vary Vorlen client terms.
-2. Scope. Work is limited to permanent recruitment activity authorised through Vorlen. The partner must use Vorlen systems for client, vacancy, candidate and introduction records.
-3. Commission. The standard partner share is 30% of qualifying recruitment fees actually received by Vorlen for a placement attributed to the partner under Vorlen records. VAT, refunds, credits, rebates, chargebacks and sums not retained by Vorlen are excluded from the commission base. No commission is earned merely because a candidate is introduced or an invoice is issued.
-4. Attribution. Vorlen's timestamped client, vacancy, candidate and placement records determine attribution. Duplicate or disputed introductions are reviewed by a Vorlen manager. A partner must not create duplicate records to obtain attribution.
-5. Client terms and authority. Partners may develop employer relationships, discuss hiring needs and gather commercial information, but they must not quote, agree, accept or vary recruitment fees, payment terms, rebates, guarantees, exclusivity, candidate-ownership periods or any other contractual commitment on behalf of Vorlen. A client engagement becomes binding only when the applicable terms are approved and recorded by an authorised Vorlen manager.
-6. Candidate data. Personal data may be processed only for authorised recruitment purposes, through approved Vorlen systems, with appropriate confidentiality and data-protection safeguards. Candidate data must not be exported, retained privately or reused outside authorised work.
-7. Conduct. The partner must act professionally, accurately identify the Vorlen relationship, avoid misleading statements and comply with applicable recruitment, equality, privacy, anti-bribery and marketing rules.
-8. Confidentiality and IP. Vorlen/client/candidate confidential information and platform materials remain protected and may be used only for the partnership.
-9. Payment. Earned commission is subject to manager approval and is paid using the partner's approved payment details. Any overpayment or commission affected by a later client refund/rebate may be reversed or offset where the underlying fee is no longer retained.
-10. Termination. Vorlen may suspend or terminate access for compliance, security, misconduct or commercial reasons. Termination does not create commission on fees not actually received; valid earned commission already due remains recorded.
-11. Independent status. The partner is responsible for their own tax, insurance and business obligations in their jurisdiction. Nothing creates employment, worker status, partnership in law or authority to bind Vorlen.
-12. Entire operational terms. These terms work with Vorlen privacy/security policies and any written partner schedule issued by Vorlen. Material changes require a new version and acceptance.`;
-export default function PartnerOnboarding(){const toast=useToast();const[onb,setOnb]=useState<any>(null),[agreement,setAgreement]=useState<any>(null),[commissions,setCommissions]=useState<any[]>([]),[placements,setPlacements]=useState<any[]>([]),[form,setForm]=useState<any>({legal_name:'',trading_name:'',country:'',address:'',phone:'',business_type:'',company_registration_number:'',vat_number:'',tax_reference:'',payment_method:'',payment_account_name:'',payment_currency:'GBP',payment_details_reference:''}),[name,setName]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
-async function load(){const{data:{user}}=await supabase.auth.getUser();if(!user)return;const[{data:o},{data:a},{data:c},{data:at}]=await Promise.all([supabase.from('partner_onboarding').select('*').eq('partner_id',user.id).maybeSingle(),supabase.from('partner_agreements').select('*').eq('partner_id',user.id).order('created_at',{ascending:false}).limit(1).maybeSingle(),supabase.from('partner_commissions').select('id,placement_id,rate,amount,status,paid_at,eligible_fee_received,payment_reference,created_at').eq('partner_user_id',user.id).order('created_at',{ascending:false}),supabase.from('partner_attributions').select('placement_id').eq('partner_id',user.id).eq('attribution_type','placement_owner').eq('status','active')]);setOnb(o);setAgreement(a);setCommissions(c||[]);const ids=(at||[]).map((x:any)=>x.placement_id).filter(Boolean);if(ids.length){const{data:p}=await supabase.from('placements').select('id,fee_amount,currency,invoice_status,created_at').in('id',ids);setPlacements(p||[])}else setPlacements([]);if(o)setForm((x:any)=>({...x,...Object.fromEntries(Object.keys(x).map(k=>[k,o[k]||'']))}))}
-useEffect(()=>{void load()},[]);
-async function accept(){if(!agreement||!name.trim())return;setBusy(true);const{error:e}=await supabase.rpc('accept_partner_agreement',{p_agreement:agreement.id,p_accepted_name:name.trim(),p_user_agent:navigator.userAgent});if(e){setError(e.message);setBusy(false);return}setBusy(false);toast('Partner agreement accepted.');await load()}
-async function details(e:any){e.preventDefault();setBusy(true);const{error:er}=await supabase.from('partner_onboarding').update({...form,status:'review_pending',updated_at:new Date().toISOString()}).eq('partner_id',onb.partner_id);setBusy(false);if(er)return setError(er.message);toast('Details submitted for activation review.');await load()}
-if(!onb)return <div className="page"><Card><h2>Partner onboarding</h2><p>Your partner invitation is not configured yet. Ask a Vorlen manager to initialise your partner record.</p></Card></div>;
-return <div className="page"><div className="page-actions"><div><div className="eyebrow">VORLEN PARTNER NETWORK</div><h2>Partner onboarding & earnings</h2><p>Complete the required steps before recruitment workspace access is activated.</p></div><Badge tone={onb.status==='active'?'green':'amber'}>{onb.status.replaceAll('_',' ')}</Badge></div><div className="notice"><strong>Commercial authority:</strong> You may develop employer relationships and gather hiring requirements, but only authorised Vorlen managers can approve or vary fees, payment terms, rebates, guarantees, exclusivity, candidate ownership or other binding client terms. Record the opportunity in Vorlen and escalate commercial terms for approval.</div>{error&&<div className="notice error">{error}</div>}{agreement?.status!=='accepted'&&<Card><h3>1. Partner agreement</h3><pre className="answer-box">{agreement?.terms_text||'Agreement is being prepared by Vorlen.'}</pre>{agreement&&<><label>Type your full legal name to accept<input value={name} onChange={e=>setName(e.target.value)}/></label><Button disabled={busy||!name.trim()} onClick={accept}>Accept agreement</Button></>}</Card>}{agreement?.status==='accepted'&&onb.status!=='active'&&<Card><h3>2. Partner details</h3><p className="muted">These details support partner administration and payments. Do not enter bank credentials or passwords; payment details should be a safe reference such as account name / invoicing method.</p><form className="form-grid" onSubmit={details}>{Object.keys(form).map(k=><label className={k==='address'?'full':''} key={k}>{k.replaceAll('_',' ')}<input required={['legal_name','country','address','phone','payment_method'].includes(k)} value={form[k]} onChange={e=>setForm({...form,[k]:e.target.value})}/></label>)}<Button disabled={busy} type="submit">Submit for activation</Button></form></Card>}{onb.status==='review_pending'&&<div className="notice">Your onboarding is awaiting Vorlen manager approval. Recruitment workspace access remains locked until activation.</div>}{onb.status==='active'&&<><div className="grid three"><Card><span className="muted">Expected commission</span><h2>£{placements.reduce((n,p)=>n+Number(p.fee_amount||0)*Number(agreement?.commission_percent||30)/100,0).toFixed(2)}</h2><p>from attributed placement fees</p></Card><Card><span className="muted">Earned commission</span><h2>£{commissions.filter(x=>x.status!=='void').reduce((n,x)=>n+Number(x.amount||0),0).toFixed(2)}</h2><p>after qualifying fees received</p></Card><Card><span className="muted">Paid commission</span><h2>£{commissions.filter(x=>x.status==='paid').reduce((n,x)=>n+Number(x.amount||0),0).toFixed(2)}</h2><p>paid to you</p></Card></div><Card><h3>Commission ledger · {Number(agreement?.commission_percent||30).toFixed(0)}% partner share</h3><p className="muted">Expected commission is indicative until Vorlen receives and retains the qualifying client fee. Earned commission is calculated against qualifying fees actually received using your accepted agreement.</p>{commissions.map(c=><div className="list-row" key={c.id}><div><strong>£{Number(c.amount||0).toFixed(2)}</strong><span>Eligible fee received £{Number(c.eligible_fee_received||0).toFixed(2)} · {(Number(c.rate||0)*100).toFixed(0)}%</span></div><Badge tone={c.status==='paid'?'green':'neutral'}>{c.status}</Badge></div>)}{!commissions.length&&<p className="muted">No commission entries yet.</p>}</Card></>}</div>}
+import {useEffect,useState} from 'react';
+import {Link} from 'react-router-dom';
+import {Card,Button,Badge,SkeletonRows,useToast} from '../components/Ui';
+import {supabase} from '../lib/supabase';
+
+const fields=[
+ ['legal_name','Legal name',true],['trading_name','Trading / business name',false],['country','Country',true],
+ ['address','Address',true],['phone','Phone',true],['business_type','Business type',false],
+ ['company_registration_number','Company registration number',false],['vat_number','VAT number',false],
+ ['tax_reference','Tax reference',false],['payment_method','Payment method',true],
+ ['payment_account_name','Payment account / payee name',false],['payment_currency','Payment currency',false],
+ ['payment_details_reference','Payment reference',false]
+] as const;
+
+export default function PartnerOnboarding(){
+ const toast=useToast();
+ const[loading,setLoading]=useState(true),[onb,setOnb]=useState<any>(null),[agreement,setAgreement]=useState<any>(null);
+ const[form,setForm]=useState<any>({legal_name:'',trading_name:'',country:'',address:'',phone:'',business_type:'',company_registration_number:'',vat_number:'',tax_reference:'',payment_method:'',payment_account_name:'',payment_currency:'GBP',payment_details_reference:''});
+ const[name,setName]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
+
+ async function load(){
+  setLoading(true);setError('');
+  const{data:{user},error:ue}=await supabase.auth.getUser();
+  if(ue||!user){setError(ue?.message||'Your session has expired.');setLoading(false);return}
+  const[{data:o,error:oe},{data:a,error:ae}]=await Promise.all([
+   supabase.from('partner_onboarding').select('*').eq('partner_id',user.id).maybeSingle(),
+   supabase.from('partner_agreements').select('*').eq('partner_id',user.id).order('created_at',{ascending:false}).limit(1).maybeSingle()
+  ]);
+  if(oe||ae)setError(oe?.message||ae?.message||'Partner onboarding could not be loaded.');
+  setOnb(o);setAgreement(a);
+  if(o)setForm((x:any)=>({...x,...Object.fromEntries(Object.keys(x).map(k=>[k,o[k]??x[k]??'']))}));
+  setLoading(false);
+ }
+ useEffect(()=>{void load()},[]);
+
+ async function accept(){
+  if(!agreement||!name.trim())return;
+  setBusy(true);setError('');
+  const{error:e}=await supabase.rpc('accept_partner_agreement',{p_agreement:agreement.id,p_accepted_name:name.trim(),p_user_agent:navigator.userAgent});
+  setBusy(false);if(e)return setError(e.message);
+  toast('Partner agreement accepted. Complete your partner details next.');await load();
+ }
+
+ async function details(e:any){
+  e.preventDefault();if(!onb||!['details_pending','review_pending'].includes(onb.status))return;
+  setBusy(true);setError('');
+  const payload={...form,payment_currency:String(form.payment_currency||'GBP').trim().toUpperCase(),status:'review_pending',updated_at:new Date().toISOString()};
+  const{error:er}=await supabase.from('partner_onboarding').update(payload).eq('partner_id',onb.partner_id);
+  setBusy(false);if(er)return setError(er.message);
+  toast(onb.status==='review_pending'?'Submitted partner details updated.':'Details submitted for Vorlen activation review.');await load();
+ }
+
+ if(loading)return <div className="page"><SkeletonRows rows={6}/></div>;
+ if(!onb)return <div className="page"><Card><h2>Partner onboarding</h2><p>Your Vorlen partner record has not been initialised. Ask a workspace owner or manager to resend or initialise your partner invitation.</p><Link className="btn ghost" to="/contact">Contact Vorlen</Link></Card></div>;
+
+ const status=String(onb.status||'terms_pending');
+ const accepted=agreement?.status==='accepted';
+ const tone=status==='active'?'green':status==='terminated'?'red':'amber';
+
+ return <div className="page partner-page">
+  <div className="page-actions"><div><div className="eyebrow">VORLEN PARTNER NETWORK</div><h2>Partner onboarding</h2><p>Agreement, operating details and Vorlen approval must be complete before operational access is enabled.</p></div><Badge tone={tone as any}>{status.replaceAll('_',' ')}</Badge></div>
+  <div className="notice"><strong>Commercial authority:</strong> You may develop employer relationships and gather hiring requirements only where your assigned partner specialism permits it. Only authorised Vorlen managers can approve fees, payment terms, rebates, guarantees, exclusivity, candidate ownership or other binding client terms.</div>
+  {error&&<div className="notice error">{error}</div>}
+
+  {status==='suspended'&&<Card><h3>Partner access suspended</h3><p>Your operational workspace is paused. Existing records remain preserved, but you cannot carry out partner activity until Vorlen management reactivates the relationship.</p><div className="button-row"><Link className="btn ghost" to="/dashboard/partner/profile">View profile & agreement</Link><Link className="btn ghost" to="/contact">Contact Vorlen</Link></div></Card>}
+  {status==='terminated'&&<Card><h3>Partner relationship ended</h3><p>Your operational partner access has ended. Historical agreement and account information remain available from your Profile, but no new client, candidate or commercial activity can be created.</p><div className="button-row"><Link className="btn ghost" to="/dashboard/partner/profile">View profile & agreement</Link><Link className="btn ghost" to="/contact">Contact Vorlen</Link></div></Card>}
+
+  {!['suspended','terminated'].includes(status)&&!accepted&&<Card><div className="eyebrow">STEP 1 OF 3</div><h3>Review and accept the partner agreement</h3><p className="muted">Acceptance records the exact agreement version and terms hash against your account.</p><pre className="answer-box">{agreement?.terms_text||'Your agreement is being prepared by Vorlen.'}</pre>{agreement&&<><label>Type your full legal name to accept<input value={name} onChange={e=>setName(e.target.value)} autoComplete="name"/></label><Button disabled={busy||!name.trim()} onClick={accept}>Accept partner agreement</Button></>}</Card>}
+
+  {!['suspended','terminated','active'].includes(status)&&accepted&&['details_pending','review_pending'].includes(status)&&<Card>
+   <div className="eyebrow">STEP 2 OF 3</div><h3>{status==='review_pending'?'Partner details submitted':'Complete your partner details'}</h3>
+   <p className="muted">{status==='review_pending'?'Vorlen is reviewing these details. You can correct them while review is pending.':'These details support partner administration and commission payments.'} Do not enter passwords, card PINs or online-banking credentials.</p>
+   <form className="form-grid" onSubmit={details}>{fields.map(([key,label,required])=><label className={key==='address'?'full':''} key={key}>{label}<input required={required} value={form[key]||''} maxLength={key==='payment_currency'?3:undefined} onChange={e=>setForm({...form,[key]:key==='payment_currency'?e.target.value.toUpperCase():e.target.value})}/></label>)}<Button disabled={busy} type="submit">{status==='review_pending'?'Update submitted details':'Submit for activation review'}</Button></form>
+  </Card>}
+
+  {status==='review_pending'&&<Card><div className="eyebrow">STEP 3 OF 3</div><h3>Awaiting Vorlen approval</h3><p>Your agreement is accepted and your details have been submitted. A Vorlen manager must review and activate the partner account before operational screens become available.</p><Badge tone="amber">Manager review pending</Badge></Card>}
+
+  {status==='active'&&<Card><div className="eyebrow">ONBOARDING COMPLETE</div><h3>Your partner workspace is active</h3><p>Your accepted agreement and onboarding review are complete. Your available screens and actions are now determined by the partner specialism assigned by Vorlen.</p><div className="button-row"><Link className="btn" to="/dashboard/partner">Open partner workspace</Link><Link className="btn ghost" to="/dashboard/partner/profile">View profile & agreement</Link><Link className="btn ghost" to="/dashboard/partner/earnings">Placements & earnings</Link></div></Card>}
+
+  {agreement&&<Card><h3>Agreement record</h3><div className="list-row"><div><strong>{agreement.version}</strong><span>{accepted&&agreement.accepted_at?'Accepted '+new Date(agreement.accepted_at).toLocaleString('en-GB'):'Awaiting acceptance'}</span></div><Badge tone={accepted?'green':'amber'}>{agreement.status}</Badge></div></Card>}
+ </div>
+}
