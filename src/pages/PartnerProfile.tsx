@@ -7,7 +7,7 @@ import {BriefcaseBusiness,CheckCircle2,Circle,ExternalLink,FileText,LifeBuoy,Loc
 
 const split=(value:string)=>value.split(',').map(x=>x.trim()).filter(Boolean);
 const money=(v:any)=>new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'}).format(Number(v||0));
-const specialismLabel=(v:string)=>({b2b_advisor:'B2B Advisor',candidate_sourcer:'Candidate Sourcer',hybrid:'Hybrid Partner'} as Record<string,string>)[v]||v?.replaceAll('_',' ')||'Partner';
+const specialismLabel=(v:string)=>({b2b_advisor:'B2B Advisor',lead_closer:'Lead Closer',candidate_sourcer:'Candidate Sourcer',hybrid:'Hybrid Partner'} as Record<string,string>)[v]||v?.replaceAll('_',' ')||'Partner';
 const statusTone=(v:boolean):'green'|'neutral'=>v?'green':'neutral';
 
 export default function PartnerProfile(){
@@ -74,7 +74,7 @@ export default function PartnerProfile(){
  const reviewed=Boolean(onboarding?.reviewed_at);
  const active=onboarding?.status==='active';
  const candidateEnabled=['candidate_sourcer','hybrid'].includes(partnerProfile?.specialism)&&access.candidateProcessingActive;
- const clientDevelopment=['b2b_advisor','hybrid'].includes(partnerProfile?.specialism);
+ const clientDevelopment=['b2b_advisor','lead_closer','hybrid'].includes(partnerProfile?.specialism);
  const joined=onboarding?.activated_at||partnerProfile?.created_at||profile?.created_at;
  const initials=(form.display_name||onboarding?.legal_name||user?.email||'VP').split(/\s+/).map((x:string)=>x[0]).join('').slice(0,2).toUpperCase();
  const checklist=[
