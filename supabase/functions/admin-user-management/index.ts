@@ -210,10 +210,19 @@ Deno.serve(async req=>{
       }
       if(b.role==='viewer'&&!b.client_id)return json({error:'Client required for viewer access'},400);
 
+      let priorPartnerStatus:string|null=null;
       if(target.role==='partner'&&b.role!=='partner'){
         const{data:onboarding}=await db.from('partner_onboarding').select('status').eq('partner_id',target.id).eq('company_id',me.company_id).maybeSingle();
+        priorPartnerStatus=onboarding?.status||null;
         if(onboarding&&onboarding.status!=='terminated'){
-          return json({error:'Terminate the partner relationship in Partner Management before changing this account to another role.'},409);
+          if(me.role!=='owner')return json({error:'Only the CEO/owner can convert an active partner account to another workspace role.'},403);
+          const{error:terminateError}=await db.from('partner_onboarding').update({
+            status:'terminated',
+            reviewed_by:user.id,
+            reviewed_at:new Date().toISOString(),
+            updated_at:new Date().toISOString()
+          }).eq('partner_id',target.id).eq('company_id',me.company_id);
+          if(terminateError)return json({error:'Partner relationship could not be terminated before the role change.',detail:terminateError.message},400);
         }
       }
       if(target.role!=='partner'&&b.role==='partner'){
@@ -224,7 +233,12 @@ Deno.serve(async req=>{
       }
 
       const{error}=await db.from('profiles').update({role:b.role,client_id:b.role==='viewer'?b.client_id:null}).eq('id',b.user_id).eq('company_id',me.company_id);
-      if(error)return json({error:error.message},400);
+      if(error){
+        if(target.role==='partner'&&b.role!=='partner'&&priorPartnerStatus&&priorPartnerStatus!=='terminated'){
+          await db.from('partner_onboarding').update({status:priorPartnerStatus,updated_at:new Date().toISOString()}).eq('partner_id',target.id).eq('company_id',me.company_id);
+        }
+        return json({error:error.message},400);
+      }
 
       if(b.role==='partner'&&target.role!=='partner'){
         const{error:initError}=await db.rpc('service_initialise_partner_onboarding',{
