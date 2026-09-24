@@ -71,7 +71,7 @@ export default function PartnerProfile(){
 
  const accepted=agreement?.status==='accepted';
  const personalComplete=Boolean(onboarding?.legal_name&&onboarding?.country&&onboarding?.address&&onboarding?.phone);
- const paymentComplete=Boolean(onboarding?.payment_method&&onboarding?.payment_account_name);
+ const paymentComplete=Boolean(onboarding?.payment_method);
  const reviewed=Boolean(onboarding?.reviewed_at);
  const active=onboarding?.status==='active';
  const candidateAssigned=['candidate_sourcer','hybrid'].includes(partnerProfile?.specialism);
