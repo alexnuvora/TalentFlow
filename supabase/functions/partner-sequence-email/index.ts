@@ -3,7 +3,7 @@ import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.57.0';
 const cors={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization, x-client-info, apikey, content-type','Access-Control-Allow-Methods':'POST, OPTIONS'};
 const json=(b:any,s=200)=>new Response(JSON.stringify(b),{status:s,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
 const esc=(v:string)=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]||c));
-const shell=(subject:string,name:string,body:string)=>`<!doctype html><html><body style="margin:0;background:#f2f5f3;font-family:Arial,sans-serif;color:#10201d"><table role="presentation" width="100%"><tr><td style="padding:34px 16px"><table role="presentation" width="100%" style="max-width:620px;margin:auto;background:#fff;border:1px solid #d9e2de"><tr><td style="padding:28px 34px;background:#10201d;color:#fff"><div style="font-size:19px;font-weight:800;letter-spacing:4px">VORLEN</div><div style="margin-top:5px;font-size:10px;letter-spacing:1.7px;color:#8fe3c2">PERMANENT RECRUITMENT</div></td></tr><tr><td style="padding:36px 34px"><h1 style="margin:0 0 22px;font-size:24px">${esc(subject)}</h1><p style="font-size:15px;line-height:1.7">Hi ${esc(name||'there')},</p><p style="font-size:15px;line-height:1.7;white-space:pre-line">${esc(body)}</p><p style="margin:28px 0 0;font-size:15px;line-height:1.7">Kind regards,<br><strong>Vorlen</strong></p></td></tr><tr><td style="padding:22px 34px;border-top:1px solid #e4ebe8;color:#6a7b75;font-size:11px;line-height:1.6">Vorlen · VORLEN T/A IVY AND PEARLS LTD · Company No. 17387520<br>contact@vorlen.co.uk</td></tr></table></td></tr></table></body></html>`;
+const shell=(subject:string,name:string,body:string)=>`<!doctype html><html><body style="margin:0;background:#f2f5f3;font-family:Arial,sans-serif;color:#10201d"><table role="presentation" width="100%"><tr><td style="padding:34px 16px"><table role="presentation" width="100%" style="max-width:620px;margin:auto;background:#fff;border:1px solid #d9e2de"><tr><td style="padding:28px 34px;background:#10201d;color:#fff"><div style="font-size:19px;font-weight:800;letter-spacing:4px">VORLEN</div><div style="margin-top:5px;font-size:10px;letter-spacing:1.7px;color:#8fe3c2">PERMANENT RECRUITMENT</div></td></tr><tr><td style="padding:36px 34px"><h1 style="margin:0 0 22px;font-size:24px">${esc(subject)}</h1><p style="font-size:15px;line-height:1.7">Hi ${esc(name||'there')},</p><p style="font-size:15px;line-height:1.7;white-space:pre-line">${esc(body)}</p><p style="margin:28px 0 0;font-size:15px;line-height:1.7">Kind regards,<br><strong>Vorlen</strong></p></td></tr><tr><td style="padding:22px 34px;border-top:1px solid #e4ebe8;color:#6a7b75;font-size:11px;line-height:1.6">Vorlen · VORLEN T/A IVY AND PEARLS LTD · Company No. 17387520<br>contact@vorlen.co.uk · <a href="https://www.vorlen.co.uk/privacy">Privacy notice</a><br>To stop recruitment-service marketing emails, reply “unsubscribe” or email contact@vorlen.co.uk.</td></tr></table></td></tr></table></body></html>`;
 
 Deno.serve(async req=>{
  if(req.method==='OPTIONS')return new Response('ok',{headers:cors});
@@ -35,13 +35,19 @@ Deno.serve(async req=>{
   if(enrollment.client_id!==task.client_id)return json({error:'Sequence task scope mismatch'},409);
 
   const[{data:client},{data:contact},{data:supp}]=await Promise.all([
-    db.from('clients').select('id,company_name,contact_name,email,phone').eq('id',task.client_id).eq('company_id',p.company_id).maybeSingle(),
+    db.from('clients').select('id,company_name,contact_name,email,phone,pecr_subscriber_type,email_marketing_basis,email_marketing_assessed_at,email_marketing_evidence').eq('id',task.client_id).eq('company_id',p.company_id).maybeSingle(),
     enrollment.contact_id?db.from('client_recruitment_contacts').select('id,name,email,communication_opt_out').eq('id',enrollment.contact_id).eq('client_id',task.client_id).eq('company_id',p.company_id).maybeSingle():Promise.resolve({data:null}),
     db.from('b2b_call_suppressions').select('id').eq('company_id',p.company_id).eq('client_id',task.client_id).limit(1).maybeSingle()
   ]);
   if(!client)return json({error:'Client not found'},404);
   if(supp)return json({error:'This client is marked do not contact. Email was not sent.'},409);
   if(contact?.communication_opt_out)return json({error:'This contact has opted out of communication.'},409);
+  const marketingEvidence=String(client.email_marketing_evidence||'').trim();
+  const marketingAllowed=!!client.email_marketing_assessed_at&&!!marketingEvidence&&(
+    (client.pecr_subscriber_type==='corporate'&&['legitimate_interests','consent','solicited'].includes(client.email_marketing_basis))
+    ||(client.pecr_subscriber_type==='individual'&&['consent','soft_opt_in','solicited'].includes(client.email_marketing_basis))
+  );
+  if(!marketingAllowed)return json({error:'Email marketing compliance has not been verified for this client. Record PECR subscriber type, lawful basis and evidence before sending.'},409);
 
   const recipient=String(contact?.email||client.email||'').trim().toLowerCase();
   const recipientName=String(contact?.name||client.contact_name||'there');
