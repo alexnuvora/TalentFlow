@@ -7,7 +7,7 @@ import {BriefcaseBusiness,CheckCircle2,Circle,ExternalLink,FileText,LifeBuoy,Loc
 
 const split=(value:string)=>value.split(',').map(x=>x.trim()).filter(Boolean);
 const money=(v:any)=>new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'}).format(Number(v||0));
-const specialismLabel=(v:string)=>({b2b_advisor:'B2B Advisor',lead_closer:'Lead Closer',candidate_sourcer:'Candidate Sourcer',hybrid:'Hybrid Partner'} as Record<string,string>)[v]||v?.replaceAll('_',' ')||'Partner';
+const specialismLabel=(v:string)=>({b2b_advisor:'B2B Advisor',lead_closer:'Lead Closer',candidate_sourcer:'Recruiter',hybrid:'Hybrid Partner'} as Record<string,string>)[v]||v?.replaceAll('_',' ')||'Partner';
 const statusTone=(v:boolean):'green'|'neutral'=>v?'green':'neutral';
 
 export default function PartnerProfile(){
