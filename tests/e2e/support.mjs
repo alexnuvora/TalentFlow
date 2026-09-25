@@ -122,7 +122,12 @@ export async function setupFixture(){
 }
 export async function cleanupFixture(fx){
   const a=fx?.admin;if(!a||!fx)return;
+  const {data:candidate}=await a.from('candidates').select('resume_path').eq('id',fx.candidateId).maybeSingle();
+  if(candidate?.resume_path)await a.storage.from('candidate-resumes').remove([candidate.resume_path]);
   await a.from('candidate_portal_tokens').delete().eq('candidate_id',fx.candidateId);
+  await a.from('activity_log').delete().eq('candidate_id',fx.candidateId);
+  await a.from('candidate_source_records').delete().eq('candidate_id',fx.candidateId);
+  await a.from('partner_tasks').delete().eq('partner_id',fx.partnerId).eq('client_id',fx.clientId);
   await a.from('client_portal_memberships').delete().eq('client_id',fx.clientId);
   await a.from('partner_outreach_enrollments').delete().eq('client_id',fx.clientId);
   await a.from('partner_outreach_templates').delete().eq('owner_partner_id',fx.partnerId).like('name','[E2E] '+RUN+'%');
