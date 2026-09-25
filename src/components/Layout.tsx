@@ -1,5 +1,5 @@
 import {NavLink,useLocation,useNavigate,Navigate} from 'react-router-dom';
-import {LayoutDashboard,BriefcaseBusiness,Building2,FileText,KanbanSquare,LogOut,Settings,Users,Zap,Receipt,CalendarDays,Megaphone,ExternalLink,CreditCard,LockKeyhole,ChartNoAxesCombined,ListTodo,UserSearch,ShieldCheck,Handshake,LifeBuoy,UserRound} from 'lucide-react';
+import {LayoutDashboard,BriefcaseBusiness,Building2,FileText,KanbanSquare,LogOut,Settings,Users,Zap,Receipt,CalendarDays,Megaphone,ExternalLink,CreditCard,LockKeyhole,ChartNoAxesCombined,ListTodo,UserSearch,ShieldCheck,Handshake,LifeBuoy,UserRound,ContactRound,BrainCircuit} from 'lucide-react';
 import {signOut} from '../lib/api';import {VorlenMark} from './VorlenBrand';
 import {useWorkspaceAccess} from '../lib/access';
 const nav=[['/dashboard','Overview',LayoutDashboard],['/dashboard/partner-management','Partners',Users],['/dashboard/ceo','CEO',ChartNoAxesCombined],['/dashboard/jobs','Jobs',BriefcaseBusiness],['/dashboard/candidates','Candidates',Users],['/dashboard/clients','Clients',Building2],['/dashboard/pipeline','Pipeline',KanbanSquare],['/dashboard/applications','Applications',FileText],['/dashboard/interviews','Interviews',CalendarDays],['/dashboard/commercial','Commercial',Receipt],['/dashboard/billing','Billing',CreditCard],['/dashboard/acquisition','Acquisition',Megaphone],['/dashboard/automations','Automations',Zap],['/dashboard/ai-governance','AI Governance',ShieldCheck]] as const;
@@ -7,9 +7,9 @@ export function Layout({children}:{children:React.ReactNode}){const navigate=use
 const partnerNav=[
  ...(!access.partnerActive?[[ '/dashboard/partner-onboarding','Onboarding',FileText] as const]:[]),
  ...(access.partnerActive?[[ '/dashboard/partner','Home',LayoutDashboard] as const]:[]),
- ...(access.partnerCanDevelopClients?[[ '/dashboard/partner/clients','My clients',Building2] as const]:[]),
+ ...(access.partnerCanDevelopClients?[[ '/dashboard/partner/clients','My clients',Building2] as const,[ '/dashboard/partner/crm','Account CRM',ContactRound] as const]:[]),
  ...((access.partnerCanCloseClients||access.partnerCanSourceCandidates)?[[ '/dashboard/partner/vacancies','Vacancies',BriefcaseBusiness] as const]:[]),
- ...(access.partnerCanSourceCandidates?[[ '/dashboard/partner/candidates','Candidates',UserSearch] as const,[ '/dashboard/partner/pipeline','Pipeline',KanbanSquare] as const]:[]),
+ ...(access.partnerCanSourceCandidates?[[ '/dashboard/partner/candidates','Candidates',UserSearch] as const,[ '/dashboard/partner/pipeline','Pipeline',KanbanSquare] as const,[ '/dashboard/partner/talent','Talent tools',BrainCircuit] as const]:[]),
  ...(access.partnerActive?[[ '/dashboard/partner/tasks','Tasks',ListTodo] as const]:[]),
  ...(access.partnerCanCloseClients?[[ '/dashboard/partner/handoffs','Commercial handoffs',Handshake] as const]:[]),
  ...(access.partnerActive?[[ '/dashboard/partner/earnings','Placements & earnings',Receipt] as const]:[]),
