@@ -12,7 +12,7 @@ export default function PartnerCRM(){
  const[tab,setTab]=useState<'contacts'|'timeline'|'opportunities'|'sequences'>('contacts');
  const[comm,setComm]=useState({event_type:'call',channel:'phone',direction:'outbound',contact_id:'',subject:'',summary:''});
  const[opp,setOpp]=useState({name:'',stage:'identified',contact_id:'',expected_fee:'',probability:'10',next_action:'',next_action_at:''});
- const[templateName,setTemplateName]=useState('5-touch employer follow-up'),[templateDescription,setTemplateDescription]=useState('A respectful multi-channel follow-up sequence that stops when the client replies.');
+ const[templateName,setTemplateName]=useState('5-touch employer follow-up'),[templateDescription,setTemplateDescription]=useState('A respectful multi-channel follow-up sequence that stops when the client replies.'),[copilotQ,setCopilotQ]=useState('What should I do next on this account?'),[copilot,setCopilot]=useState<any>(null),[calls,setCalls]=useState<any[]>([]),[callNotes,setCallNotes]=useState<Record<string,any>>({});
  const[steps,setSteps]=useState<any[]>([
    {channel:'call',delay_hours:0,title:'Initial call',instructions:'Confirm the recruitment decision-maker and live hiring need.',priority:'high'},
    {channel:'email',delay_hours:24,title:'Follow-up email',instructions:'Send a concise follow-up based on the conversation.',priority:'normal'},
@@ -32,12 +32,12 @@ export default function PartnerCRM(){
    setLoading(false);
  }
  async function loadClient(id=selected){
-   if(!id){setSnap(null);return}
+   if(!id){setSnap(null);setCalls([]);return}
    setBusy('load');setError('');
-   const{data,error}=await supabase.rpc('partner_crm_snapshot',{p_client:id});
+   const[{data,error},{data:callRows,error:callError}]=await Promise.all([supabase.rpc('partner_crm_snapshot',{p_client:id}),supabase.rpc('partner_call_transcripts',{p_client:id})]);
    setBusy('');
-   if(error){setError(error.message);return}
-   setSnap(data);
+   if(error||callError){setError(error?.message||callError?.message||'Unable to load account');return}
+   setSnap(data);setCalls(callRows||[]);
  }
  useEffect(()=>{void loadBase()},[]);
  useEffect(()=>{if(selected)void loadClient(selected)},[selected]);
@@ -87,6 +87,8 @@ export default function PartnerCRM(){
    const{error}=await supabase.rpc('partner_enroll_outreach_sequence',{p_template:template.id,p_client:selected,p_contact:contactId});
    setBusy('');if(error)return setError(error.message);toast('Sequence started. Steps were added to your Tasks and will stop if an inbound reply is logged.');await loadClient();
  }
+ async function askCopilot(){if(!selected||!copilotQ.trim())return;setBusy('copilot');setError('');const{data,error}=await supabase.functions.invoke('partner-ai-tools',{body:{action:'copilot',client_id:selected,question:copilotQ.trim()}});setBusy('');if(error||data?.error)return setError(data?.error||error?.message||'AI copilot failed');setCopilot(data)}
+ async function summariseCall(id:string){setBusy('call-notes');setError('');const{data,error}=await supabase.functions.invoke('partner-ai-tools',{body:{action:'summarize_transcript',transcript_id:id}});setBusy('');if(error||data?.error)return setError(data?.error||error?.message||'AI call notes failed');setCallNotes(v=>({...v,[id]:data}))}
  if(loading)return <div className="page"><SkeletonRows rows={6}/></div>;
  return <div className="page partner-page">
   {error&&<div className="notice error">{error}</div>}
@@ -97,6 +99,7 @@ export default function PartnerCRM(){
    <div><span>Weighted pipeline</span><strong>{money(analytics.weighted_pipeline)}</strong><small>Evidence-based expected value</small></div>
    <div><span>Recruiting output</span><strong>{analytics.candidate_recommendations||0}</strong><small>{analytics.interviews||0} interviews · {analytics.placements||0} placements</small></div>
   </div>}
+  <div className="grid two"><Card><div className="card-head"><div><h3>AI account copilot</h3><p>Ask about the live assigned account. Answers use current Vorlen data and keep commercial authority with management.</p></div></div><label>Question<input value={copilotQ} onChange={e=>setCopilotQ(e.target.value)}/></label><Button disabled={!selected||busy==='copilot'} onClick={askCopilot}>Ask copilot</Button>{copilot&&<div className="review-box"><strong>{copilot.answer}</strong>{copilot.next_actions?.length>0&&<><span>Next actions</span><ul>{copilot.next_actions.map((x:string)=><li key={x}>{x}</li>)}</ul></>}{copilot.risks_or_missing_info?.length>0&&<><span>Missing / risks</span><ul>{copilot.risks_or_missing_info.map((x:string)=><li key={x}>{x}</li>)}</ul></>}</div>}</Card><Card><div className="card-head"><div><h3>AI call / meeting notes</h3><p>Turn saved call transcripts into factual notes and next actions.</p></div></div>{calls.slice(0,5).map((c:any)=><div className="list-row" key={c.id}><div><strong>{fmt(c.ended_at||c.started_at)}</strong><span>{c.summary||'Saved call transcript'}</span>{callNotes[c.id]&&<div className="review-box"><span>{callNotes[c.id].summary}</span>{callNotes[c.id].next_actions?.length>0&&<small>Next: {callNotes[c.id].next_actions.join(' · ')}</small>}</div>}</div><Button variant="ghost" disabled={busy==='call-notes'} onClick={()=>summariseCall(c.id)}>AI notes</Button></div>)}{!calls.length&&<p className="muted">No saved call transcripts for this account yet.</p>}</Card></div>
   <Card><label>Account<select value={selected} onChange={e=>setSelected(e.target.value)}><option value="">Select account…</option>{clients.map(c=><option key={c.id} value={c.id}>{c.company_name}</option>)}</select></label>{client&&<div className="account-strip"><strong>{client.company_name}</strong><span>{client.contact_name||'No named contact'}{client.email?' · '+client.email:''}</span><span>{client.status}</span></div>}</Card>
   {!selected?<Card><p className="muted">No assigned client account is available.</p></Card>:busy==='load'&&!snap?<SkeletonRows rows={4}/>:<>
    <div className="tabs partner-crm-tabs">
