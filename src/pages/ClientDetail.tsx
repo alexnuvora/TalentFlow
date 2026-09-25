@@ -29,7 +29,7 @@ export default function ClientDetail(){
  return <div className="page client-detail-page">
   <div className="client-detail-back"><Link className="text-link" to="/dashboard/clients"><ArrowLeft size={14}/> Back to clients</Link></div>
   <div className="page-actions client-detail-head"><div><div className="eyebrow">CLIENT WORKSPACE</div><h2>{client.company_name}</h2><p>{client.contact_name}{client.email?' · '+client.email:''}</p></div><div className="button-row">
-   <Button variant="ghost" disabled={busy==='terms'} onClick={sendTerms}><Send size={14}/> Send TOB</Button>
+   {!client.terms_accepted_at&&<Button variant="ghost" disabled={busy==='terms'} onClick={sendTerms}><Send size={14}/> Send TOB</Button>}
    <Button variant="ghost" disabled={busy==='invite'} onClick={invite}><UserPlus size={14}/> Invite</Button>
    {!client.terms_accepted_at&&<Button variant="ghost" disabled={busy==='partner-terms'} onClick={authorisePartnerTerms}><ShieldCheck size={14}/>{client.partner_terms_send_authorized_at?' Revoke partner TOB':' Authorise partner TOB'}</Button>}
    <Button variant="ghost" onClick={openEdit}><Pencil size={14}/> Edit</Button>
