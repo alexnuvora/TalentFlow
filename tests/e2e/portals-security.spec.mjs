@@ -91,13 +91,20 @@ test.describe.serial('Vorlen portals, interviews and permission E2E',()=>{
     const row=page.locator('tr',{hasText:'[E2E] '+RUN+' Candidate'}).first();
     await expect(row).toBeVisible();
 
-    page.once('dialog',d=>d.accept(new Date(Date.now()+4*86400000).toISOString().slice(0,16)));
-    page.once('dialog',d=>d.accept('30'));
-    page.once('dialog',d=>d.accept('https://example.invalid/e2e-meeting'));
+    const rescheduleAnswers=[
+      new Date(Date.now()+4*86400000).toISOString().slice(0,16),
+      '30',
+      'https://example.invalid/e2e-meeting'
+    ];
+    const rescheduleDialog=async d=>{await d.accept(rescheduleAnswers.shift()??'')};
+    page.on('dialog',rescheduleDialog);
     await row.getByRole('button',{name:'Reschedule'}).click();
+    page.off('dialog',rescheduleDialog);
 
-    page.once('dialog',d=>d.accept('Cancelled by production E2E'));
+    const cancelDialog=async d=>{if(d.type()==='confirm')await d.accept();else await d.accept('Cancelled by production E2E')};
+    page.on('dialog',cancelDialog);
     await row.getByRole('button',{name:'Cancel'}).click();
+    page.off('dialog',cancelDialog);
     await expect(row.getByText('cancelled')).toBeVisible();
 
     await page.context().clearCookies();
@@ -127,16 +134,18 @@ test.describe.serial('Vorlen portals, interviews and permission E2E',()=>{
     }).select('id').single(); if(oca)throw oca;
 
     try{
-      const partnerPage=await browser.newPage();
+      const partnerContext=await browser.newContext();
+      const partnerPage=await partnerContext.newPage();
       await login(partnerPage,PARTNER_EMAIL,PARTNER_PASSWORD);
       await partnerPage.goto(BASE+'/dashboard/settings');
       await expect(partnerPage).toHaveURL(/\/dashboard\/partner/);
       await partnerPage.goto(BASE+'/dashboard/partner/talent');
       await expect(partnerPage.getByLabel('Assigned vacancy')).not.toContainText('UNASSIGNED JOB');
       await expect(partnerPage.getByLabel('Assigned candidate')).not.toContainText('UNASSIGNED CANDIDATE');
-      await partnerPage.close();
+      await partnerContext.close();
 
-      const clientPage=await browser.newPage();
+      const clientContext=await browser.newContext();
+      const clientPage=await clientContext.newPage();
       await login(clientPage,fx.client.email,fx.client.password);
       await clientPage.goto(BASE+'/dashboard/partner-management');
       await expect(clientPage).toHaveURL(/\/client$/);
@@ -144,7 +153,7 @@ test.describe.serial('Vorlen portals, interviews and permission E2E',()=>{
       const body=(await clientPage.locator('body').innerText()).toLowerCase();
       expect(body).not.toContain('resume_path');
       expect(body).not.toContain('source / authorisation evidence');
-      await clientPage.close();
+      await clientContext.close();
     } finally {
       await fx.admin.from('candidates').delete().eq('id',otherCandidate.id);
       await fx.admin.from('jobs').delete().eq('id',otherJob.id);
