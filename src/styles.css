@@ -491,3 +491,6 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 @media(max-width:1100px){.partner-profile-stats{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:800px){.partner-page .profile-hero{align-items:flex-start}.partner-profile-stats{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.partner-page .profile-hero{flex-direction:column}.partner-profile-stats{grid-template-columns:1fr}}
+
+/* Candidate AI screening history */
+.screening-results-stack{display:grid;gap:12px;margin-top:14px}.screening-results-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.screening-results-stack .screening-placeholder{margin:0}.screening-results-stack .card-head{margin-bottom:10px}.screening-results-stack .card-head>div:first-child{display:grid;gap:3px}.screening-date{font-size:11px;color:#748681;font-weight:500}.screening-results-stack ul{margin:7px 0 12px;padding-left:20px}.screening-results-stack li{margin:4px 0;color:#536861;font-size:13px;line-height:1.45}@media(max-width:640px){.screening-results-stack .card-head{flex-direction:column;align-items:flex-start}.screening-results-stack .button-row{width:auto}.screening-results-stack .button-row .badge{flex:none}}
