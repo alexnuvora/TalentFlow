@@ -70,3 +70,6 @@ test('candidate privacy and marketing preference reflect live processing',()=>{c
 test('production legal identity and transport security are explicit',()=>{const landing=read('src/pages/Landing.tsx'),seo=read('src/pages/SeoLanding.tsx'),terms=read('supabase/functions/client-terms/index.ts'),vercel=read('vercel.json');for(const x of [landing,seo,terms]){assert.match(x,/17387520/);assert.match(x,/10 South Street/);assert.match(x,/England and Wales/);}assert.match(vercel,/Strict-Transport-Security/);assert.match(vercel,/max-age=31536000/);});
 
 test('live call device gateway source remains version controlled',()=>{const gateway=read('supabase/functions/vorlen-call-device/index.ts');assert.match(gateway,/x-device-code/);assert.match(gateway,/claim_gateway_call|dispatch_next_ai_dialer_call/);});
+
+
+test('candidate automations use the verified production sender and opt-out footer',()=>{const ui=read('src/pages/Automations.tsx'),worker=read('supabase/functions/process-automation-queue/index.ts');assert.match(ui,/contact@vorlen\.co\.uk/);assert.match(ui,/verified production sender/);assert.match(worker,/contact@vorlen\.co\.uk/);assert.match(worker,/reply “unsubscribe”/);assert.match(worker,/10 South Street/);assert.doesNotMatch(worker,/onboarding@resend\.dev/);});
