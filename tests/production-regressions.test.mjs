@@ -50,3 +50,6 @@ test('partner integration requests have a complete manager review and configurat
 
 
 test('AI governance approval matches the runtime gate',()=>{const ui=read('src/pages/AiGovernance.tsx'),migration=read('supabase/migrations/20260925172500_harden_ai_governance_runtime_gate.sql');assert.match(ui,/Approved · runtime blocked/);assert.match(ui,/Solely automated significant decisions enabled/);assert.match(migration,/solely_automated_significant_decisions=false/);assert.match(migration,/not human_review_required/);assert.match(migration,/solely_automated_significant_decisions/);});
+
+
+test('job start dates never send empty strings to the date column',()=>{const jobs=read('src/pages/Jobs.tsx');assert.match(jobs,/start_date:String\(form\.start_date\|\|'\'\)\.trim\(\)\|\|null/);assert.match(jobs,/Start date: .*Not specified/);});
