@@ -122,6 +122,7 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
  if(access.role!=='partner')return <div className="page"><div className="notice">Partner workspace access required.</div></div>;
  if(!active)return <div className="page"><Card><h2>Partner activation required</h2><p>Your operational workspace unlocks after agreement acceptance and Vorlen approval.</p></Card></div>;
 
+ if(section==='vacancies'&&!access.partnerCanCloseClients&&!access.partnerCanSourceCandidates)return <div className="page"><Card><h2>Vacancy workspace not enabled</h2><p>B2B Advisors qualify employer opportunities and hand them to a Lead Closer. Vacancy delivery is enabled for Lead Closers, Recruiters and Hybrid Partners.</p></Card></div>;
  if(section==='vacancies')return <div className="page partner-page">
   <div className="page-actions"><div><div className="eyebrow">MY VACANCIES</div><h2>Vacancy workspace</h2><p>Work only the genuine vacancies assigned to you by Vorlen.{access.partnerCanCloseClients?' New commercially qualified opportunities can be submitted for Vorlen review.':''}</p></div>{access.partnerCanCloseClients&&<Button onClick={()=>location.assign('/dashboard/partner/handoffs?new=1')}><Plus size={15}/> Submit hiring opportunity</Button>}</div>
   {error&&<div className="notice error">{error}</div>}
