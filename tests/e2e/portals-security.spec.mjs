@@ -77,11 +77,8 @@ test.describe.serial('Vorlen portals, interviews and permission E2E',()=>{
 
     const future=new Date(Date.now()+3*86400000);
     const local=new Date(future.getTime()-future.getTimezoneOffset()*60000).toISOString().slice(0,16);
-    const dateInputs=page.locator('input[type="datetime-local"]');
-    await dateInputs.last().fill(local);
-    const duration=page.locator('input[type="number"]').filter({has:page.locator('')});
-    const scheduleCard=page.locator('.card',{hasText:'Interview scheduling'}).first();
-    await scheduleCard.locator('input[type="number"]').fill('45');
+    await page.getByLabel('When').fill(local);
+    await page.getByLabel('Minutes').fill('45');
     await page.getByRole('button',{name:'Schedule interview'}).click();
     await expect(page.getByText(/scheduled/).last()).toBeVisible();
 
