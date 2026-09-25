@@ -217,6 +217,18 @@ Deno.serve(async req=>{
     return json({error:'Unable to send client portal invitation.',detail:ej?.message||'Email provider rejected the request'},502);
   }
 
+  await db.from('partner_communication_events').insert({
+    company_id:me.company_id,
+    partner_id:me.role==='partner'?user.id:null,
+    client_id:c.id,
+    event_type:'portal',
+    channel:'email',
+    direction:'outbound',
+    subject:'Client portal access',
+    summary:(existingProfile?'Client portal access link sent to ':'Client portal invitation sent to ')+normalizedEmail+' ('+portalRole.replaceAll('_',' ')+').',
+    metadata:{portal_role:portalRole,email_id:ej?.id||null,invited_user_id:account?.id||null}
+  });
+
   return json({
     ok:true,
     message:existingProfile?'Client portal access link sent.':'Client portal invitation sent.',
