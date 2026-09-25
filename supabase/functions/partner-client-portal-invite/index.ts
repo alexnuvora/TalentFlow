@@ -36,6 +36,9 @@ Deno.serve(async req=>{
   const{data:me}=await db.from('profiles').select('company_id,role,client_id').eq('id',user.id).maybeSingle();
   if(!me)return json({error:'Workspace access required'},403);
   const managerAccess=['owner','manager'].includes(me.role);
+  const{data:portalEnabled,error:portalFeatureError}=await db.rpc('workspace_feature_enabled',{p_company:me.company_id,p_feature:'client_portal'});
+  if(portalFeatureError)return json({error:'Client portal entitlement could not be verified.'},503);
+  if(portalEnabled!==true)return json({error:'Client portal is not included in the current active subscription.'},402);
   const clientId=me.role==='viewer'?String(me.client_id||''):String(body.client_id||'');
   if(!clientId)return json({error:'Client id is required'},400);
   const{data:selfMembership}=me.role==='viewer'?await db.from('client_portal_memberships').select('portal_role,status').eq('user_id',user.id).eq('client_id',clientId).eq('company_id',me.company_id).maybeSingle():{data:null};
