@@ -25,7 +25,7 @@ Deno.serve(async(req)=>{
     partnerSend=!!pp?.active&&o?.status==='active'&&['lead_closer','hybrid'].includes(pp?.specialism||'')&&!!a;
   }
   if(!['owner','manager'].includes(p.role)&&!partnerSend)return json({error:'Only an assigned Lead Closer or Hybrid Partner may send manager-authorised client terms.'},403);
-  const{data:c}=await db.from('clients').select('*').eq('id',body.client_id).eq('company_id',p.company_id).maybeSingle();if(!c)return json({error:'Client not found'},404);if(!c.email||!c.contact_name||!c.business_nature||!c.recruitment_fee_percent||!c.payment_terms_days||!c.rebate_terms)return json({error:'Complete the client contact, business nature, fee, payment and rebate/replacement terms before sending.'},400);
+  const{data:c}=await db.from('clients').select('*').eq('id',body.client_id).eq('company_id',p.company_id).maybeSingle();if(!c)return json({error:'Client not found'},404);if(c.terms_accepted_at)return json({error:'The client has already accepted the current Terms of Business. Clear/supersede the acceptance and prepare revised terms before sending another version.'},409);if(!c.email||!c.contact_name||!c.business_nature||!c.recruitment_fee_percent||!c.payment_terms_days||!c.rebate_terms)return json({error:'Complete the client contact, business nature, fee, payment and rebate/replacement terms before sending.'},400);
   if(partnerSend){
     const{data:allowed,error:allowError}=await userClient.rpc('partner_terms_send_allowed',{p_client:c.id});
     if(allowError||allowed!==true)return json({error:'Vorlen management must authorise the current commercial terms before a partner can send them.'},403);
