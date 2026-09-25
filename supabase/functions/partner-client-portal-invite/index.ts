@@ -36,7 +36,8 @@ Deno.serve(async req=>{
   if(!clientId)return json({error:'Client id is required'},400);
 
   const{data:me}=await db.from('profiles').select('company_id,role').eq('id',user.id).maybeSingle();
-  if(!me||me.role!=='partner')return json({error:'Partner access required'},403);
+  if(!me)return json({error:'Workspace access required'},403);
+  const managerAccess=['owner','manager'].includes(me.role);
 
   const [{data:pp},{data:o},{data:a},{data:c}]=await Promise.all([
    db.from('partner_profiles').select('specialism,active').eq('user_id',user.id).eq('company_id',me.company_id).maybeSingle(),
@@ -45,8 +46,9 @@ Deno.serve(async req=>{
    db.from('clients').select('id,company_name,contact_name,email,status,terms_accepted_at').eq('id',clientId).eq('company_id',me.company_id).maybeSingle()
   ]);
 
-  if(!pp?.active||o?.status!=='active'||!['lead_closer','hybrid'].includes(pp?.specialism||'')||!a){
-    return json({error:'Assigned Lead Closer or Hybrid Partner access required'},403);
+  const partnerAccess=me.role==='partner'&&!!pp?.active&&o?.status==='active'&&['lead_closer','hybrid'].includes(pp?.specialism||'')&&!!a;
+  if(!managerAccess&&!partnerAccess){
+    return json({error:'Owner, manager, or assigned Lead Closer/Hybrid Partner access required'},403);
   }
   if(!c)return json({error:'Client not found'},404);
   if(!c.terms_accepted_at||c.status!=='active')return json({error:'Client portal access can be invited after the client has accepted Terms of Business and is active.'},409);
