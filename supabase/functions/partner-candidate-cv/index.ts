@@ -23,7 +23,7 @@ Deno.serve(async req=>{
     const[{data:pp},{data:onboarding},{data:processing}]=await Promise.all([
       db.from('partner_profiles').select('specialism,active').eq('user_id',user.id).eq('company_id',profile.company_id).maybeSingle(),
       db.from('partner_onboarding').select('status').eq('partner_id',user.id).eq('company_id',profile.company_id).maybeSingle(),
-      db.rpc('candidate_processing_allowed',{p_company:profile.company_id})
+      db.rpc('candidate_processing_allowed',{p_company_id:profile.company_id})
     ]);
     if(!pp?.active||onboarding?.status!=='active'||!['candidate_sourcer','hybrid'].includes(pp.specialism||''))return json({error:'Recruiter or Hybrid Partner access required'},403);
     if(processing!==true)return json({error:'Candidate processing is not active'},409);
