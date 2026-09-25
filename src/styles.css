@@ -497,3 +497,21 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 
 /* Partner operating model v2 */
 .partner-client-status{margin:14px 0}.partner-client-status .card h3{margin:4px 0 5px}.partner-contact-editor{margin-top:14px;padding-top:14px;border-top:1px solid #e3e9e7}.partner-contact-editor .check{align-self:end}.partner-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.partner-kpi-grid>div{padding:14px;border:1px solid #e0e8e5;border-radius:11px;background:#f8fbfa;display:grid;gap:4px}.partner-kpi-grid span{font-size:11px;color:#687b76;font-weight:700}.partner-kpi-grid strong{font-size:24px;color:#17302b}.partner-kpi-grid small{font-size:10px;color:#82928d}.partner-page .grid.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:14px}.partner-page .form-grid input,.partner-page .form-grid select{min-width:0}@media(max-width:1050px){.partner-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.partner-page .grid.three{grid-template-columns:1fr}}@media(max-width:640px){.partner-kpi-grid{grid-template-columns:1fr}}
+
+/* Partner customer-first UX */
+.partner-client-head{align-items:center}
+.partner-next-action{display:flex;align-items:center;justify-content:space-between;gap:22px;padding:20px 22px;border-left:4px solid #08795e!important;background:#f5fbf8}
+.partner-next-action h3{margin:5px 0 6px}
+.partner-next-action p{margin:0;max-width:760px;color:#5e726b}
+.partner-workflow-tools{background:#fafcfb}
+.partner-empty-state{padding:26px;text-align:left}
+.partner-empty-state h3{margin:4px 0 7px}
+.partner-empty-state p{max-width:760px}
+.partner-handoff-row small{color:#7a8b85}
+.partner-page details{border-top:1px solid #e7ecea;padding-top:10px}
+.partner-page details>summary{padding:7px 0}
+@media(max-width:760px){
+ .partner-next-action{align-items:flex-start;flex-direction:column}
+ .partner-next-action .button-row{width:100%}
+ .partner-client-head{align-items:flex-start;flex-direction:column}
+}
