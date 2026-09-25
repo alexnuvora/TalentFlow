@@ -98,6 +98,7 @@ Deno.serve(async req=>{
 
   if(existing){
     if(!existingProfile){
+      if(!managerAccess)return json({error:'This email already has an account that is not attached to this client workspace. Ask Vorlen management to review it.'},409);
       const{error:pe}=await db.from('profiles').insert({
         id:existing.id,
         company_id:me.company_id,
