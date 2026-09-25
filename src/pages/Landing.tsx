@@ -186,7 +186,7 @@ export default function Landing(){
       <div><strong>Employers</strong><Link to="/employers">For employers</Link><Link to="/services/permanent-recruitment">Permanent recruitment</Link><Link to="/services/candidate-sourcing">Candidate sourcing</Link><Link to="/services/recruitment-for-smes">Recruitment for SMEs</Link></div>
       <div><strong>Candidates</strong><Link to="/candidates">For candidates</Link><Link to="/careers">Open opportunities</Link><Link to="/candidate-terms">Candidate terms</Link></div>
       <div><strong>Vorlen</strong><Link to="/partners">Partner network</Link><Link to="/locations/manchester">Manchester</Link><Link to="/locations/greater-manchester">Greater Manchester</Link><Link to="/contact">Contact</Link></div>
-      <div className="vp-footer-base"><span>© {new Date().getFullYear()} Vorlen</span><span>VORLEN T/A IVY AND PEARLS LTD · Company No. 17387520</span></div>
+      <div className="vp-footer-base"><span>© {new Date().getFullYear()} Vorlen</span><span>Ivy and Pearls Ltd trading as Vorlen · Company No. 17387520 · Registered in England and Wales · Registered office: 10 South Street, Rochdale, United Kingdom, OL16 2EP</span></div>
     </footer>
   </div>
 }
