@@ -32,12 +32,14 @@ Deno.serve(async req=>{
 
   const db=createClient(url,service);
   const body=await req.json();
-  const clientId=String(body.client_id||'');
-  if(!clientId)return json({error:'Client id is required'},400);
 
-  const{data:me}=await db.from('profiles').select('company_id,role').eq('id',user.id).maybeSingle();
+  const{data:me}=await db.from('profiles').select('company_id,role,client_id').eq('id',user.id).maybeSingle();
   if(!me)return json({error:'Workspace access required'},403);
   const managerAccess=['owner','manager'].includes(me.role);
+  const clientId=me.role==='viewer'?String(me.client_id||''):String(body.client_id||'');
+  if(!clientId)return json({error:'Client id is required'},400);
+  const{data:selfMembership}=me.role==='viewer'?await db.from('client_portal_memberships').select('portal_role,status').eq('user_id',user.id).eq('client_id',clientId).eq('company_id',me.company_id).maybeSingle():{data:null};
+  const clientAdminAccess=me.role==='viewer'&&selfMembership?.status==='active'&&selfMembership?.portal_role==='admin';
 
   const [{data:pp},{data:o},{data:a},{data:c}]=await Promise.all([
    db.from('partner_profiles').select('specialism,active').eq('user_id',user.id).eq('company_id',me.company_id).maybeSingle(),
@@ -47,19 +49,24 @@ Deno.serve(async req=>{
   ]);
 
   const partnerAccess=me.role==='partner'&&!!pp?.active&&o?.status==='active'&&['lead_closer','hybrid'].includes(pp?.specialism||'')&&!!a;
-  if(!managerAccess&&!partnerAccess){
-    return json({error:'Owner, manager, or assigned Lead Closer/Hybrid Partner access required'},403);
+  if(!managerAccess&&!partnerAccess&&!clientAdminAccess){
+    return json({error:'Owner, manager, assigned Lead Closer/Hybrid Partner, or client admin access required'},403);
   }
   if(!c)return json({error:'Client not found'},404);
   if(!c.terms_accepted_at||c.status!=='active')return json({error:'Client portal access can be invited after the client has accepted Terms of Business and is active.'},409);
   if(!c.email)return json({error:'Client email is required'},400);
 
   const requestedRole=String(body.portal_role||'hiring_manager');
-  const portalRole=managerAccess&&['admin','hiring_manager','reviewer','read_only'].includes(requestedRole)?requestedRole:'hiring_manager';
+  const canChoosePortalRole=managerAccess||clientAdminAccess;
+  const portalRole=canChoosePortalRole&&['admin','hiring_manager','reviewer','read_only'].includes(requestedRole)?requestedRole:'hiring_manager';
   let inviteName=String(c.contact_name||c.company_name);
   let normalizedEmail=String(c.email).trim().toLowerCase();
 
-  if(managerAccess&&body.contact_id){
+  if(clientAdminAccess){
+    inviteName=String(body.full_name||'').trim();
+    normalizedEmail=String(body.email||'').trim().toLowerCase();
+    if(inviteName.length<2||inviteName.length>200)return json({error:'Client member name is required.'},400);
+  }else if(managerAccess&&body.contact_id){
     const{data:contact}=await db.from('client_recruitment_contacts')
       .select('name,email')
       .eq('id',String(body.contact_id))
