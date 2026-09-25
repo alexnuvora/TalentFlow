@@ -82,7 +82,22 @@ test.describe.serial('Vorlen partner and manager production E2E',()=>{
     await expect(page.getByText(/Match \d+\/100/).first()).toBeVisible();
 
     const pdf=testInfo.outputPath('candidate.pdf');
-    fs.writeFileSync(pdf,'%PDF-1.4\n% E2E CV '+RUN+'\n%%EOF');
+    const text='Vorlen E2E Candidate Manchester software recruitment experience '+RUN;
+    const objects=[
+      '<< /Type /Catalog /Pages 2 0 R >>',
+      '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+      '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>',
+      '<< /Length '+(33+text.length)+' >>\\nstream\\nBT /F1 12 Tf 72 720 Td ('+text.replace(/[()\\\\]/g,'\\\\    const pdf=testInfo.outputPath('candidate.pdf');
+    fs.writeFileSync(pdf,'%PDF-1.4\n% E2E CV '+RUN+'\n%%EOF');')+') Tj ET\\nendstream',
+      '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'
+    ];
+    let body='%PDF-1.4\\n',offsets=[0];
+    for(let i=0;i<objects.length;i++){offsets.push(Buffer.byteLength(body));body+=(i+1)+' 0 obj\\n'+objects[i]+'\\nendobj\\n'}
+    const xref=Buffer.byteLength(body);
+    body+='xref\\n0 '+(objects.length+1)+'\\n0000000000 65535 f \\n';
+    for(let i=1;i<offsets.length;i++)body+=String(offsets[i]).padStart(10,'0')+' 00000 n \\n';
+    body+='trailer\\n<< /Size '+(objects.length+1)+' /Root 1 0 R >>\\nstartxref\\n'+xref+'\\n%%EOF\\n';
+    fs.writeFileSync(pdf,body);
     await page.getByLabel('Candidate-provided CV').setInputFiles(pdf);
     await page.getByLabel('Source / authorisation evidence').fill('Candidate fixture authorised for '+RUN+' production E2E testing.');
     await page.getByRole('button',{name:'Upload CV securely'}).click();
