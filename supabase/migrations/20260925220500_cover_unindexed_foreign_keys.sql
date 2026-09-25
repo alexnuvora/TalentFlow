@@ -1,0 +1,13 @@
+create index if not exists idx_fk_candidate_assessment_results_candidate_id on public.candidate_assessment_results(candidate_id);
+create index if not exists idx_fk_candidate_assessment_results_reviewed_by on public.candidate_assessment_results(reviewed_by);
+create index if not exists idx_fk_candidate_assessment_templates_company_id on public.candidate_assessment_templates(company_id);
+create index if not exists idx_fk_candidate_assessment_templates_created_by on public.candidate_assessment_templates(created_by);
+create index if not exists idx_fk_client_vacancy_requests_client_id on public.client_vacancy_requests(client_id);
+create index if not exists idx_fk_frozen_email_attempts_company_id on public.frozen_email_attempts(company_id);
+create index if not exists idx_fk_frozen_email_attempts_submission_id on public.frozen_email_attempts(submission_id);
+create index if not exists idx_fk_job_distribution_requests_job_id on public.job_distribution_requests(job_id);
+create index if not exists idx_fk_partner_integration_requests_job_id on public.partner_integration_requests(job_id);
+create index if not exists idx_fk_partner_integration_requests_reviewed_by on public.partner_integration_requests(reviewed_by);
+create index if not exists idx_fk_partner_opportunities_client_id on public.partner_opportunities(client_id);
+create index if not exists idx_fk_partner_outreach_enrollments_partner_id on public.partner_outreach_enrollments(partner_id);
+create index if not exists idx_fk_partner_outreach_templates_owner_partner_id on public.partner_outreach_templates(owner_partner_id);
