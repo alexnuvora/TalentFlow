@@ -27,9 +27,8 @@ Deno.serve(async(req)=>{
   if(!['owner','manager'].includes(p.role)&&!partnerSend)return json({error:'Only an assigned Lead Closer or Hybrid Partner may send manager-authorised client terms.'},403);
   const{data:c}=await db.from('clients').select('*').eq('id',body.client_id).eq('company_id',p.company_id).maybeSingle();if(!c)return json({error:'Client not found'},404);if(!c.email||!c.contact_name||!c.business_nature||!c.recruitment_fee_percent||!c.payment_terms_days||!c.rebate_terms)return json({error:'Complete the client contact, business nature, fee, payment and rebate/replacement terms before sending.'},400);
   if(partnerSend){
-    if(c.terms_accepted_at)return json({error:'The client has already accepted the current Terms of Business.'},409);
-    const currentHash=await sha([c.business_nature||'',String(c.recruitment_fee_percent??''),String(c.payment_terms_days??''),c.rebate_terms||''].join('|'));
-    if(!c.partner_terms_send_authorized_at||!c.partner_terms_send_authorized_hash||c.partner_terms_send_authorized_hash!==currentHash)return json({error:'Vorlen management must authorise the current commercial terms before a partner can send them.'},403);
+    const{data:allowed,error:allowError}=await userClient.rpc('partner_terms_send_allowed',{p_client:c.id});
+    if(allowError||allowed!==true)return json({error:'Vorlen management must authorise the current commercial terms before a partner can send them.'},403);
   }
   const{data:company}=await db.from('companies').select('name,legal_name,company_registration_number,privacy_email,billing_email,trading_name').eq('id',p.company_id).single();const version='client-tob-2026-09-21';const text=terms(c,company,version);const hash=await sha(text);const raw=crypto.randomUUID()+crypto.randomUUID().replaceAll('-','');const th=await sha(raw),expires=new Date(Date.now()+7*864e5).toISOString();
   await db.from('client_terms_documents').update({status:'superseded',updated_at:new Date().toISOString()}).eq('client_id',c.id).in('status',['draft','sent','viewed']);
