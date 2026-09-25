@@ -54,7 +54,25 @@ Deno.serve(async req=>{
   if(!c.terms_accepted_at||c.status!=='active')return json({error:'Client portal access can be invited after the client has accepted Terms of Business and is active.'},409);
   if(!c.email)return json({error:'Client email is required'},400);
 
-  const normalizedEmail=String(c.email).trim().toLowerCase();
+  const requestedRole=String(body.portal_role||'hiring_manager');
+  const portalRole=managerAccess&&['admin','hiring_manager','reviewer','read_only'].includes(requestedRole)?requestedRole:'hiring_manager';
+  let inviteName=String(c.contact_name||c.company_name);
+  let normalizedEmail=String(c.email).trim().toLowerCase();
+
+  if(managerAccess&&body.contact_id){
+    const{data:contact}=await db.from('client_recruitment_contacts')
+      .select('name,email')
+      .eq('id',String(body.contact_id))
+      .eq('client_id',c.id)
+      .eq('company_id',me.company_id)
+      .maybeSingle();
+    if(!contact?.email)return json({error:'Selected client contact does not have an email address.'},400);
+    normalizedEmail=String(contact.email).trim().toLowerCase();
+    inviteName=String(contact.name||c.company_name);
+  }
+
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail))return json({error:'Client contact email is invalid.'},400);
+
   const existing=await findAuthUserByEmail(db,normalizedEmail);
   const existingProfile=existing?(await db.from('profiles').select('id,company_id,role,client_id').eq('id',existing.id).maybeSingle()).data:null;
 
@@ -76,7 +94,7 @@ Deno.serve(async req=>{
       const{error:pe}=await db.from('profiles').insert({
         id:existing.id,
         company_id:me.company_id,
-        full_name:c.contact_name||c.company_name,
+        full_name:inviteName,
         role:'viewer',
         client_id:c.id
       });
@@ -98,7 +116,7 @@ Deno.serve(async req=>{
     const{data,error}=await db.auth.admin.generateLink({
       type:'invite',
       email:normalizedEmail,
-      options:{redirectTo:base+'/reset-password',data:{full_name:c.contact_name||c.company_name,invited_role:'viewer'}}
+      options:{redirectTo:base+'/reset-password',data:{full_name:inviteName,invited_role:'viewer'}}
     });
     if(error||!data?.user||!data?.properties)return json({error:error?.message||'Could not generate client invitation.'},400);
     account=data.user;
@@ -109,7 +127,7 @@ Deno.serve(async req=>{
     const{error:pe}=await db.from('profiles').insert({
       id:account.id,
       company_id:me.company_id,
-      full_name:c.contact_name||c.company_name,
+      full_name:inviteName,
       role:'viewer',
       client_id:c.id
     });
@@ -120,8 +138,35 @@ Deno.serve(async req=>{
     createdProfile=true;
   }
 
+  const{data:existingMembership}=await db.from('client_portal_memberships')
+    .select('id,portal_role,status')
+    .eq('user_id',account.id)
+    .maybeSingle();
+
+  const{error:membershipError}=await db.from('client_portal_memberships').upsert({
+    company_id:me.company_id,
+    client_id:c.id,
+    user_id:account.id,
+    email:normalizedEmail,
+    full_name:inviteName,
+    portal_role:portalRole,
+    status:'active',
+    created_by:user.id,
+    updated_at:new Date().toISOString()
+  },{onConflict:'user_id'});
+  if(membershipError){
+    if(createdProfile&&account?.id)await db.from('profiles').delete().eq('id',account.id);
+    if(createdAuth&&account?.id)await db.auth.admin.deleteUser(account.id);
+    return json({error:'Client portal membership could not be created.'},500);
+  }
+
   const token=rawLink.properties?.hashed_token||(()=>{try{return new URL(rawLink.properties?.action_link||'').searchParams.get('token')||''}catch{return''}})();
   if(!token){
+    if(existingMembership?.id){
+      await db.from('client_portal_memberships').update({portal_role:existingMembership.portal_role,status:existingMembership.status,updated_at:new Date().toISOString()}).eq('id',existingMembership.id);
+    }else{
+      await db.from('client_portal_memberships').delete().eq('user_id',account.id);
+    }
     if(createdProfile&&account?.id)await db.from('profiles').delete().eq('id',account.id);
     if(createdAuth&&account?.id)await db.auth.admin.deleteUser(account.id);
     return json({error:'Could not create secure client access link.'},500);
@@ -132,6 +177,11 @@ Deno.serve(async req=>{
 
   const key=Deno.env.get('RESEND_API_KEY');
   if(!key){
+    if(existingMembership?.id){
+      await db.from('client_portal_memberships').update({portal_role:existingMembership.portal_role,status:existingMembership.status,updated_at:new Date().toISOString()}).eq('id',existingMembership.id);
+    }else{
+      await db.from('client_portal_memberships').delete().eq('user_id',account.id);
+    }
     if(createdProfile&&account?.id)await db.from('profiles').delete().eq('id',account.id);
     if(createdAuth&&account?.id)await db.auth.admin.deleteUser(account.id);
     return json({error:'Client invitation email is not configured.'},503);
@@ -145,11 +195,16 @@ Deno.serve(async req=>{
       to:[normalizedEmail],
       reply_to:'contact@vorlen.co.uk',
       subject:'Your Vorlen client workspace',
-      html:shell(c.contact_name||c.company_name,link)
+      html:shell(inviteName,link)
     })
   });
   const ej=await er.json().catch(()=>({}));
   if(!er.ok){
+    if(existingMembership?.id){
+      await db.from('client_portal_memberships').update({portal_role:existingMembership.portal_role,status:existingMembership.status,updated_at:new Date().toISOString()}).eq('id',existingMembership.id);
+    }else{
+      await db.from('client_portal_memberships').delete().eq('user_id',account.id);
+    }
     if(createdProfile&&account?.id)await db.from('profiles').delete().eq('id',account.id);
     if(createdAuth&&account?.id)await db.auth.admin.deleteUser(account.id);
     return json({error:'Unable to send client portal invitation.',detail:ej?.message||'Email provider rejected the request'},502);
@@ -158,6 +213,7 @@ Deno.serve(async req=>{
   return json({
     ok:true,
     message:existingProfile?'Client portal access link sent.':'Client portal invitation sent.',
+    portal_role:portalRole,
     email_id:ej?.id||null
   });
  }catch(e){
