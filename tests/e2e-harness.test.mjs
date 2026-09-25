@@ -10,7 +10,7 @@ test('production E2E remains mutation-gated and credential-safe',()=>{
   const portals=read('tests/e2e/portals-security.spec.mjs');
   assert.match(support,/VORLEN_E2E_ALLOW_MUTATIONS/);
   assert.match(support,/cleanupFixture/);
-  assert.match(partner,/official submission/i);
+  assert.match(partner,/controlled submission|candidate_submissions/i);
   assert.match(portals,/security boundaries/i);
   assert.doesNotMatch(support,/test1234567|jefferygo0o@gmail\.com/);
   assert.doesNotMatch(partner,/test1234567|jefferygo0o@gmail\.com/);
