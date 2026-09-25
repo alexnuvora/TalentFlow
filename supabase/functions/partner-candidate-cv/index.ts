@@ -54,28 +54,40 @@ Deno.serve(async req=>{
     const{error:uploadError}=await db.storage.from('candidate-resumes').upload(path,bytes,{contentType:file.type||allowedMime[0],upsert:false});
     if(uploadError)return json({error:'CV upload failed',detail:uploadError.message},500);
 
-    const{error:updateError}=await db.from('candidates').update({resume_path:path,updated_at:new Date().toISOString()}).eq('id',candidateId).eq('company_id',profile.company_id);
-    if(updateError){
-      await db.storage.from('candidate-resumes').remove([path]);
-      return json({error:'Candidate CV could not be linked',detail:updateError.message},500);
-    }
-
-    await db.from('candidate_source_records').insert({
+    const{data:sourceRow,error:sourceError}=await db.from('candidate_source_records').insert({
       company_id:profile.company_id,
       candidate_id:candidateId,
       provider:'partner_cv_upload',
       source_url:null,
-      metadata:{file_name:file.name,file_type:ext,source_evidence:sourceEvidence,previous_resume_path:candidate.resume_path||null},
+      metadata:{file_name:file.name,file_type:ext,source_evidence:sourceEvidence,previous_resume_path:candidate.resume_path||null,storage_path:path},
       imported_by:user.id
-    });
+    }).select('id').single();
+    if(sourceError||!sourceRow){
+      await db.storage.from('candidate-resumes').remove([path]);
+      return json({error:'CV provenance could not be recorded',detail:sourceError?.message||'Source record was not created'},500);
+    }
 
-    await db.from('activity_log').insert({
+    const{error:updateError}=await db.from('candidates').update({resume_path:path,updated_at:new Date().toISOString()}).eq('id',candidateId).eq('company_id',profile.company_id);
+    if(updateError){
+      await db.from('candidate_source_records').delete().eq('id',sourceRow.id);
+      await db.storage.from('candidate-resumes').remove([path]);
+      return json({error:'Candidate CV could not be linked',detail:updateError.message},500);
+    }
+
+    const{error:auditError}=await db.from('activity_log').insert({
       company_id:profile.company_id,
       candidate_id:candidateId,
       actor_id:user.id,
       event_type:'partner_cv_uploaded',
-      detail:'Partner uploaded a candidate-provided CV for controlled recruitment use.'
+      detail:'Partner uploaded a candidate-provided CV for controlled recruitment use.',
+      metadata:{candidate_source_record_id:sourceRow.id}
     });
+    if(auditError){
+      await db.from('candidates').update({resume_path:candidate.resume_path||null,updated_at:new Date().toISOString()}).eq('id',candidateId).eq('company_id',profile.company_id);
+      await db.from('candidate_source_records').delete().eq('id',sourceRow.id);
+      await db.storage.from('candidate-resumes').remove([path]);
+      return json({error:'CV upload could not be audit-logged',detail:auditError.message},500);
+    }
 
     return json({ok:true,candidate_id:candidateId,resume_path:path,file_name:file.name});
   }catch(e){
