@@ -1,0 +1,2 @@
+
+drop policy if exists client_recruitment_contacts_staff_select on public.client_recruitment_contacts;
