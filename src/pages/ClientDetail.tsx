@@ -1,5 +1,5 @@
 import {useEffect,useState} from 'react';
-import {ArrowLeft,ExternalLink,Pencil,Send,Trash2,UserPlus} from 'lucide-react';
+import {ArrowLeft,ExternalLink,Pencil,Send,Trash2,UserPlus,ShieldCheck} from 'lucide-react';
 import {Link,useNavigate,useParams} from 'react-router-dom';
 import {Badge,Button,Card,Empty,SkeletonCards,useToast} from '../components/Ui';
 import {supabase} from '../lib/supabase';
@@ -23,6 +23,7 @@ export default function ClientDetail(){
  async function remove(){if(!client||!confirm(`Delete ${client.company_name}? This cannot be undone.`))return;const{error}=await supabase.from('clients').delete().eq('id',client.id);if(error)setError(error.message);else{toast('Client deleted.');navigate('/dashboard/clients')}}
  async function sendTerms(){if(!client?.email)return setError('Add a client contact email first.');setBusy('terms');setError('');const{data,error}=await supabase.functions.invoke('client-terms',{body:{action:'send',client_id:client.id}});setBusy('');if(error||data?.error)setError(data?.error||error?.message||'Could not send Terms of Business.');else{toast('Terms of Business sent securely to the client.');load()}}
  async function invite(){if(!client?.email)return setError('Add a client contact email first.');setBusy('invite');setError('');const{data,error}=await supabase.functions.invoke('admin-user-management',{body:{action:'invite',email:client.email,full_name:client.contact_name||client.company_name,role:'viewer',client_id:client.id}});setBusy('');if(error||data?.error)return setError(data?.detail?`${data.error} ${data.detail}`:(data?.error||error?.message||'Could not send client portal invitation.'));toast(data?.message||'Client portal invitation sent.')}
+ async function authorisePartnerTerms(){setBusy('partner-terms');setError('');const enable=!client?.partner_terms_send_authorized_at;const{error}=await supabase.rpc('authorise_partner_terms_send',{p_client:client.id,p_authorised:enable});setBusy('');if(error)return setError(error.message);toast(enable?'Partner TOB send authorised for the current commercial terms.':'Partner TOB send authorisation removed.');await load()}
  if(loading)return <div className="page"><SkeletonCards count={4}/></div>;
  if(!client)return <div className="page"><Link className="text-link" to="/dashboard/clients"><ArrowLeft size={14}/> Back to clients</Link><Empty title="Client not found" text={error||'This client may have been removed.'}/></div>;
  return <div className="page client-detail-page">
@@ -30,6 +31,7 @@ export default function ClientDetail(){
   <div className="page-actions client-detail-head"><div><div className="eyebrow">CLIENT WORKSPACE</div><h2>{client.company_name}</h2><p>{client.contact_name}{client.email?' · '+client.email:''}</p></div><div className="button-row">
    <Button variant="ghost" disabled={busy==='terms'} onClick={sendTerms}><Send size={14}/> Send TOB</Button>
    <Button variant="ghost" disabled={busy==='invite'} onClick={invite}><UserPlus size={14}/> Invite</Button>
+   {!client.terms_accepted_at&&<Button variant="ghost" disabled={busy==='partner-terms'} onClick={authorisePartnerTerms}><ShieldCheck size={14}/>{client.partner_terms_send_authorized_at?' Revoke partner TOB':' Authorise partner TOB'}</Button>}
    <Button variant="ghost" onClick={openEdit}><Pencil size={14}/> Edit</Button>
    <Button variant="danger" onClick={remove}><Trash2 size={14}/> Delete</Button>
   </div></div>
@@ -51,7 +53,7 @@ export default function ClientDetail(){
     <div className="detail-list"><div><span>Business</span><strong>{client.business_nature||'Not recorded'}</strong></div><div><span>Phone</span><strong>{client.phone||'Not recorded'}</strong></div><div><span>Email</span><strong>{client.email||'Not recorded'}</strong></div><div><span>Website</span><strong>{client.website?<a href={client.website.startsWith('http')?client.website:'https://'+client.website} target="_blank" rel="noreferrer">{client.website} <ExternalLink size={12}/></a>:'Not recorded'}</strong></div><div><span>Last call outcome</span><strong>{client.last_call_outcome||'None recorded'}</strong></div><div><span>Last call note</span><strong>{client.last_call_note||'None recorded'}</strong></div></div>
    </Card>
    <Card><div className="card-head"><div><h2>Terms of Business</h2><p>Commercial and acceptance record.</p></div></div>
-    <div className="detail-list"><div><span>Terms status</span><strong>{client.terms_accepted_at?'Accepted':'Not accepted'}</strong></div><div><span>Accepted by</span><strong>{client.terms_accepted_by||'—'}</strong></div><div><span>Method</span><strong>{client.terms_acceptance_method||'—'}</strong></div><div><span>Fee</span><strong>{client.recruitment_fee_percent!=null?client.recruitment_fee_percent+'%':'—'}</strong></div><div><span>Payment terms</span><strong>{client.payment_terms_days?client.payment_terms_days+' days':'—'}</strong></div><div><span>Rebate / replacement</span><strong>{client.rebate_terms||'—'}</strong></div></div>
+    <div className="detail-list"><div><span>Terms status</span><strong>{client.terms_accepted_at?'Accepted':'Not accepted'}</strong></div><div><span>Partner TOB send</span><strong>{client.terms_accepted_at?'No longer required':client.partner_terms_send_authorized_at?'Authorised for current terms':'Not authorised'}</strong></div><div><span>Accepted by</span><strong>{client.terms_accepted_by||'—'}</strong></div><div><span>Method</span><strong>{client.terms_acceptance_method||'—'}</strong></div><div><span>Fee</span><strong>{client.recruitment_fee_percent!=null?client.recruitment_fee_percent+'%':'—'}</strong></div><div><span>Payment terms</span><strong>{client.payment_terms_days?client.payment_terms_days+' days':'—'}</strong></div><div><span>Rebate / replacement</span><strong>{client.rebate_terms||'—'}</strong></div></div>
    </Card>
   </div>
   <div className="grid two">
