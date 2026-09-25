@@ -515,3 +515,17 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
  .partner-next-action .button-row{width:100%}
  .partner-client-head{align-items:flex-start;flex-direction:column}
 }
+
+/* Partner platform V3 / portal collaboration */
+.candidate-profile-form{display:grid;gap:10px;margin:12px 0 16px}
+.candidate-profile-form label{display:grid;gap:6px;font-size:12px;font-weight:700}
+.candidate-profile-form input,.candidate-profile-form textarea{width:100%;box-sizing:border-box}
+.candidate-marketing-pref{margin:16px 0;padding:14px;border:1px solid #dfe8e4;border-radius:10px;background:#f8fbfa}
+.client-rating{display:grid;gap:8px;margin:14px 0}
+.client-rating .button-row{flex-wrap:wrap}
+.client-portal-access .detail-list select{min-width:150px}
+.client-portal-access .detail-list strong{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+@media(max-width:680px){
+ .client-portal-access .detail-list>div{align-items:flex-start;flex-direction:column}
+ .client-portal-access .detail-list strong{width:100%}
+}
