@@ -58,6 +58,7 @@ test.describe.serial('Vorlen partner and manager production E2E',()=>{
     await page.getByRole('button',{name:'Outreach sequences'}).click();
     let start=page.getByRole('button',{name:'Start'}).first();
     if(await start.count()===0){
+      await page.getByLabel('Name').fill('[E2E] '+RUN+' Sequence');
       await page.getByRole('button',{name:'Save reusable sequence'}).click();
       start=page.getByRole('button',{name:'Start'}).first();
     }
