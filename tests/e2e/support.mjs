@@ -125,6 +125,7 @@ export async function cleanupFixture(fx){
   await a.from('candidate_portal_tokens').delete().eq('candidate_id',fx.candidateId);
   await a.from('client_portal_memberships').delete().eq('client_id',fx.clientId);
   await a.from('partner_outreach_enrollments').delete().eq('client_id',fx.clientId);
+  await a.from('partner_outreach_templates').delete().eq('owner_partner_id',fx.partnerId).like('name','[E2E] '+RUN+'%');
   await a.from('partner_communication_events').delete().eq('client_id',fx.clientId);
   await a.from('partner_opportunities').delete().eq('client_id',fx.clientId);
   await a.from('client_recruitment_contacts').delete().eq('client_id',fx.clientId);
@@ -133,7 +134,7 @@ export async function cleanupFixture(fx){
   await a.from('partner_submission_packs').delete().eq('client_id',fx.clientId);
   await a.from('candidate_submissions').delete().eq('client_id',fx.clientId);
   await a.from('applications').delete().eq('candidate_id',fx.candidateId);
-  await a.from('partner_assignments').delete().eq('partner_id',fx.partnerId);
+  await a.from('partner_assignments').delete().eq('partner_id',fx.partnerId).eq('objective',RUN);
   await a.from('candidates').delete().eq('id',fx.candidateId);
   await a.from('jobs').delete().eq('id',fx.jobId);
   await a.from('clients').delete().eq('id',fx.clientId);
