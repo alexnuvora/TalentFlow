@@ -8,7 +8,7 @@ const money=(v:any)=>new Intl.NumberFormat('en-GB',{style:'currency',currency:'G
 const stages=['identified','qualified','meeting','commercial_review','terms_sent','terms_accepted','vacancy_open','won','lost'];
 export default function PartnerCRM(){
  const toast=useToast();
- const[clients,setClients]=useState<any[]>([]),[selected,setSelected]=useState(''),[snap,setSnap]=useState<any>(null),[analytics,setAnalytics]=useState<any>(null),[loading,setLoading]=useState(true),[busy,setBusy]=useState(''),[error,setError]=useState('');
+ const[clients,setClients]=useState<any[]>([]),[selected,setSelected]=useState(''),[snap,setSnap]=useState<any>(null),[analytics,setAnalytics]=useState<any>(null),[aiStatus,setAiStatus]=useState<any>(null),[loading,setLoading]=useState(true),[busy,setBusy]=useState(''),[error,setError]=useState('');
  const[tab,setTab]=useState<'contacts'|'timeline'|'opportunities'|'sequences'>('contacts');
  const[comm,setComm]=useState({event_type:'call',channel:'phone',direction:'outbound',contact_id:'',subject:'',summary:''});
  const[opp,setOpp]=useState({name:'',stage:'identified',contact_id:'',expected_fee:'',probability:'10',next_action:'',next_action_at:''});
@@ -22,12 +22,13 @@ export default function PartnerCRM(){
  ]);
  async function loadBase(){
    setLoading(true);setError('');
-   const[{data:c,error:ce},{data:a,error:ae}]=await Promise.all([
+   const[{data:c,error:ce},{data:a,error:ae},{data:ais,error:aie}]=await Promise.all([
      supabase.from('clients').select('id,company_name,contact_name,email,phone,status,website').order('company_name'),
-     supabase.rpc('partner_analytics_snapshot')
+     supabase.rpc('partner_analytics_snapshot'),
+     supabase.rpc('partner_ai_capability_status')
    ]);
-   if(ce||ae)setError(ce?.message||ae?.message||'Unable to load CRM workspace');
-   setClients(c||[]);setAnalytics(a||null);
+   if(ce||ae||aie)setError(ce?.message||ae?.message||aie?.message||'Unable to load CRM workspace');
+   setClients(c||[]);setAnalytics(a||null);setAiStatus(ais||null);
    setSelected(v=>v||(c?.[0]?.id||''));
    setLoading(false);
  }
@@ -100,7 +101,7 @@ export default function PartnerCRM(){
    <div><span>Weighted pipeline</span><strong>{money(analytics.weighted_pipeline)}</strong><small>Evidence-based expected value</small></div>
    <div><span>Recruiting output</span><strong>{analytics.candidate_recommendations||0}</strong><small>{analytics.interviews||0} interviews · {analytics.placements||0} placements</small></div>
   </div>}
-  <div className="grid two"><Card><div className="card-head"><div><h3>AI account copilot</h3><p>Ask about the live assigned account. Answers use current Vorlen data and keep commercial authority with management.</p></div></div><label>Question<input value={copilotQ} onChange={e=>setCopilotQ(e.target.value)}/></label><Button disabled={!selected||busy==='copilot'} onClick={askCopilot}>Ask copilot</Button>{copilot&&<div className="review-box"><strong>{copilot.answer}</strong>{copilot.next_actions?.length>0&&<><span>Next actions</span><ul>{copilot.next_actions.map((x:string)=><li key={x}>{x}</li>)}</ul></>}{copilot.risks_or_missing_info?.length>0&&<><span>Missing / risks</span><ul>{copilot.risks_or_missing_info.map((x:string)=><li key={x}>{x}</li>)}</ul></>}</div>}</Card><Card><div className="card-head"><div><h3>AI call / meeting notes</h3><p>Turn saved call transcripts into factual notes and next actions.</p></div></div>{calls.slice(0,5).map((c:any)=><div className="list-row" key={c.id}><div><strong>{fmt(c.ended_at||c.started_at)}</strong><span>{c.summary||'Saved call transcript'}</span>{callNotes[c.id]&&<div className="review-box"><span>{callNotes[c.id].summary}</span>{callNotes[c.id].next_actions?.length>0&&<small>Next: {callNotes[c.id].next_actions.join(' · ')}</small>}<div className="button-row">{!callNotes[c.id].saved?<Button variant="ghost" disabled={busy==='save-call-notes'} onClick={()=>saveCallNotes(c)}>Save reviewed notes</Button>:<Badge tone="green">Saved to timeline</Badge>}</div></div>}</div><Button variant="ghost" disabled={busy==='call-notes'} onClick={()=>summariseCall(c.id)}>AI notes</Button></div>)}{!calls.length&&<p className="muted">No saved call transcripts for this account yet.</p>}</Card></div>
+  <div className="grid two"><Card><div className="card-head"><div><h3>AI account copilot</h3><p>Ask about the live assigned account. Answers use current Vorlen data and keep commercial authority with management.</p></div></div>{aiStatus?.enabled===false&&<div className="notice">{aiStatus.reason}</div>}<label>Question<input value={copilotQ} onChange={e=>setCopilotQ(e.target.value)}/></label><Button disabled={!selected||busy==='copilot'||aiStatus?.enabled!==true} onClick={askCopilot}>Ask copilot</Button>{copilot&&<div className="review-box"><strong>{copilot.answer}</strong>{copilot.next_actions?.length>0&&<><span>Next actions</span><ul>{copilot.next_actions.map((x:string)=><li key={x}>{x}</li>)}</ul></>}{copilot.risks_or_missing_info?.length>0&&<><span>Missing / risks</span><ul>{copilot.risks_or_missing_info.map((x:string)=><li key={x}>{x}</li>)}</ul></>}</div>}</Card><Card><div className="card-head"><div><h3>AI call / meeting notes</h3><p>Turn saved call transcripts into factual notes and next actions.</p></div></div>{aiStatus?.enabled===false&&<div className="notice">{aiStatus.reason}</div>}{calls.slice(0,5).map((c:any)=><div className="list-row" key={c.id}><div><strong>{fmt(c.ended_at||c.started_at)}</strong><span>{c.summary||'Saved call transcript'}</span>{callNotes[c.id]&&<div className="review-box"><span>{callNotes[c.id].summary}</span>{callNotes[c.id].next_actions?.length>0&&<small>Next: {callNotes[c.id].next_actions.join(' · ')}</small>}<div className="button-row">{!callNotes[c.id].saved?<Button variant="ghost" disabled={busy==='save-call-notes'} onClick={()=>saveCallNotes(c)}>Save reviewed notes</Button>:<Badge tone="green">Saved to timeline</Badge>}</div></div>}</div><Button variant="ghost" disabled={busy==='call-notes'||aiStatus?.enabled!==true} onClick={()=>summariseCall(c.id)}>AI notes</Button></div>)}{!calls.length&&<p className="muted">No saved call transcripts for this account yet.</p>}</Card></div>
   <Card><label>Account<select value={selected} onChange={e=>setSelected(e.target.value)}><option value="">Select account…</option>{clients.map(c=><option key={c.id} value={c.id}>{c.company_name}</option>)}</select></label>{client&&<div className="account-strip"><strong>{client.company_name}</strong><span>{client.contact_name||'No named contact'}{client.email?' · '+client.email:''}</span><span>{client.status}</span></div>}</Card>
   {!selected?<Card><p className="muted">No assigned client account is available.</p></Card>:busy==='load'&&!snap?<SkeletonRows rows={4}/>:<>
    <div className="tabs partner-crm-tabs">
