@@ -15,7 +15,7 @@ const strip=s=>String(s??'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
 
 async function jobs(){
   if(!sb||!key)return[];
-  const fields='slug,title,description,location,employment_type,commission_text,salary_min,salary_max,application_mode,created_at,updated_at';
+  const fields='slug,title,description,location,employment_type,commission_text,salary_min,salary_max,application_mode,created_at';
   const url=`${sb}/rest/v1/jobs?select=${encodeURIComponent(fields)}&status=eq.published&order=created_at.desc`;
   for(let attempt=1;attempt<=3;attempt++){
     try{
@@ -85,7 +85,7 @@ for(const j of rows){
   const canonical=`${base}/careers/${encodeURIComponent(j.slug)}`;
   const schema=j.application_mode==='register_interest'
     ?{'@context':'https://schema.org','@type':'WebPage',name:j.title,description:strip(j.description||j.title),url:canonical}
-    :{'@context':'https://schema.org','@type':'JobPosting',title:j.title,description:strip(j.description||j.title),datePosted:j.created_at,dateModified:j.updated_at||j.created_at,employmentType:j.employment_type,url:canonical,directApply:true,jobLocation:j.location?{'@type':'Place',address:{'@type':'PostalAddress',addressLocality:j.location,addressCountry:'GB'}}:undefined};
+    :{'@context':'https://schema.org','@type':'JobPosting',title:j.title,description:strip(j.description||j.title),datePosted:j.created_at,dateModified:j.created_at,employmentType:j.employment_type,url:canonical,directApply:true,jobLocation:j.location?{'@type':'Place',address:{'@type':'PostalAddress',addressLocality:j.location,addressCountry:'GB'}}:undefined};
   if(j.application_mode!=='register_interest'&&(j.salary_min||j.salary_max)){
     schema.baseSalary={'@type':'MonetaryAmount',currency:'GBP',value:{'@type':'QuantitativeValue',minValue:j.salary_min||undefined,maxValue:j.salary_max||undefined,unitText:'YEAR'}};
   }
@@ -95,7 +95,7 @@ for(const j of rows){
 const urls=[
   ['/',RELEASE_LASTMOD],
   ...staticPages.map(p=>[p.route,p.lastmod]),
-  ...rows.map(j=>[`/careers/${j.slug}`,j.updated_at||j.created_at||''])
+  ...rows.map(j=>[`/careers/${j.slug}`,j.created_at||''])
 ];
 const sitemap=`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(([u,d])=>`  <url><loc>${xml(base+u)}</loc>${d?`<lastmod>${xml(new Date(d).toISOString())}</lastmod>`:''}</url>`).join('\n')}\n</urlset>\n`;
 await fs.writeFile(path.join(dist,'sitemap.xml'),sitemap);
