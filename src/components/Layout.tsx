@@ -11,7 +11,7 @@ const partnerNav=[
  ...(access.partnerActive?[[ '/dashboard/partner/vacancies','Vacancies',BriefcaseBusiness] as const]:[]),
  ...(access.partnerCanSourceCandidates?[[ '/dashboard/partner/candidates','Candidates',UserSearch] as const,[ '/dashboard/partner/pipeline','Pipeline',KanbanSquare] as const]:[]),
  ...(access.partnerActive?[[ '/dashboard/partner/tasks','Tasks',ListTodo] as const]:[]),
- ...(access.partnerCanDevelopClients?[[ '/dashboard/partner/handoffs','Commercial handoffs',Handshake] as const]:[]),
+ ...(access.partnerCanCloseClients?[[ '/dashboard/partner/handoffs','Commercial handoffs',Handshake] as const]:[]),
  ...(access.partnerActive?[[ '/dashboard/partner/earnings','Placements & earnings',Receipt] as const]:[]),
  ['/dashboard/partner/profile','Profile',UserRound] as const,
  ['/dashboard/partner/resources','Help & resources',LifeBuoy] as const
