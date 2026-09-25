@@ -76,7 +76,6 @@ export default function PartnerProfile(){
  const active=onboarding?.status==='active';
  const activatedOnce=Boolean(onboarding?.activated_at);
  const candidateAssigned=['candidate_sourcer','hybrid'].includes(partnerProfile?.specialism);
- const clientDevelopment=access.partnerCanDevelopClients;
  const joined=onboarding?.activated_at||partnerProfile?.created_at||profile?.created_at;
  const initials=(form.display_name||onboarding?.legal_name||user?.email||'VP').split(/\s+/).map((x:string)=>x[0]).join('').slice(0,2).toUpperCase();
  const checklist=[
