@@ -56,3 +56,6 @@ test('job start dates never send empty strings to the date column',()=>{const jo
 
 
 test('job saves use backend normalization so blank date strings cannot reach date columns',()=>{const jobs=read('src/pages/Jobs.tsx'),migration=read('supabase/migrations/20260925184500_manager_save_job_blank_date_normalization.sql');assert.match(jobs,/manager_save_job/);assert.doesNotMatch(jobs,/from\('jobs'\)\.insert\(payload\)/);assert.match(migration,/p_job->>'start_date'/);assert.match(migration,/::date/);assert.match(migration,/v_start_date/);});
+
+
+test('workspace users shows partner T&C and onboarding state',()=>{const settings=read('src/pages/Settings.tsx');assert.match(settings,/T&C accepted/);assert.match(settings,/T&C pending/);assert.match(settings,/Onboarding complete/);assert.match(settings,/partner_onboarding/);assert.match(settings,/partner_agreements/);});
