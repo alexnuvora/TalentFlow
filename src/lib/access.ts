@@ -20,6 +20,8 @@ export type WorkspaceAccess={
   partnerSpecialism:string;
   partnerActive:boolean;
   partnerCanDevelopClients:boolean;
+  partnerCanProspect:boolean;
+  partnerCanCloseClients:boolean;
   partnerCanSourceCandidates:boolean;
   refresh:()=>Promise<void>;
 };
@@ -70,6 +72,8 @@ export function useWorkspaceAccess():WorkspaceAccess{
   const canAccessCandidateData=candidateProcessingActive&&candidateDataApproved;
   const partnerActive=role==='partner'&&partnerStatus==='active';
   const partnerCanDevelopClients=partnerActive&&['b2b_advisor','lead_closer','hybrid'].includes(partnerSpecialism);
+  const partnerCanProspect=partnerActive&&['b2b_advisor','hybrid'].includes(partnerSpecialism);
+  const partnerCanCloseClients=partnerActive&&['lead_closer','hybrid'].includes(partnerSpecialism);
   const partnerCanSourceCandidates=partnerActive&&['candidate_sourcer','hybrid'].includes(partnerSpecialism);
-  return{loading,error,role,companyId,subscription,canManageWorkspace,canManageBilling:isOwner,isOwner,canUseAutomations:active&&features.automations===true,canUseAiScreening:active&&features.ai_screening===true&&canAccessCandidateData,canUseClientPortal:active&&features.client_portal===true,candidateProcessingActive,candidateDataApproved,canAccessCandidateData,partnerStatus,partnerSpecialism,partnerActive,partnerCanDevelopClients,partnerCanSourceCandidates,refresh};
+  return{loading,error,role,companyId,subscription,canManageWorkspace,canManageBilling:isOwner,isOwner,canUseAutomations:active&&features.automations===true,canUseAiScreening:active&&features.ai_screening===true&&canAccessCandidateData,canUseClientPortal:active&&features.client_portal===true,candidateProcessingActive,candidateDataApproved,canAccessCandidateData,partnerStatus,partnerSpecialism,partnerActive,partnerCanDevelopClients,partnerCanProspect,partnerCanCloseClients,partnerCanSourceCandidates,refresh};
 }
