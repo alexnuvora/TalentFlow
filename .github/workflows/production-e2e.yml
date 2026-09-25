@@ -1,0 +1,87 @@
+name: Production E2E
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Run level
+        required: true
+        default: smoke
+        type: choice
+        options: [smoke, full]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-e2e-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm install --no-save @playwright/test@1.55.0
+      - run: npx playwright install --with-deps chromium
+      - name: Public production smoke
+        env:
+          VORLEN_E2E_BASE_URL: https://www.vorlen.co.uk
+        run: npx playwright test -g "public production surfaces are healthy"
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-e2e-smoke-artifacts
+          path: |
+            playwright-report
+            test-results
+
+  full:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'full' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment: production-e2e
+    env:
+      VORLEN_E2E_BASE_URL: https://www.vorlen.co.uk
+      VORLEN_E2E_ALLOW_MUTATIONS: "true"
+      VORLEN_E2E_PARTNER_EMAIL: ${{ secrets.VORLEN_E2E_PARTNER_EMAIL }}
+      VORLEN_E2E_PARTNER_PASSWORD: ${{ secrets.VORLEN_E2E_PARTNER_PASSWORD }}
+      VORLEN_SUPABASE_URL: ${{ secrets.VORLEN_SUPABASE_URL }}
+      VORLEN_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.VORLEN_SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Validate protected E2E configuration
+        run: |
+          test -n "$VORLEN_E2E_PARTNER_EMAIL"
+          test -n "$VORLEN_E2E_PARTNER_PASSWORD"
+          test -n "$VORLEN_SUPABASE_URL"
+          test -n "$VORLEN_SUPABASE_SERVICE_ROLE_KEY"
+      - run: npm install --no-save @playwright/test@1.55.0
+      - run: npx playwright install --with-deps chromium
+      - name: Record E2E start time
+        run: echo "VORLEN_E2E_STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+      - name: Full production journeys
+        run: npx playwright test
+      - name: Database/email observability snapshot
+        if: always()
+        run: node scripts/production-e2e-observability.mjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-e2e-full-artifacts
+          path: |
+            playwright-report
+            test-results
+            production-e2e-observability.json
