@@ -17,7 +17,7 @@ export default function Privacy(){
    <p className="legal-lead">This notice explains how Ivy and Pearls Ltd, trading as Vorlen, uses personal information when providing permanent recruitment services, operating its partner and client workspaces, developing business relationships and responding to enquiries.</p>
 
    <section><h2>Who is responsible for your information</h2>
-    <p><strong>Ivy and Pearls Ltd</strong>, company number <strong>17387520</strong>, trading as <strong>Vorlen</strong>, is the controller for the personal information described in this notice unless another organisation is clearly identified as the controller for a particular activity.</p>
+    <p><strong>Ivy and Pearls Ltd</strong>, company number <strong>17387520</strong>, registered in England and Wales with registered office at <strong>10 South Street, Rochdale, United Kingdom, OL16 2EP</strong>, trading as <strong>Vorlen</strong>, is the controller for the personal information described in this notice unless another organisation is clearly identified as the controller for a particular activity.</p>
     <p>Privacy enquiries can be sent to <a href="mailto:privacy@vorlen.co.uk">privacy@vorlen.co.uk</a>.</p>
    </section>
 
