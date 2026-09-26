@@ -12,9 +12,14 @@ The Partner is appointed on a non-exclusive independent-contractor basis to iden
 The practical working arrangement must remain consistent with independent-contractor status. The Partner controls when and where they perform the services, subject to agreed deadlines, confidentiality, security and client/candidate requirements.
 
 ## Commission
-Commission is [30]% of the net recruitment fee actually received and retained by Vorlen for a placement attributable to the Partner, excluding VAT, refunds, rebates, chargebacks and pass-through costs.
+The standard partner commission pool is a maximum of **30%** of the qualifying net recruitment fee actually received and retained by Vorlen, split into two independently attributable components:
 
-No commission becomes payable until Vorlen has received cleared client funds. If a fee is refunded or reduced under a client rebate/replacement arrangement before commission is paid, commission is calculated on the amount retained. If commission has already been paid, any clawback must follow the expressly agreed schedule: [insert schedule].
+- **15% Client Development** — for the partner recorded by Vorlen as responsible for the evidence-backed employer/client side of the placement, including genuine relationship development, decision-maker engagement, client onboarding/approved commercial progression and bringing the relevant hiring requirement into Vorlen.
+- **15% Candidate Delivery** — for the partner recorded by Vorlen as responsible for sourcing/engaging the candidate who is ultimately placed and progressing that candidate through the authorised Vorlen recruitment workflow.
+
+A Partner earns only the component(s) attributed to them in Vorlen. If the same Partner validly performs both sides, they may earn both components, up to 30% in total. Merely adding a company/contact, uploading a CV, or creating a duplicate record does not create commission entitlement.
+
+No commission becomes payable until Vorlen has received cleared client funds. VAT, refunds, credits, rebates, chargebacks and pass-through costs are excluded. If a client payment includes VAT, commission is calculated only on the corresponding net recruitment-fee portion received. If a fee is refunded or reduced after approval/payment, the change must be handled through the auditable commission-adjustment ledger and any recovery/offset must be evidenced.
 
 The Partner cannot charge candidates or work-seekers any fee for work-finding services.
 
