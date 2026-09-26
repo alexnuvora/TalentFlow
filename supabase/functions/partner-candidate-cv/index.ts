@@ -40,6 +40,7 @@ Deno.serve(async req=>{
 
     const name=file.name.toLowerCase();
     const ext=name.endsWith('.pdf')?'pdf':name.endsWith('.docx')?'docx':'';
+    const canonicalMime=ext==='pdf'?'application/pdf':'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
     const allowedMime=ext==='pdf'?['application/pdf','application/octet-stream']:['application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/octet-stream'];
     if(!ext||!allowedMime.includes(file.type||'application/octet-stream'))return json(req,{error:'Only PDF or DOCX CV files are supported'},400);
 
@@ -55,8 +56,15 @@ Deno.serve(async req=>{
     const isPdf=bytes.length>=5&&String.fromCharCode(...bytes.slice(0,5))==='%PDF-';
     const isZip=bytes.length>=4&&bytes[0]===0x50&&bytes[1]===0x4b&&[0x03,0x05,0x07].includes(bytes[2])&&[0x04,0x06,0x08].includes(bytes[3]);
     if((ext==='pdf'&&!isPdf)||(ext==='docx'&&!isZip))return json(req,{error:'The selected file does not appear to be a valid '+ext.toUpperCase()+' document.'},400);
-    const{error:uploadError}=await db.storage.from('candidate-resumes').upload(path,bytes,{contentType:file.type||allowedMime[0],upsert:false});
-    if(uploadError)return json(req,{error:'CV upload failed',detail:uploadError.message},500);
+
+    // Always store with the canonical MIME type. Some browsers report DOCX/PDF as
+    // application/octet-stream, while this private bucket intentionally allow-lists
+    // document MIME types only.
+    const{error:uploadError}=await db.storage.from('candidate-resumes').upload(path,bytes,{contentType:canonicalMime,upsert:false});
+    if(uploadError){
+      console.error('partner-candidate-cv storage upload failed',{candidateId,code:uploadError.name,message:uploadError.message});
+      return json(req,{error:'CV upload failed'},500);
+    }
 
     const{data:sourceRow,error:sourceError}=await db.from('candidate_source_records').insert({
       company_id:profile.company_id,
@@ -67,15 +75,19 @@ Deno.serve(async req=>{
       imported_by:user.id
     }).select('id').single();
     if(sourceError||!sourceRow){
+      console.error('partner-candidate-cv provenance insert failed',{candidateId,message:sourceError?.message||'Source record was not created'});
       await db.storage.from('candidate-resumes').remove([path]);
-      return json(req,{error:'CV provenance could not be recorded',detail:sourceError?.message||'Source record was not created'},500);
+      return json(req,{error:'CV provenance could not be recorded'},500);
     }
 
-    const{error:updateError}=await db.from('candidates').update({resume_path:path,updated_at:new Date().toISOString()}).eq('id',candidateId).eq('company_id',profile.company_id);
+    // candidates has no updated_at column in the production schema. Keep this write
+    // limited to resume_path so PostgREST does not reject the update with PGRST204.
+    const{error:updateError}=await db.from('candidates').update({resume_path:path}).eq('id',candidateId).eq('company_id',profile.company_id);
     if(updateError){
+      console.error('partner-candidate-cv candidate link failed',{candidateId,message:updateError.message});
       await db.from('candidate_source_records').delete().eq('id',sourceRow.id);
       await db.storage.from('candidate-resumes').remove([path]);
-      return json(req,{error:'Candidate CV could not be linked',detail:updateError.message},500);
+      return json(req,{error:'Candidate CV could not be linked'},500);
     }
 
     const{error:auditError}=await db.from('activity_log').insert({
@@ -87,10 +99,11 @@ Deno.serve(async req=>{
       metadata:{candidate_source_record_id:sourceRow.id}
     });
     if(auditError){
-      await db.from('candidates').update({resume_path:candidate.resume_path||null,updated_at:new Date().toISOString()}).eq('id',candidateId).eq('company_id',profile.company_id);
+      console.error('partner-candidate-cv audit insert failed',{candidateId,message:auditError.message});
+      await db.from('candidates').update({resume_path:candidate.resume_path||null}).eq('id',candidateId).eq('company_id',profile.company_id);
       await db.from('candidate_source_records').delete().eq('id',sourceRow.id);
       await db.storage.from('candidate-resumes').remove([path]);
-      return json(req,{error:'CV upload could not be audit-logged',detail:auditError.message},500);
+      return json(req,{error:'CV upload could not be audit-logged'},500);
     }
 
     let previousCvCleanupPending=false;
@@ -98,11 +111,13 @@ Deno.serve(async req=>{
       const{error:cleanupError}=await db.storage.from('candidate-resumes').remove([candidate.resume_path]);
       if(cleanupError){
         previousCvCleanupPending=true;
+        console.error('partner-candidate-cv previous file cleanup failed',{candidateId,message:cleanupError.message});
         await db.from('compliance_audit_log').insert({company_id:profile.company_id,event_type:'candidate_cv_previous_file_cleanup_failed',new_state:{candidate_id:candidateId,partner_user_id:user.id,previous_resume_path:candidate.resume_path,replacement_resume_path:path,error:cleanupError.message}});
       }
     }
     return json(req,{ok:true,candidate_id:candidateId,resume_path:path,file_name:file.name,previous_cv_cleanup_pending:previousCvCleanupPending});
   }catch(e){
-    return json(req,{error:e instanceof Error?e.message:'CV upload failed'},500);
+    console.error('partner-candidate-cv unhandled error',e);
+    return json(req,{error:'CV upload failed'},500);
   }
 });
