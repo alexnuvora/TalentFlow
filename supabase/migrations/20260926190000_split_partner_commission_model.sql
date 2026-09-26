@@ -785,3 +785,336 @@ end
 $$;
 
 revoke all on function private.enforce_partner_attribution_scope() from public,anon,authenticated;
+
+
+-- Final split-commission hardening: preserve voided history, allow safe reassignment
+-- before approval, backfill on later agreement acceptance, and keep manager issuance
+-- under RLS/security-invoker rather than a new SECURITY DEFINER API surface.
+
+drop index if exists public.partner_commissions_placement_component_uq;
+create unique index if not exists partner_commissions_active_component_uq
+  on public.partner_commissions(placement_id,commission_component)
+  where status<>'void';
+
+create or replace function public.issue_partner_commission_terms(p_partner uuid)
+returns uuid
+language plpgsql
+security invoker
+set search_path=''
+as $$
+declare v_company uuid:=private.current_company_id();v_id uuid;
+begin
+  if not private.is_manager() then raise exception 'Manager access required'; end if;
+  if not exists(select 1 from public.profiles p where p.id=p_partner and p.company_id=v_company and p.role='partner') then
+    raise exception 'Partner not found in this workspace';
+  end if;
+  select a.id into v_id
+  from public.partner_agreements a
+  where a.company_id=v_company and a.partner_id=p_partner
+    and a.status='pending' and a.commission_model='split_15_15'
+  order by a.created_at desc limit 1;
+  if v_id is not null then return v_id; end if;
+  insert into public.partner_agreements(
+    company_id,partner_id,version,status,commission_percent,
+    client_commission_percent,candidate_commission_percent,commission_model,terms_text,terms_hash
+  ) values(
+    v_company,p_partner,'partner-2026-09-26-split-v1','pending',30,15,15,'split_15_15',
+    private.partner_agreement_terms(),encode(extensions.digest(private.partner_agreement_terms(),'sha256'),'hex')
+  ) returning id into v_id;
+  return v_id;
+end
+$$;
+revoke all on function public.issue_partner_commission_terms(uuid) from public,anon;
+grant execute on function public.issue_partner_commission_terms(uuid) to authenticated,service_role;
+
+create or replace function private.reconcile_partner_commission_component(
+  p_company uuid,p_placement uuid,p_component text,p_source_invoice uuid default null
+) returns void
+language plpgsql
+security definer
+set search_path=''
+as $$
+declare
+  v_attr_type text;v_partner uuid;v_agreement uuid;v_percent numeric;v_received numeric;v_target numeric;
+  v_base public.partner_commissions%rowtype;v_old public.partner_commissions%rowtype;
+  v_settled_fee numeric;v_fee_delta numeric;v_amount_delta numeric;v_open uuid;v_invoice uuid;
+begin
+  if p_component not in ('client','candidate') then raise exception 'Invalid commission component'; end if;
+  v_attr_type:=case when p_component='client' then 'client_commission_owner' else 'candidate_commission_owner' end;
+
+  select pa.partner_id into v_partner
+  from public.partner_attributions pa
+  where pa.company_id=p_company and pa.placement_id=p_placement
+    and pa.attribution_type=v_attr_type and pa.status='active'
+  order by pa.attributed_at desc limit 1;
+
+  for v_old in
+    select * from public.partner_commissions pc
+    where pc.company_id=p_company and pc.placement_id=p_placement
+      and pc.commission_component=p_component and pc.status<>'void'
+      and (v_partner is null or pc.partner_user_id is distinct from v_partner)
+    for update
+  loop
+    if v_old.status in ('approved','paid') then
+      raise exception 'Cannot reassign % commission after it has been approved or paid',p_component;
+    end if;
+    if v_old.status='accrued' then
+      update public.partner_commissions
+      set status='void',updated_at=now(),
+          notes=coalesce(notes||' · ','')||'Voided after commission-side attribution changed'
+      where id=v_old.id;
+    end if;
+  end loop;
+
+  if v_partner is null then return; end if;
+
+  select a.id,
+         case when p_component='client' then a.client_commission_percent else a.candidate_commission_percent end
+  into v_agreement,v_percent
+  from public.partner_agreements a
+  where a.company_id=p_company and a.partner_id=v_partner and a.status='accepted'
+    and a.commission_model='split_15_15'
+  order by a.accepted_at desc nulls last,a.created_at desc limit 1;
+
+  if v_agreement is null or coalesce(v_percent,0)<=0 then return; end if;
+
+  v_received:=private.partner_net_fee_received(p_placement);
+  v_target:=round(v_received*v_percent/100,2);
+
+  if p_source_invoice is null then
+    select i.id into v_invoice
+    from public.invoices i
+    where i.placement_id=p_placement and i.status<>'void'
+    order by coalesce(i.paid_at,i.created_at) desc limit 1;
+  else
+    v_invoice:=p_source_invoice;
+  end if;
+
+  select * into v_base
+  from public.partner_commissions pc
+  where pc.company_id=p_company and pc.placement_id=p_placement
+    and pc.commission_component=p_component and pc.status<>'void'
+  for update;
+
+  if v_base.id is null then
+    if v_received<=0 then return; end if;
+    insert into public.partner_commissions(
+      company_id,placement_id,partner_user_id,commission_component,rate,amount,status,
+      agreement_id,invoice_id,eligible_fee_received,notes
+    ) values(
+      p_company,p_placement,v_partner,p_component,v_percent/100,v_target,'accrued',
+      v_agreement,v_invoice,v_received,
+      case when p_component='client' then 'Client Development commission' else 'Candidate Delivery commission' end
+    );
+    return;
+  end if;
+
+  if v_base.partner_user_id is distinct from v_partner then return; end if;
+
+  if v_base.status='accrued' then
+    if v_received<=0 then
+      update public.partner_commissions
+      set status='void',invoice_id=v_invoice,updated_at=now(),
+          notes=coalesce(notes||' · ','')||'Voided because no qualifying net fee remains'
+      where id=v_base.id;
+    else
+      update public.partner_commissions
+      set rate=v_percent/100,amount=v_target,eligible_fee_received=v_received,
+          agreement_id=v_agreement,invoice_id=v_invoice,updated_at=now()
+      where id=v_base.id;
+    end if;
+    return;
+  end if;
+
+  select coalesce(sum(adj.eligible_fee_delta),0) into v_settled_fee
+  from public.partner_commission_adjustments adj
+  where adj.base_commission_id=v_base.id and adj.status in ('approved','paid');
+
+  v_settled_fee:=v_base.eligible_fee_received+v_settled_fee;
+  v_fee_delta:=round(v_received-v_settled_fee,2);
+  v_amount_delta:=round(v_fee_delta*v_base.rate,2);
+
+  select adj.id into v_open
+  from public.partner_commission_adjustments adj
+  where adj.base_commission_id=v_base.id and adj.status='accrued'
+  limit 1 for update;
+
+  if abs(v_fee_delta)<0.005 or abs(v_amount_delta)<0.005 then
+    if v_open is not null then
+      update public.partner_commission_adjustments
+      set status='void',reason='No remaining commission adjustment after invoice reconciliation',updated_at=now()
+      where id=v_open;
+    end if;
+    return;
+  end if;
+
+  if v_open is null then
+    insert into public.partner_commission_adjustments(
+      company_id,base_commission_id,placement_id,partner_user_id,agreement_id,source_invoice_id,
+      commission_component,eligible_fee_delta,amount,status,reason
+    ) values(
+      v_base.company_id,v_base.id,v_base.placement_id,v_base.partner_user_id,v_base.agreement_id,v_invoice,
+      p_component,v_fee_delta,v_amount_delta,'accrued',
+      case when v_amount_delta>=0 then 'Additional qualifying net client fee received after commission approval'
+           else 'Qualifying net client fee reduction/refund after commission approval' end
+    );
+  else
+    update public.partner_commission_adjustments
+    set source_invoice_id=v_invoice,commission_component=p_component,eligible_fee_delta=v_fee_delta,amount=v_amount_delta,
+        reason=case when v_amount_delta>=0 then 'Additional qualifying net client fee received after commission approval'
+                    else 'Qualifying net client fee reduction/refund after commission approval' end,
+        updated_at=now()
+    where id=v_open;
+  end if;
+end
+$$;
+revoke all on function private.reconcile_partner_commission_component(uuid,uuid,text,uuid) from public,anon,authenticated;
+grant execute on function private.reconcile_partner_commission_component(uuid,uuid,text,uuid) to service_role;
+
+create or replace function public.attribute_partner_entity(
+  p_partner uuid,p_type text,p_entity uuid,p_evidence text
+) returns uuid
+language plpgsql
+security definer
+set search_path=''
+as $$
+declare v_id uuid;v_company uuid:=private.current_company_id();v_component text;
+begin
+  if not private.is_manager() then raise exception 'Manager access required'; end if;
+  if not exists(select 1 from public.partner_onboarding where partner_id=p_partner and company_id=v_company and status='active') then
+    raise exception 'Partner must be active';
+  end if;
+  if p_type not in ('client_originator','vacancy_originator','candidate_originator','placement_owner','client_commission_owner','candidate_commission_owner') then
+    raise exception 'Invalid attribution type';
+  end if;
+  if nullif(btrim(p_evidence),'') is null then raise exception 'Attribution evidence is required'; end if;
+
+  if p_type='client_originator' and not exists(select 1 from public.clients c where c.id=p_entity and c.company_id=v_company) then
+    raise exception 'Client not found in this workspace';
+  elsif p_type='vacancy_originator' and not exists(select 1 from public.jobs j where j.id=p_entity and j.company_id=v_company) then
+    raise exception 'Vacancy not found in this workspace';
+  elsif p_type='candidate_originator' and not exists(select 1 from public.candidates c where c.id=p_entity and c.company_id=v_company) then
+    raise exception 'Candidate not found in this workspace';
+  elsif p_type in ('placement_owner','client_commission_owner','candidate_commission_owner')
+    and not exists(select 1 from public.placements p where p.id=p_entity and p.company_id=v_company) then
+    raise exception 'Placement not found in this workspace';
+  end if;
+
+  if p_type in ('client_commission_owner','candidate_commission_owner') then
+    v_component:=case when p_type='client_commission_owner' then 'client' else 'candidate' end;
+
+    if exists(
+      select 1 from public.partner_commissions pc
+      where pc.company_id=v_company and pc.placement_id=p_entity and pc.commission_component=v_component
+        and pc.status in ('approved','paid') and pc.partner_user_id is distinct from p_partner
+    ) then
+      raise exception 'This commission side is financially locked because commission has already been approved or paid';
+    end if;
+
+    update public.partner_attributions
+    set status='superseded'
+    where company_id=v_company and placement_id=p_entity and attribution_type=p_type
+      and status='active' and partner_id<>p_partner;
+
+    select pa.id into v_id
+    from public.partner_attributions pa
+    where pa.company_id=v_company and pa.placement_id=p_entity and pa.attribution_type=p_type
+      and pa.status='active' and pa.partner_id=p_partner
+    limit 1;
+
+    if v_id is not null then
+      update public.partner_attributions
+      set evidence=btrim(p_evidence),attributed_by=auth.uid(),attributed_at=now()
+      where id=v_id;
+    else
+      insert into public.partner_attributions(company_id,partner_id,placement_id,attribution_type,evidence,attributed_by)
+      values(v_company,p_partner,p_entity,p_type,btrim(p_evidence),auth.uid())
+      returning id into v_id;
+    end if;
+
+    perform private.reconcile_partner_commission_component(v_company,p_entity,v_component,null);
+    return v_id;
+  end if;
+
+  insert into public.partner_attributions(
+    company_id,partner_id,client_id,job_id,candidate_id,placement_id,attribution_type,evidence,attributed_by
+  ) values(
+    v_company,p_partner,
+    case when p_type='client_originator' then p_entity end,
+    case when p_type='vacancy_originator' then p_entity end,
+    case when p_type='candidate_originator' then p_entity end,
+    case when p_type='placement_owner' then p_entity end,
+    p_type,btrim(p_evidence),auth.uid()
+  ) returning id into v_id;
+
+  return v_id;
+exception when unique_violation then
+  raise exception 'This record already has an active owner; resolve the existing attribution instead of creating a duplicate';
+end
+$$;
+revoke all on function public.attribute_partner_entity(uuid,text,uuid,text) from public,anon;
+grant execute on function public.attribute_partner_entity(uuid,text,uuid,text) to authenticated,service_role;
+
+create or replace function public.accept_partner_agreement(
+  p_agreement uuid,p_accepted_name text,p_user_agent text default null
+) returns void
+language plpgsql
+security definer
+set search_path=''
+as $$
+declare v_hash text;v_user uuid:=auth.uid();v_company uuid;v_onboarding_status text;v_model text;v_attr record;
+begin
+  if v_user is null then raise exception 'Authentication required'; end if;
+  if nullif(btrim(p_accepted_name),'') is null then raise exception 'Full legal name is required'; end if;
+
+  select a.company_id,encode(extensions.digest(a.terms_text,'sha256'),'hex'),a.commission_model
+    into v_company,v_hash,v_model
+  from public.partner_agreements a
+  join public.profiles p on p.id=v_user and p.company_id=a.company_id and p.role='partner'
+  where a.id=p_agreement and a.partner_id=v_user and a.status='pending'
+  for update;
+
+  if v_hash is null then raise exception 'Pending partner agreement not found'; end if;
+
+  select o.status into v_onboarding_status
+  from public.partner_onboarding o
+  where o.partner_id=v_user and o.company_id=v_company
+  for update;
+
+  if v_onboarding_status is null then raise exception 'Partner onboarding record not found'; end if;
+
+  update public.partner_agreements
+  set status='superseded'
+  where company_id=v_company and partner_id=v_user and status='accepted' and id<>p_agreement;
+
+  update public.partner_agreements
+  set status='accepted',accepted_at=now(),accepted_name=btrim(p_accepted_name),
+      terms_hash=v_hash,accepted_terms_hash=v_hash,accepted_user_agent=left(p_user_agent,500)
+  where id=p_agreement and partner_id=v_user and status='pending';
+
+  if v_onboarding_status='terms_pending' then
+    update public.partner_onboarding
+    set status='details_pending',agreement_id=p_agreement,updated_at=now()
+    where partner_id=v_user and company_id=v_company;
+  else
+    update public.partner_onboarding
+    set agreement_id=p_agreement,updated_at=now()
+    where partner_id=v_user and company_id=v_company;
+  end if;
+
+  if v_model='split_15_15' then
+    for v_attr in
+      select distinct pa.placement_id,
+        case when pa.attribution_type='client_commission_owner' then 'client' else 'candidate' end as component
+      from public.partner_attributions pa
+      where pa.company_id=v_company and pa.partner_id=v_user and pa.status='active'
+        and pa.attribution_type in ('client_commission_owner','candidate_commission_owner')
+        and pa.placement_id is not null
+    loop
+      perform private.reconcile_partner_commission_component(v_company,v_attr.placement_id,v_attr.component,null);
+    end loop;
+  end if;
+end
+$$;
+revoke all on function public.accept_partner_agreement(uuid,text,text) from public,anon;
+grant execute on function public.accept_partner_agreement(uuid,text,text) to authenticated,service_role;
