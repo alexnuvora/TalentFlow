@@ -1,4 +1,4 @@
-export type Role = 'owner'|'recruiter'|'manager'|'viewer';
+export type Role = 'owner'|'recruiter'|'manager'|'viewer'|'partner';
 export type JobStatus = 'draft'|'published'|'paused'|'closed';
 export type CandidateStage = 'new'|'screening'|'qualified'|'submitted'|'interview'|'offer'|'placed'|'rejected'|'withdrawn';
 export type ClientStatus = 'prospect'|'active'|'paused'|'closed';
