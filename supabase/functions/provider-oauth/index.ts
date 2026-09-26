@@ -1,136 +1,109 @@
-import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.57.0';
+import {createClient} from 'npm:@supabase/supabase-js@2';
 
-const cors={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization, x-client-info, apikey, content-type','Access-Control-Allow-Methods':'POST, OPTIONS','Cache-Control':'no-store'};
-const json=(b:any,s=200)=>new Response(JSON.stringify(b),{status:s,headers:{...cors,'Content-Type':'application/json'}});
-const appUrl=(Deno.env.get('APP_URL')||Deno.env.get('SITE_URL')||'https://www.vorlen.co.uk').replace(/\/+$/,'');
-const supabaseUrl=Deno.env.get('SUPABASE_URL')!;
-const anonKey=Deno.env.get('SUPABASE_ANON_KEY')||JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS')||'{}').default;
-const serviceKey=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')||JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS')||'{}').default;
-const admin=createClient(supabaseUrl,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}});
-const oauthProviders=new Set(['google_calendar','microsoft_calendar','linkedin']);
+const SUPABASE_URL=Deno.env.get('SUPABASE_URL')!;
+const SERVICE_KEY=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const CALLBACK=SUPABASE_URL+'/functions/v1/provider-oauth/callback';
+const APP='https://www.vorlen.co.uk/dashboard/partner-management';
+const admin=createClient(SUPABASE_URL,SERVICE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
 
+const providers:any={
+ google_calendar:{mode:'authorization_code',auth:'https://accounts.google.com/o/oauth2/v2/auth',token:'https://oauth2.googleapis.com/token',scopes:'openid email https://www.googleapis.com/auth/calendar.events',test:'https://www.googleapis.com/calendar/v3/calendars/primary/events?maxResults=1&singleEvents=true'},
+ microsoft_calendar:{mode:'pkce',scopes:'openid profile email offline_access User.Read Calendars.ReadWrite',test:'https://graph.microsoft.com/v1.0/me/calendar'},
+ linkedin:{mode:'authorization_code',auth:'https://www.linkedin.com/oauth/v2/authorization',token:'https://www.linkedin.com/oauth/v2/accessToken',scopes:'openid profile email',test:'https://api.linkedin.com/v2/userinfo'}
+};
+
+function allowedOrigin(req:Request){const o=req.headers.get('origin')||'';return ['https://www.vorlen.co.uk','https://vorlen.co.uk','http://localhost:5173'].includes(o)?o:'https://www.vorlen.co.uk'}
+function cors(req:Request){return {'Access-Control-Allow-Origin':allowedOrigin(req),'Access-Control-Allow-Headers':'authorization, x-client-info, apikey, content-type','Access-Control-Allow-Methods':'POST, OPTIONS','Cache-Control':'no-store','Vary':'Origin'}}
+function json(req:Request,x:any,status=200){return new Response(JSON.stringify(x),{status,headers:{...cors(req),'Content-Type':'application/json'}})}
 function b64url(bytes:Uint8Array){return btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
-function randomVerifier(){return b64url(crypto.getRandomValues(new Uint8Array(64)))}
-async function challenge(verifier:string){return b64url(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier))))}
-function redirectResult(returnTo:string,provider:string,ok:boolean,message:string){const u=new URL(returnTo);u.searchParams.set('integration',provider);u.searchParams.set(ok?'oauth_connected':'oauth_error',ok?'1':message.slice(0,240));return Response.redirect(u.toString(),302)}
-async function managerContext(req:Request){
- const auth=req.headers.get('Authorization')||'';if(!auth.startsWith('Bearer '))throw Object.assign(new Error('Authentication required'),{status:401});
- const userDb=createClient(supabaseUrl,anonKey,{global:{headers:{Authorization:auth}},auth:{persistSession:false,autoRefreshToken:false}});
- const{data:{user},error:ue}=await userDb.auth.getUser();if(ue||!user)throw Object.assign(new Error('Authentication required'),{status:401});
- const{data:profile,error:pe}=await userDb.from('profiles').select('company_id,role').eq('id',user.id).single();
- if(pe||!profile||!['owner','manager'].includes(profile.role))throw Object.assign(new Error('Manager access required'),{status:403});
- return{userDb,user,companyId:profile.company_id};
+function randomString(n=48){const b=new Uint8Array(n);crypto.getRandomValues(b);return b64url(b)}
+async function sha256(v:string){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));return b64url(new Uint8Array(b))}
+function redirect(provider:string,result:string,message=''){const u=new URL(APP);u.searchParams.set('integration',provider);u.searchParams.set('oauth',result);if(message)u.searchParams.set('message',message.slice(0,180));return Response.redirect(u.toString(),302)}
+async function manager(req:Request){
+ const h=req.headers.get('authorization')||'';if(!h.startsWith('Bearer '))throw Object.assign(new Error('Authentication required'),{status:401});
+ const jwt=h.slice(7);const{data,error}=await admin.auth.getUser(jwt);if(error||!data.user)throw Object.assign(new Error('Authentication required'),{status:401});
+ const{data:p,error:pe}=await admin.from('profiles').select('id,company_id,role').eq('id',data.user.id).single();
+ if(pe||!p||!['owner','manager'].includes(p.role))throw Object.assign(new Error('Manager access required'),{status:403});
+ return p;
 }
-function endpoints(provider:string,tenant?:string|null){
- if(provider==='google_calendar')return{authorize:'https://accounts.google.com/o/oauth2/v2/auth',token:'https://oauth2.googleapis.com/token'};
- if(provider==='microsoft_calendar'){const t=(tenant||'organizations').trim()||'organizations';return{authorize:`https://login.microsoftonline.com/${encodeURIComponent(t)}/oauth2/v2.0/authorize`,token:`https://login.microsoftonline.com/${encodeURIComponent(t)}/oauth2/v2.0/token`}}
- return{authorize:'https://www.linkedin.com/oauth/v2/authorization',token:'https://www.linkedin.com/oauth/v2/accessToken'};
+async function material(company:string,provider:string){const{data,error}=await admin.rpc('internal_provider_oauth_material',{p_company:company,p_provider:provider});if(error)throw error;return data}
+async function tokenMaterial(company:string,provider:string){const{data,error}=await admin.rpc('internal_provider_oauth_tokens',{p_company:company,p_provider:provider});if(error)throw error;return data}
+function microsoftEndpoints(tenant?:string){const t=(tenant||'organizations').trim()||'organizations';return{auth:`https://login.microsoftonline.com/${encodeURIComponent(t)}/oauth2/v2.0/authorize`,token:`https://login.microsoftonline.com/${encodeURIComponent(t)}/oauth2/v2.0/token`}}
+async function exchange(provider:string,code:string,state:any,mat:any){
+ const p=providers[provider];const endpoints=provider==='microsoft_calendar'?microsoftEndpoints(mat.tenant_id):p;
+ const body=new URLSearchParams({grant_type:'authorization_code',code,client_id:mat.client_id,redirect_uri:CALLBACK});
+ if(mat.client_secret)body.set('client_secret',mat.client_secret);
+ if(state.code_verifier)body.set('code_verifier',state.code_verifier);
+ if(provider==='microsoft_calendar')body.set('scope',String(mat.public_config?.oauth_scopes||p.scopes));
+ const r=await fetch(endpoints.token,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body,signal:AbortSignal.timeout(20000)});
+ const x=await r.json().catch(()=>({}));
+ if(!r.ok||!x.access_token)throw new Error('Token exchange failed: '+(x.error_description||x.error||r.status));
+ return x;
 }
-function defaultScopes(provider:string){
- if(provider==='google_calendar')return'openid email https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.calendarlist.readonly';
- if(provider==='microsoft_calendar')return'offline_access User.Read Calendars.ReadWrite';
- return'openid profile email';
-}
-async function exchange(provider:string,material:any,code:string){
- const ep=endpoints(provider,material.tenant_id),scope=material.requested_scopes||defaultScopes(provider);
- const body=new URLSearchParams({grant_type:'authorization_code',code,client_id:material.client_id,redirect_uri:material.redirect_uri});if(provider!=='linkedin')body.set('code_verifier',material.code_verifier);
- if(material.client_secret)body.set('client_secret',material.client_secret);
- if(provider==='microsoft_calendar')body.set('scope',scope);
- const r=await fetch(ep.token,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body,signal:AbortSignal.timeout(20000)});
- const text=await r.text();if(!r.ok)throw new Error('OAuth token exchange failed ('+r.status+')');
- let data:any;try{data=JSON.parse(text)}catch{throw new Error('OAuth provider returned an invalid token response')}
- if(!data.access_token)throw new Error('OAuth provider did not return an access token');
- return data;
-}
-async function refresh(provider:string,material:any){
- if(!material.refresh_token)throw new Error('Provider session requires reconnection');
- const ep=endpoints(provider,material.tenant_id),scope=material.scope||defaultScopes(provider);
- const body=new URLSearchParams({grant_type:'refresh_token',refresh_token:material.refresh_token,client_id:material.client_id});
- if(material.client_secret)body.set('client_secret',material.client_secret);
- if(provider==='microsoft_calendar')body.set('scope',scope);
- const r=await fetch(ep.token,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body,signal:AbortSignal.timeout(20000)});
- if(!r.ok)throw new Error('Provider token refresh failed ('+r.status+')');
- const data=await r.json();if(!data.access_token)throw new Error('Provider did not return a refreshed access token');return data;
-}
-async function providerTest(provider:string,token:string){
- const headers={Authorization:'Bearer '+token,'Accept':'application/json'};
- if(provider==='google_calendar'){
-   const [cal,who]=await Promise.all([
-     fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList?maxResults=1',{headers,signal:AbortSignal.timeout(15000)}),
-     fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers,signal:AbortSignal.timeout(15000)})
-   ]);
-   if(!cal.ok)throw new Error('Google Calendar permission test failed ('+cal.status+')');
-   const account=who.ok?await who.json():{};return{provider_user_id:account.sub||null,email:account.email||null,name:account.name||null};
- }
- if(provider==='microsoft_calendar'){
-   const [cal,who]=await Promise.all([
-     fetch('https://graph.microsoft.com/v1.0/me/calendars?$top=1',{headers,signal:AbortSignal.timeout(15000)}),
-     fetch('https://graph.microsoft.com/v1.0/me?$select=id,displayName,mail,userPrincipalName',{headers,signal:AbortSignal.timeout(15000)})
-   ]);
-   if(!cal.ok)throw new Error('Microsoft Calendar permission test failed ('+cal.status+')');
-   const account=who.ok?await who.json():{};return{provider_user_id:account.id||null,email:account.mail||account.userPrincipalName||null,name:account.displayName||null};
- }
- const who=await fetch('https://api.linkedin.com/v2/userinfo',{headers,signal:AbortSignal.timeout(15000)});
- if(!who.ok)throw new Error('LinkedIn identity permission test failed ('+who.status+')');
- const account=await who.json();return{provider_user_id:account.sub||null,email:account.email||null,name:account.name||null};
-}
-async function storeTokens(companyId:string,provider:string,tokens:any,account:any,existingRefresh?:string|null){
- const expiresAt=tokens.expires_in?new Date(Date.now()+Number(tokens.expires_in)*1000).toISOString():null;
- const{error}=await admin.rpc('service_store_integration_oauth_tokens',{
-   p_company:companyId,p_provider:provider,p_access_token:tokens.access_token,
-   p_refresh_token:tokens.refresh_token||existingRefresh||null,p_expires_at:expiresAt,
-   p_scope:tokens.scope||'',p_token_type:tokens.token_type||'Bearer',p_external_account:account,p_test_result:'OAuth connection verified'
- });
- if(error)throw new Error(error.message);
-}
-Deno.serve(async(req)=>{
- if(req.method==='OPTIONS')return new Response('ok',{headers:cors});
- const url=new URL(req.url),isCallback=url.pathname.endsWith('/callback');
+async function accountLabel(provider:string,access:string){
  try{
-  if(isCallback){
-    const state=url.searchParams.get('state'),code=url.searchParams.get('code'),providerError=url.searchParams.get('error');
-    if(!state)return redirectResult(appUrl+'/dashboard/partner-management','unknown',false,'Missing OAuth state');
-    const{data:material,error:me}=await admin.rpc('service_consume_integration_oauth_state',{p_state:state});
-    if(me||!material)return redirectResult(appUrl+'/dashboard/partner-management','unknown',false,'OAuth state expired or invalid');
-    if(providerError)return redirectResult(material.return_to,material.provider,false,url.searchParams.get('error_description')||providerError);
-    if(!code)return redirectResult(material.return_to,material.provider,false,'Provider did not return an authorization code');
-    const tokens=await exchange(material.provider,material,code);
-    const account=await providerTest(material.provider,tokens.access_token);
-    await storeTokens(material.company_id,material.provider,tokens,account);
-    return redirectResult(material.return_to,material.provider,true,'Connected');
-  }
+  if(provider==='google_calendar'){const r=await fetch('https://www.googleapis.com/oauth2/v2/userinfo',{headers:{Authorization:'Bearer '+access},signal:AbortSignal.timeout(12000)});if(r.ok){const x=await r.json();return x.email||x.name||''}}
+  if(provider==='microsoft_calendar'){const r=await fetch('https://graph.microsoft.com/v1.0/me?$select=displayName,mail,userPrincipalName',{headers:{Authorization:'Bearer '+access},signal:AbortSignal.timeout(12000)});if(r.ok){const x=await r.json();return x.mail||x.userPrincipalName||x.displayName||''}}
+  if(provider==='linkedin'){const r=await fetch('https://api.linkedin.com/v2/userinfo',{headers:{Authorization:'Bearer '+access},signal:AbortSignal.timeout(12000)});if(r.ok){const x=await r.json();return x.email||x.name||x.sub||''}}
+ }catch{}
+ return '';
+}
+async function refresh(provider:string,company:string,t:any){
+ const p=providers[provider];if(!t.refresh_token)throw new Error('Provider session requires reconnection');
+ const pc=t.public_config||{};const endpoints=provider==='microsoft_calendar'?microsoftEndpoints(pc.tenant_id):p;
+ const body=new URLSearchParams({grant_type:'refresh_token',refresh_token:t.refresh_token,client_id:pc.client_id||''});
+ if(t.client_secret)body.set('client_secret',t.client_secret);
+ if(provider==='microsoft_calendar')body.set('scope',String(pc.oauth_scopes||p.scopes));
+ const r=await fetch(endpoints.token,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body,signal:AbortSignal.timeout(20000)});
+ const x=await r.json().catch(()=>({}));
+ if(!r.ok||!x.access_token)throw new Error('Token refresh failed: '+(x.error_description||x.error||r.status));
+ const expires=new Date(Date.now()+Number(x.expires_in||3600)*1000).toISOString();
+ const{error}=await admin.rpc('internal_provider_oauth_store_tokens',{p_company:company,p_provider:provider,p_access_token:x.access_token,p_refresh_token:x.refresh_token||'',p_expires_at:expires,p_scopes:x.scope||pc.granted_scopes||'',p_account_label:pc.connected_account||''});
+ if(error)throw error;return x.access_token;
+}
+async function currentAccess(provider:string,company:string){
+ const t=await tokenMaterial(company,provider);if(!t.access_token)throw new Error('No OAuth access token is stored');
+ const exp=t.public_config?.token_expires_at?new Date(t.public_config.token_expires_at).getTime():0;
+ if(exp&&exp>Date.now()+60000)return t.access_token;
+ return await refresh(provider,company,t);
+}
 
-  if(req.method!=='POST')return json({error:'Method not allowed'},405);
-  const ctx=await managerContext(req),body=await req.json().catch(()=>({})),action=String(body.action||''),provider=String(body.provider||'');
-  if(!oauthProviders.has(provider))return json({error:'This provider does not support Vorlen OAuth/PKCE.'},400);
-
+Deno.serve(async(req)=>{
+ if(req.method==='OPTIONS')return new Response('ok',{headers:cors(req)});
+ const url=new URL(req.url),isCallback=req.method==='GET'&&url.pathname.endsWith('/callback');
+ if(isCallback){
+  const stateRaw=url.searchParams.get('state')||'',code=url.searchParams.get('code')||'',providerError=url.searchParams.get('error');if(!stateRaw)return redirect('unknown','error','Missing OAuth state');
+  let state:any=null;
+  try{
+   const stateHash=await sha256(stateRaw);const{data,error}=await admin.rpc('internal_provider_oauth_consume',{p_state_hash:stateHash});if(error)throw error;state=data;
+   const provider=state.provider;if(providerError)throw new Error(url.searchParams.get('error_description')||providerError);if(!code)throw new Error('Authorization code was not returned');
+   const mat=await material(state.company_id,provider);if(!mat?.client_id||!mat?.client_secret)throw new Error('OAuth application credentials are incomplete');
+   const token=await exchange(provider,code,state,mat);const label=await accountLabel(provider,token.access_token);const expires=new Date(Date.now()+Number(token.expires_in||3600)*1000).toISOString();
+   const{error:saveError}=await admin.rpc('internal_provider_oauth_store_tokens',{p_company:state.company_id,p_provider:provider,p_access_token:token.access_token,p_refresh_token:token.refresh_token||'',p_expires_at:expires,p_scopes:token.scope||providers[provider].scopes,p_account_label:label});if(saveError)throw saveError;
+   await admin.rpc('internal_provider_oauth_cleanup',{p_state_id:state.id});return redirect(provider,'success','Connected'+(label?' as '+label:''));
+  }catch(e){if(state?.id)await admin.rpc('internal_provider_oauth_cleanup',{p_state_id:state.id});return redirect(state?.provider||'unknown','error',e instanceof Error?e.message:'OAuth connection failed')}
+ }
+ if(req.method!=='POST')return json(req,{error:'Method not allowed'},405);
+ try{
+  const me=await manager(req),body=await req.json().catch(()=>({})),action=String(body.action||''),provider=String(body.provider||''),p=providers[provider];
+  if(!p)return json(req,{error:'This provider does not support an OAuth connection from Vorlen.'},400);
   if(action==='start'){
-    const verifier=randomVerifier(),codeChallenge=await challenge(verifier),redirectUri=supabaseUrl+'/functions/v1/provider-oauth/callback',returnTo=appUrl+'/dashboard/partner-management';
-    const{data:prepared,error}=await admin.rpc('service_prepare_integration_oauth',{p_company:ctx.companyId,p_provider:provider,p_user:ctx.user.id,p_verifier:verifier,p_redirect_uri:redirectUri,p_return_to:returnTo});
-    if(error)throw new Error(error.message);
-    const ep=endpoints(provider,prepared.tenant_id),scope=prepared.requested_scopes||defaultScopes(provider);
-    const authUrl=new URL(ep.authorize);
-    authUrl.searchParams.set('client_id',prepared.client_id);authUrl.searchParams.set('redirect_uri',redirectUri);authUrl.searchParams.set('response_type','code');
-    authUrl.searchParams.set('state',prepared.state);authUrl.searchParams.set('scope',scope);if(provider!=='linkedin'){authUrl.searchParams.set('code_challenge',codeChallenge);authUrl.searchParams.set('code_challenge_method','S256')}
-    if(provider==='google_calendar'){authUrl.searchParams.set('access_type','offline');authUrl.searchParams.set('include_granted_scopes','true');authUrl.searchParams.set('prompt','consent')}
-    return json({authorization_url:authUrl.toString()});
+   const mat=await material(me.company_id,provider);if(!mat?.client_id||!mat?.client_secret)return json(req,{error:'Save the provider OAuth client ID and client secret before connecting.'},409);
+   const rawState=randomString(32),stateHash=await sha256(rawState);let verifier:string|null=null,codeChallenge:string|null=null;
+   if(p.mode==='pkce'){verifier=randomString(64);codeChallenge=await sha256(verifier)}
+   const{error:stateError}=await admin.rpc('internal_provider_oauth_begin',{p_company:me.company_id,p_provider:provider,p_user:me.id,p_state_hash:stateHash,p_code_verifier:verifier});if(stateError)throw stateError;
+   const endpoints=provider==='microsoft_calendar'?microsoftEndpoints(mat.tenant_id):p;const a=new URL(endpoints.auth);
+   a.searchParams.set('response_type','code');a.searchParams.set('client_id',mat.client_id);a.searchParams.set('redirect_uri',CALLBACK);a.searchParams.set('state',rawState);a.searchParams.set('scope',String(mat.public_config?.oauth_scopes||p.scopes));
+   if(provider==='google_calendar'){a.searchParams.set('access_type','offline');a.searchParams.set('include_granted_scopes','true');a.searchParams.set('prompt','consent')}
+   if(codeChallenge){a.searchParams.set('code_challenge',codeChallenge);a.searchParams.set('code_challenge_method','S256')}
+   return json(req,{authorization_url:a.toString(),callback_url:CALLBACK,pkce:p.mode==='pkce'});
   }
-
   if(action==='test'){
-    const{data:material,error}=await admin.rpc('service_integration_oauth_material',{p_company:ctx.companyId,p_provider:provider});if(error)throw new Error(error.message);
-    let token=material?.access_token,tokens:any=null;
-    const expires=material?.expires_at?new Date(material.expires_at).getTime():0;
-    if(!token||!expires||expires<Date.now()+120000){tokens=await refresh(provider,material);token=tokens.access_token}
-    const account=await providerTest(provider,token);
-    if(tokens)await storeTokens(ctx.companyId,provider,tokens,account,material.refresh_token);
-    else await storeTokens(ctx.companyId,provider,{access_token:token,refresh_token:material.refresh_token,expires_in:Math.max(60,Math.floor((expires-Date.now())/1000)),scope:material.scope,token_type:'Bearer'},account,material.refresh_token);
-    return json({ok:true,account});
+   const access=await currentAccess(provider,me.company_id);const tm=await tokenMaterial(me.company_id,provider),endpoint=String(tm.public_config?.test_url||p.test);
+   const r=await fetch(endpoint,{headers:{Authorization:'Bearer '+access,Accept:'application/json'},signal:AbortSignal.timeout(15000)});const msg=r.ok?'Connection verified':'Provider returned HTTP '+r.status;
+   await admin.rpc('internal_provider_oauth_test_result',{p_company:me.company_id,p_provider:provider,p_ok:r.ok,p_result:msg});
+   return json(req,{ok:r.ok,message:msg},r.ok?200:502);
   }
-
-  if(action==='disconnect'){
-    const{error}=await ctx.userDb.rpc('manager_disconnect_oauth_connection',{p_provider:provider});if(error)throw new Error(error.message);
-    return json({ok:true});
-  }
-  return json({error:'Unsupported action'},400);
- }catch(e){console.error('provider-oauth',e instanceof Error?e.message:String(e));const status=(e as any)?.status||500;return json({error:e instanceof Error?e.message:'Provider OAuth failed'},status)}
+  return json(req,{error:'Unknown action'},400);
+ }catch(e){const m=e instanceof Error?e.message:'Provider OAuth failed';console.error('provider-oauth',m);return json(req,{error:m},(e as any)?.status||500)}
 });
