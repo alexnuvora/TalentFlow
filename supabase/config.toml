@@ -38,3 +38,7 @@ verify_jwt = false
 # Authenticated client-only secure CV link issuer.
 [functions.client-candidate-cv]
 verify_jwt = true
+
+# Authenticated owner/manager candidate erasure using the audited privacy workflow.
+[functions.manager-candidate-erasure]
+verify_jwt = true
