@@ -737,3 +737,51 @@ where a.status='accepted'
     where x.partner_id=a.partner_id
       and x.version='partner-2026-09-26-split-v1'
   );
+
+
+create or replace function private.enforce_partner_attribution_scope()
+returns trigger
+language plpgsql
+security definer
+set search_path=''
+as $$
+declare
+  v_partner_company uuid;
+  v_nonnull integer;
+begin
+  select p.company_id into v_partner_company
+  from public.profiles p
+  where p.id=new.partner_id and p.role='partner';
+
+  if v_partner_company is null or v_partner_company<>new.company_id then
+    raise exception 'Partner attribution must belong to the same workspace as the partner';
+  end if;
+
+  v_nonnull:=num_nonnulls(new.client_id,new.job_id,new.candidate_id,new.placement_id);
+  if v_nonnull<>1 then raise exception 'Partner attribution must reference exactly one entity'; end if;
+
+  if new.attribution_type='client_originator' then
+    if new.client_id is null or not exists(select 1 from public.clients c where c.id=new.client_id and c.company_id=new.company_id) then
+      raise exception 'Client attribution must reference a client in the same workspace';
+    end if;
+  elsif new.attribution_type='vacancy_originator' then
+    if new.job_id is null or not exists(select 1 from public.jobs j where j.id=new.job_id and j.company_id=new.company_id) then
+      raise exception 'Vacancy attribution must reference a vacancy in the same workspace';
+    end if;
+  elsif new.attribution_type='candidate_originator' then
+    if new.candidate_id is null or not exists(select 1 from public.candidates c where c.id=new.candidate_id and c.company_id=new.company_id) then
+      raise exception 'Candidate attribution must reference a candidate in the same workspace';
+    end if;
+  elsif new.attribution_type in ('placement_owner','client_commission_owner','candidate_commission_owner') then
+    if new.placement_id is null or not exists(select 1 from public.placements p where p.id=new.placement_id and p.company_id=new.company_id) then
+      raise exception 'Placement attribution must reference a placement in the same workspace';
+    end if;
+  else
+    raise exception 'Invalid attribution type';
+  end if;
+
+  return new;
+end
+$$;
+
+revoke all on function private.enforce_partner_attribution_scope() from public,anon,authenticated;
