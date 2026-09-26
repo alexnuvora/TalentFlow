@@ -2,15 +2,18 @@ import {useEffect,useMemo,useState} from 'react';
 import {Link} from 'react-router-dom';
 import {Badge,Card,Empty,SkeletonRows} from '../components/Ui';
 import {supabase} from '../lib/supabase';
+import {useWorkspaceAccess} from '../lib/access';
 
 const scopeLabel=(scope:string)=>scope==='candidate_and_vacancy'?'Assigned candidate + vacancy':scope==='candidate'?'Assigned candidate':'Assigned vacancy';
 const toneFor=(status:string)=>status==='placed'?'green':status==='rejected'||status==='withdrawn'?'red':status==='offer'||status==='interview'?'amber':'blue';
 
 export default function PartnerApplications(){
+ const access=useWorkspaceAccess();
  const[rows,setRows]=useState<any[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[query,setQuery]=useState(''),[status,setStatus]=useState('all');
- useEffect(()=>{let active=true;(async()=>{setLoading(true);setError('');const{data,error}=await supabase.functions.invoke('partner-applications-list',{body:{}});if(!active)return;if(error){let detail=error.message||'Unable to load applications.';try{const context=(error as any).context;if(context instanceof Response){const body=await context.clone().json();if(body?.error)detail=body.error}}catch{}setError(detail);setRows([])}else setRows(data?.applications||[]);setLoading(false)})();return()=>{active=false}},[]);
+ useEffect(()=>{if(access.loading)return;if(!access.candidateProcessingActive){setRows([]);setError('');setLoading(false);return}let active=true;(async()=>{setLoading(true);setError('');const{data,error}=await supabase.functions.invoke('partner-applications-list',{body:{}});if(!active)return;if(error){let detail=error.message||'Unable to load applications.';try{const context=(error as any).context;if(context instanceof Response){const body=await context.clone().json();if(body?.error)detail=body.error}}catch{}setError(detail);setRows([])}else setRows(data?.applications||[]);setLoading(false)})();return()=>{active=false}},[access.loading,access.candidateProcessingActive]);
  const statuses=useMemo(()=>Array.from(new Set(rows.map(x=>x.status).filter(Boolean))).sort(),[rows]);
  const filtered=useMemo(()=>rows.filter(a=>{const hay=`${a.candidate?.full_name||''} ${a.candidate?.email||''} ${a.job?.title||''} ${a.job?.client?.company_name||''}`.toLowerCase();return(!query||hay.includes(query.toLowerCase()))&&(status==='all'||a.status===status)}),[rows,query,status]);
+ if(!access.loading&&!access.candidateProcessingActive)return <div className="page partner-page"><div className="page-actions"><div><div className="eyebrow">MY APPLICATIONS</div><h2>Applications</h2><p>Application handling is unavailable while candidate processing is disabled.</p></div></div><Card><h3>Candidate processing is disabled</h3><p>Vorlen will unlock assigned applications when the candidate-processing compliance checkpoint is active.</p></Card></div>;
  return <div className="page partner-page">
   <div className="page-actions"><div><div className="eyebrow">MY APPLICATIONS</div><h2>Applications</h2><p>Applications are limited to candidates or vacancies actively assigned to you. Other partners' recruitment records are not exposed.</p></div></div>
   <div className="notice"><strong>Controlled candidate access.</strong> This page shows the minimum application context needed for your assigned recruitment work. CVs, screening answers and wider candidate records remain in the approved candidate workflows.</div>
