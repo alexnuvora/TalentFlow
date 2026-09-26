@@ -33,7 +33,7 @@ function defaultScopes(provider:string){
 }
 async function exchange(provider:string,material:any,code:string){
  const ep=endpoints(provider,material.tenant_id),scope=material.requested_scopes||defaultScopes(provider);
- const body=new URLSearchParams({grant_type:'authorization_code',code,client_id:material.client_id,redirect_uri:material.redirect_uri,code_verifier:material.code_verifier});
+ const body=new URLSearchParams({grant_type:'authorization_code',code,client_id:material.client_id,redirect_uri:material.redirect_uri});if(provider!=='linkedin')body.set('code_verifier',material.code_verifier);
  if(material.client_secret)body.set('client_secret',material.client_secret);
  if(provider==='microsoft_calendar')body.set('scope',scope);
  const r=await fetch(ep.token,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body,signal:AbortSignal.timeout(20000)});
@@ -111,7 +111,7 @@ Deno.serve(async(req)=>{
     const ep=endpoints(provider,prepared.tenant_id),scope=prepared.requested_scopes||defaultScopes(provider);
     const authUrl=new URL(ep.authorize);
     authUrl.searchParams.set('client_id',prepared.client_id);authUrl.searchParams.set('redirect_uri',redirectUri);authUrl.searchParams.set('response_type','code');
-    authUrl.searchParams.set('state',prepared.state);authUrl.searchParams.set('scope',scope);authUrl.searchParams.set('code_challenge',codeChallenge);authUrl.searchParams.set('code_challenge_method','S256');
+    authUrl.searchParams.set('state',prepared.state);authUrl.searchParams.set('scope',scope);if(provider!=='linkedin'){authUrl.searchParams.set('code_challenge',codeChallenge);authUrl.searchParams.set('code_challenge_method','S256')}
     if(provider==='google_calendar'){authUrl.searchParams.set('access_type','offline');authUrl.searchParams.set('include_granted_scopes','true');authUrl.searchParams.set('prompt','consent')}
     return json({authorization_url:authUrl.toString()});
   }
