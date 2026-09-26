@@ -42,3 +42,7 @@ verify_jwt = true
 # Authenticated owner/manager candidate erasure using the audited privacy workflow.
 [functions.manager-candidate-erasure]
 verify_jwt = true
+
+# Authenticated partner-only candidate delivery workspace.
+[functions.partner-candidate-workspace]
+verify_jwt = true
