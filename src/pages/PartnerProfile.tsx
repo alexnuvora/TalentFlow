@@ -13,7 +13,7 @@ const statusTone=(v:boolean):'green'|'neutral'=>v?'green':'neutral';
 export default function PartnerProfile(){
  const access=useWorkspaceAccess(),toast=useToast(),navigate=useNavigate();
  const[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState('');
- const[user,setUser]=useState<any>(null),[profile,setProfile]=useState<any>(null),[partnerProfile,setPartnerProfile]=useState<any>(null),[onboarding,setOnboarding]=useState<any>(null),[agreement,setAgreement]=useState<any>(null);
+ const[user,setUser]=useState<any>(null),[profile,setProfile]=useState<any>(null),[partnerProfile,setPartnerProfile]=useState<any>(null),[onboarding,setOnboarding]=useState<any>(null),[agreement,setAgreement]=useState<any>(null),[pendingAgreement,setPendingAgreement]=useState<any>(null);
  const[stats,setStats]=useState({clients:0,jobs:0,candidates:0,placements:0,paid:0});
  const[form,setForm]=useState({display_name:'',phone:'',country:'',address:'',trading_name:'',linkedin_url:'',timezone:'UTC',sectors:'',regions:'',role_types:'',availability_hours:'',profile_photo_url:'',payment_method:'',payment_account_name:'',payment_currency:'GBP',payment_details_reference:''});
 
@@ -26,14 +26,14 @@ export default function PartnerProfile(){
    supabase.from('profiles').select('id,full_name,role,created_at').eq('id',u.id).maybeSingle(),
    supabase.from('partner_profiles').select('*').eq('user_id',u.id).maybeSingle(),
    supabase.from('partner_onboarding').select('*').eq('partner_id',u.id).maybeSingle(),
-   supabase.from('partner_agreements').select('*').eq('partner_id',u.id).order('created_at',{ascending:false}).limit(1).maybeSingle(),
+   supabase.from('partner_agreements').select('*').eq('partner_id',u.id).order('created_at',{ascending:false}),
    supabase.from('partner_assignments').select('client_id,job_id,candidate_id,completed_at').eq('partner_id',u.id),
    supabase.from('partner_attributions').select('placement_id,attribution_type').eq('partner_id',u.id).in('attribution_type',['client_commission_owner','candidate_commission_owner']).eq('status','active'),
    supabase.from('partner_commissions').select('amount,status').eq('partner_user_id',u.id),
    supabase.from('partner_commission_adjustments').select('amount,status').eq('partner_user_id',u.id)
   ]);
   const first=pe||ppe||oe||ae||ase||ate||ce||adje;if(first)setError(first.message);
-  setProfile(p);setPartnerProfile(pp);setOnboarding(o);setAgreement(a);
+  const agreements=Array.isArray(a)?a:[];const acceptedAgreement=agreements.find((x:any)=>x.status==='accepted')||null;const pendingSplit=agreements.find((x:any)=>x.status==='pending'&&x.commission_model==='split_15_15')||null;setProfile(p);setPartnerProfile(pp);setOnboarding(o);setAgreement(acceptedAgreement||pendingSplit);setPendingAgreement(pendingSplit);
   const active=(assign||[]).filter((x:any)=>!x.completed_at);
   setStats({
    clients:new Set(active.map((x:any)=>x.client_id).filter(Boolean)).size,
@@ -92,7 +92,7 @@ export default function PartnerProfile(){
 
  return <div className="page partner-page">
   <div className="page-actions"><div><div className="eyebrow">PARTNER PROFILE</div><h2>Your Vorlen partner account</h2><p>Personal details, partnership status, permissions, preferences, payment administration and account security.</p></div><Badge tone={active?'green':'amber'}>{String(onboarding.status).replaceAll('_',' ')}</Badge></div>
-  {error&&<div className="notice error">{error}</div>}{agreement?.status==='pending'&&agreement?.commission_model==='split_15_15'&&<div className="notice"><strong>Updated commission terms ready.</strong> Vorlen has moved to a 15% Client Development + 15% Candidate Delivery model. Review and accept the new agreement before new split commission can accrue. <Link to="/dashboard/partner-onboarding">Review agreement</Link></div>}
+  {error&&<div className="notice error">{error}</div>}{pendingAgreement&&<div className="notice"><strong>Updated commission terms ready.</strong> Vorlen has moved to a 15% Client Development + 15% Candidate Delivery model. Your existing accepted agreement remains your current record until you accept the updated version. <Link to="/dashboard/partner-onboarding">Review agreement</Link></div>}
 
   <Card>
    <div className="profile-hero">
