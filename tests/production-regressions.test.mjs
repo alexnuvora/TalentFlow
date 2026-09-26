@@ -83,3 +83,6 @@ test('provider OAuth uses one-time state, server-held tokens and provider-correc
 
 
 test('CEO user deletion terminates partner relationship and surfaces backend detail',()=>{const admin=read('supabase/functions/admin-user-management/index.ts'),settings=read('src/pages/Settings.tsx');assert.match(admin,/status:'terminated'/);assert.match(admin,/retained audit, financial or recruitment records/);assert.match(admin,/deleteUser\(target\.id\)/);assert.match(settings,/Partner relationships will be terminated automatically/);assert.match(settings,/error\.context instanceof Response/);});
+
+
+test('mobile workspace navigation exposes every allowed route without hidden overflow traps',()=>{const layout=read('src/components/Layout.tsx'),css=read('src/v9.css');assert.match(layout,/mobile-nav-drawer/);assert.match(layout,/mobileLinks\.map/);assert.match(layout,/mobile-menu-trigger/);assert.match(layout,/aria-label="Open workspace menu"/);assert.match(layout,/Settings/);assert.match(layout,/Sign out/);assert.doesNotMatch(css,/\.sidebar nav a:nth-child\(n\+6\)\{display:none\}/);assert.match(css,/@media\(max-width:620px\)/);assert.match(css,/\.tabs\{overflow-x:auto/);assert.match(css,/\.table-wrap\{max-width:100%;overflow-x:auto/);assert.match(css,/\.list-row\{align-items:flex-start;flex-direction:column\}/);assert.match(css,/@media\(max-width:390px\)/);});
