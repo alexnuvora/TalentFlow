@@ -1,76 +1,118 @@
-# Vorlen Recruitment Partner Agreement — operating template
+# Vorlen Recruitment Partner Terms — split commission model
 
-> Operational template for legal review before signature. Complete the bracketed commercial/legal details before onboarding a live partner.
+**Effective version:** `partner-2026-09-26-split-v2`
 
-## Parties
-**Vorlen recruitment business:** [legal entity name, company number, registered address] ("Vorlen")  
-**Recruitment Partner:** [full legal name / business name, address, Pakistan tax/registration details where applicable] ("Partner")
+## 1. Parties and status
 
-## Appointment and status
-The Partner is appointed on a non-exclusive independent-contractor basis to identify prospective hiring clients, source candidates and support recruitment assignments allocated through Vorlen. Nothing in this agreement creates employment, worker status, partnership, agency authority to bind Vorlen, or authority to agree fees/terms with a hirer unless Vorlen gives written authority.
+These terms are between **Ivy and Pearls Ltd trading as Vorlen**, company number **17387520**, registered in England and Wales with registered office at **10 South Street, Rochdale, United Kingdom, OL16 2EP** ("Vorlen"), and the recruitment partner identified in the accepted agreement record ("Partner").
 
-The practical working arrangement must remain consistent with independent-contractor status. The Partner controls when and where they perform the services, subject to agreed deadlines, confidentiality, security and client/candidate requirements.
+The Partner acts as an independent recruitment/business-development contractor. Nothing in these terms creates employment, worker status, a legal partnership, or authority to bind Vorlen.
 
-## Commission
-The standard partner commission pool is a maximum of **30%** of the qualifying net recruitment fee actually received and retained by Vorlen, split into two independently attributable components:
+## 2. Authorised scope
 
-- **15% Client Development** — for the partner recorded by Vorlen as responsible for the evidence-backed employer/client side of the placement, including genuine relationship development, decision-maker engagement, client onboarding/approved commercial progression and bringing the relevant hiring requirement into Vorlen.
-- **15% Candidate Delivery** — for the partner recorded by Vorlen as responsible for sourcing/engaging the candidate who is ultimately placed and progressing that candidate through the authorised Vorlen recruitment workflow.
+The Partner may carry out only the recruitment activities enabled for their Vorlen partner specialism and account permissions. Recruitment records, client activity, candidate activity, submissions, interviews and commission evidence must be maintained in authorised Vorlen systems.
 
-A Partner earns only the component(s) attributed to them in Vorlen. If the same Partner validly performs both sides, they may earn both components, up to 30% in total. Merely adding a company/contact, uploading a CV, or creating a duplicate record does not create commission entitlement.
+## 3. Maximum partner commission pool
 
-No commission becomes payable until Vorlen has received cleared client funds. VAT, refunds, credits, rebates, chargebacks and pass-through costs are excluded. If a client payment includes VAT, commission is calculated only on the corresponding net recruitment-fee portion received. If a fee is refunded or reduced after approval/payment, the change must be handled through the auditable commission-adjustment ledger and any recovery/offset must be evidenced.
+The standard maximum partner commission pool for a qualifying permanent placement is **30%** of the qualifying net recruitment fee actually received and retained by Vorlen. It is divided into two separate components:
 
-The Partner cannot charge candidates or work-seekers any fee for work-finding services.
+- **15% Client Development**
+- **15% Candidate Delivery**
 
-## Client terms and authority
-The Partner may prospect for potential clients but must not bind Vorlen, quote non-approved commercial terms, sign a client contract, make warranties, or represent that a vacancy is confirmed unless Vorlen has recorded the hirer's instruction.
+A Partner earns only the component or components for which Vorlen records them as the verified commission owner for that placement. A **Hybrid Partner** who validly performs both sides may earn both components, up to **30% in total**.
 
-Vorlen controls final client terms, pricing, invoicing and collection.
+## 4. Client Development — 15%
 
-## Candidate handling
-The Partner must use candidate information only for authorised Vorlen recruitment purposes and only for vacancies or talent-pool activity assigned to them. Candidate information must not be copied to personal drives, private email, messaging apps, spreadsheets or another ATS unless Vorlen has expressly authorised the transfer.
+The Client Development component requires evidence-backed responsibility for the employer side of the relevant placement. This normally includes genuine relationship development with the hiring organisation, engagement with an appropriate recruitment decision-maker, progressing the client through Vorlen onboarding and manager-approved commercial terms, obtaining or progressing a genuine hiring instruction, and bringing the relevant vacancy into the authorised Vorlen workflow.
 
-Identifiable candidate information may be submitted to a prospective employer only through the authorised Vorlen workflow and where the applicable recruitment business has a lawful basis and authority to make that submission.
+Merely adding a company, contact, lead, vacancy or publicly available information to Vorlen does not create commission entitlement.
 
-## Confidentiality and security
+## 5. Candidate Delivery — 15%
+
+The Candidate Delivery component requires evidence-backed responsibility for sourcing or engaging the candidate who is ultimately placed and materially progressing that candidate through the authorised Vorlen recruitment workflow, including appropriate screening/qualification and candidate authority where required.
+
+Merely uploading a CV, viewing a candidate, creating a duplicate candidate record or making an unsupported ownership claim does not create commission entitlement.
+
+## 6. Attribution and disputes
+
+Vorlen's timestamped client, vacancy, candidate, submission, placement and manager-reviewed attribution records determine commission ownership.
+
+Each placement can have only one active **Client Development** commission owner and one active **Candidate Delivery** commission owner. A commission side may be reassigned before approval where the evidence supports correction. Once that side has been approved or paid, its financial ownership is locked except for a documented accounting correction or adjustment.
+
+Duplicate or disputed claims are decided by an authorised Vorlen manager using the recorded evidence.
+
+## 7. Commission base and payment trigger
+
+Commission is calculated only on qualifying **net recruitment fees actually received and retained by Vorlen**.
+
+The following are excluded from the commission base:
+
+- VAT;
+- refunds and credits;
+- rebates;
+- chargebacks;
+- pass-through costs;
+- candidate-paid sums; and
+- any amount not retained by Vorlen.
+
+If a client pays an invoice partly, commission accrues only on the corresponding net recruitment-fee portion actually received.
+
+No commission is earned merely because a candidate is introduced, an invoice is issued, or a placement is recorded.
+
+## 8. Refunds, rebates and later changes
+
+If qualifying client fees increase, decrease, are refunded, rebated or otherwise adjusted after commission has accrued, been approved or been paid, Vorlen records the corresponding commission adjustment in the auditable commission ledger.
+
+Any recovery or offset must be evidenced. A paid commission record is not silently rewritten.
+
+## 9. Client terms and authority
+
+Partners may develop employer relationships, discuss hiring needs and gather commercial information within their assigned capabilities, but must not quote, agree, accept or vary recruitment fees, payment terms, rebates, guarantees, exclusivity, candidate-ownership periods or any other contractual commitment on behalf of Vorlen unless expressly authorised in writing by Vorlen.
+
+A client engagement becomes binding only when the applicable terms are approved and recorded by an authorised Vorlen manager.
+
+## 10. Candidate protection and work-seeker fees
+
+A Partner must not charge a candidate or work-seeker any fee for work-finding services.
+
+Candidate personal information may be processed only for authorised recruitment purposes through approved Vorlen systems and must not be exported, retained privately, reused or disclosed outside the authorised workflow.
+
+Identifiable candidate information may be submitted to an employer only where the applicable lawful basis and candidate authority requirements have been met.
+
+## 11. Data protection, confidentiality and security
+
+The Partner must comply with applicable data-protection, confidentiality and security requirements, including Vorlen instructions governing UK GDPR restricted transfers where relevant.
+
 The Partner must:
-- keep credentials private and use MFA where available;
-- access Vorlen only from devices/accounts under their control;
-- immediately report suspected loss, unauthorised access, phishing, disclosure or credential compromise;
-- not bulk-export candidate/client information;
-- not share CV links or candidate records outside the authorised recruitment purpose;
-- comply with Vorlen security instructions and access reviews; and
-- permanently delete local copies when instructed or when the engagement ends.
 
-Vorlen may suspend or revoke access immediately to protect candidates, clients or the service.
+- keep credentials private;
+- use MFA where available;
+- promptly report suspected loss, unauthorised access or disclosure;
+- avoid unauthorised bulk exports and local copies; and
+- return or delete personal/confidential data when required.
 
-## Data protection and Pakistan access
-Before the Partner can access live candidate personal information from Pakistan, the parties must document their data-protection roles and execute the required data-processing/data-sharing terms.
+## 12. AI and recruitment decisions
 
-Where the arrangement is a restricted transfer under UK GDPR, Vorlen must record the applicable transfer mechanism before access is enabled. Where appropriate safeguards are used, the required UK data protection test / transfer risk assessment must be completed and any additional technical, organisational or contractual protections implemented.
+AI-generated screening, summaries, matching or scores are decision-support tools only. The Partner must review source evidence and must not make a final hiring or rejection decision solely because of an AI output.
 
-The Partner must process personal information only on documented instructions where acting as a processor, assist with rights/security obligations as agreed, notify Vorlen of incidents without undue delay, and return/delete personal information at termination.
+Protected characteristics must not be inferred or used unlawfully.
 
-## AI and recruitment decisions
-AI-generated screening, summaries and scores are decision support. The Partner must review source evidence and must not make a final hiring/rejection decision solely because of an AI score or output. Protected characteristics must not be inferred or used unlawfully.
+## 13. Conduct, records and non-circumvention
 
-## Ownership and non-circumvention
-Vorlen retains its platform, brand, systems, client contracts and confidential business information. Candidate personal information is not owned by either party and remains subject to data-protection law.
+The Partner must act professionally, accurately describe the Vorlen relationship, comply with applicable recruitment, equality, privacy, anti-bribery and marketing rules, and keep material recruitment activity in Vorlen.
 
-During the engagement and for [6] months after it ends, the Partner must not deliberately circumvent Vorlen to collect directly a recruitment fee arising from a client introduction or active assignment first introduced through Vorlen, subject to applicable law and legal review.
+During the engagement and for **6 months after it ends**, the Partner must not deliberately circumvent Vorlen to collect directly a recruitment fee arising from a client introduction or active assignment first introduced through Vorlen, to the extent enforceable under applicable law.
 
-## Records
-The Partner must keep recruitment activity in Vorlen so the business can evidence client instructions, candidate authority, screening/review, submissions, interviews, outcomes and commission attribution.
+## 14. Suspension and termination
 
-## Termination
-Either party may terminate on [7] days' written notice. Vorlen may suspend or terminate immediately for confidentiality, security, data-protection, fraud, candidate-charging, client misrepresentation or serious conduct concerns. System access ends on termination.
+Either party may end the relationship on **7 days' written notice**.
 
-Accrued commission on qualifying placements remains governed by the commission and rebate terms above.
+Vorlen may suspend or terminate access immediately for compliance, security, fraud, candidate charging, client misrepresentation, confidentiality/data-protection breach or serious conduct concerns.
 
-## Governing law
-This agreement is governed by the law of England and Wales and the courts of England and Wales have jurisdiction, subject to legal review of enforceability and any mandatory rules applying to the Partner in Pakistan.
+No new commission accrues from unauthorised activity after termination. Valid commission already earned on qualifying fees remains governed by these terms and the recorded attribution/adjustment ledger.
 
-## Signatures
-Vorlen: __________________ Date: __________  
-Partner: _____________________ Date: __________
+## 15. Governing law, changes and acceptance
+
+These terms are governed by the law of **England and Wales** and the courts of England and Wales have jurisdiction, subject to any mandatory law that applies to the Partner.
+
+Material commercial changes require a new agreement version. Acceptance records the exact terms hash, version, date, accepting account and typed legal name in Vorlen. The Partner should retain a copy of the accepted terms.
