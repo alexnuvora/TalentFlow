@@ -32,6 +32,10 @@
   ],
   "rewrites": [
     {
+      "source": "/oauth/provider/callback",
+      "destination": "https://mzkaodoruhklzluikagy.supabase.co/functions/v1/provider-oauth/callback"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
