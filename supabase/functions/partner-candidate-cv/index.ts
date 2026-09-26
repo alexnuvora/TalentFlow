@@ -52,6 +52,9 @@ Deno.serve(async req=>{
 
     const path=`${profile.company_id}/${candidateId}/${crypto.randomUUID()}.${ext}`;
     const bytes=new Uint8Array(await file.arrayBuffer());
+    const isPdf=bytes.length>=5&&String.fromCharCode(...bytes.slice(0,5))==='%PDF-';
+    const isZip=bytes.length>=4&&bytes[0]===0x50&&bytes[1]===0x4b&&[0x03,0x05,0x07].includes(bytes[2])&&[0x04,0x06,0x08].includes(bytes[3]);
+    if((ext==='pdf'&&!isPdf)||(ext==='docx'&&!isZip))return json(req,{error:'The selected file does not appear to be a valid '+ext.toUpperCase()+' document.'},400);
     const{error:uploadError}=await db.storage.from('candidate-resumes').upload(path,bytes,{contentType:file.type||allowedMime[0],upsert:false});
     if(uploadError)return json(req,{error:'CV upload failed',detail:uploadError.message},500);
 
@@ -90,7 +93,15 @@ Deno.serve(async req=>{
       return json(req,{error:'CV upload could not be audit-logged',detail:auditError.message},500);
     }
 
-    return json(req,{ok:true,candidate_id:candidateId,resume_path:path,file_name:file.name});
+    let previousCvCleanupPending=false;
+    if(candidate.resume_path&&candidate.resume_path!==path){
+      const{error:cleanupError}=await db.storage.from('candidate-resumes').remove([candidate.resume_path]);
+      if(cleanupError){
+        previousCvCleanupPending=true;
+        await db.from('compliance_audit_log').insert({company_id:profile.company_id,event_type:'candidate_cv_previous_file_cleanup_failed',new_state:{candidate_id:candidateId,partner_user_id:user.id,previous_resume_path:candidate.resume_path,replacement_resume_path:path,error:cleanupError.message}});
+      }
+    }
+    return json(req,{ok:true,candidate_id:candidateId,resume_path:path,file_name:file.name,previous_cv_cleanup_pending:previousCvCleanupPending});
   }catch(e){
     return json(req,{error:e instanceof Error?e.message:'CV upload failed'},500);
   }
