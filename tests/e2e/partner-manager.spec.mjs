@@ -83,12 +83,13 @@ test.describe.serial('Vorlen partner and manager production E2E',()=>{
 
     const pdf=testInfo.outputPath('candidate.pdf');
     const text='Vorlen E2E Candidate Manchester software recruitment experience '+RUN;
+    const escaped=text.replace(/([()\\])/g,'\\$1');
+    const content='BT /F1 12 Tf 72 720 Td ('+escaped+') Tj ET';
     const objects=[
       '<< /Type /Catalog /Pages 2 0 R >>',
       '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
       '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>',
-      '<< /Length '+(33+text.length)+' >>\\nstream\\nBT /F1 12 Tf 72 720 Td ('+text.replace(/[()\\\\]/g,'\\\\    const pdf=testInfo.outputPath('candidate.pdf');
-    fs.writeFileSync(pdf,'%PDF-1.4\n% E2E CV '+RUN+'\n%%EOF');')+') Tj ET\\nendstream',
+      '<< /Length '+content.length+' >>\\nstream\\n'+content+'\\nendstream',
       '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'
     ];
     let body='%PDF-1.4\\n',offsets=[0];
