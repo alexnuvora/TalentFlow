@@ -23,3 +23,57 @@ body{background:var(--canvas);color:var(--ink);font-size:14px}.app-shell{backgro
 .recruiter-workspace{max-width:1240px}.recruiter-workspace>.text-link{margin-bottom:14px}.workspace-summary{display:grid;grid-template-columns:110px minmax(220px,1.5fr) minmax(180px,1fr) 100px;background:#fff;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:hidden}.workspace-summary>div{padding:13px 15px;border-right:1px solid var(--border);min-width:0}.workspace-summary>div:last-child{border-right:0}.workspace-summary span{display:block;color:var(--muted);font-size:10px;font-weight:600;margin-bottom:4px}.workspace-summary strong{display:block;font-size:12px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.workspace-application{margin-bottom:14px}.workspace-application>label{display:grid;grid-template-columns:110px minmax(0,520px);align-items:center;gap:12px;font-size:11px;font-weight:600}.workspace-application select{min-height:36px;border:1px solid var(--border-strong);border-radius:6px;background:#fff;padding:7px 9px}.workspace-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px 18px;border-top:1px solid var(--border);margin:14px -18px -17px;padding:12px 18px;background:#fafbfa;font-size:11px;color:var(--muted)}.workspace-meta>span{display:inline-flex;align-items:center;gap:5px}.workspace-main{align-items:start}.workspace-main>.card{min-height:100%}.workspace-main .button-row{margin:12px 0}.workspace-main label>span,.workspace-submit label>span{display:flex;align-items:center;gap:5px}.workspace-notes{margin-top:14px;max-height:280px;overflow:auto}.workspace-submit{margin-top:14px}.workspace-submit .review-box{margin:14px 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 18px}.workspace-submit .review-box strong{grid-column:1/-1}.workspace-submit .review-box span{font-size:11px;color:var(--muted)}
 @media(max-width:900px){.workspace-summary{grid-template-columns:1fr 1fr}.workspace-summary>div:nth-child(2){border-right:0}.workspace-summary>div:nth-child(-n+2){border-bottom:1px solid var(--border)}}
 @media(max-width:620px){.workspace-summary{grid-template-columns:1fr}.workspace-summary>div{border-right:0;border-bottom:1px solid var(--border)}.workspace-summary>div:last-child{border-bottom:0}.workspace-application>label{grid-template-columns:1fr}.workspace-meta{align-items:flex-start;flex-direction:column}.workspace-submit .review-box{grid-template-columns:1fr}}
+
+.mobile-menu-trigger{display:none;border:0;background:transparent;color:var(--ink);padding:7px;border-radius:6px}
+.mobile-menu-trigger:focus-visible,.mobile-nav-head button:focus-visible{outline:2px solid #76b6a6;outline-offset:2px}
+.mobile-nav-backdrop{display:none}
+@media(max-width:620px){
+  .sidebar{display:none}
+  .main{margin-left:0;width:100%;padding-bottom:0}
+  .topbar{position:sticky;top:0;z-index:30;height:52px;padding:0 12px;gap:10px}
+  .mobile-menu-trigger{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .topbar-product{min-width:0;flex:1}
+  .topbar-product strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mobile-nav-backdrop{display:block;position:fixed;inset:0;z-index:100;background:#0e1816aa;backdrop-filter:blur(2px)}
+  .mobile-nav-drawer{position:absolute;inset:0 auto 0 0;width:min(88vw,340px);background:var(--nav);color:#fff;display:flex;flex-direction:column;box-shadow:16px 0 44px #0004}
+  .mobile-nav-head{display:flex;align-items:center;justify-content:space-between;padding:10px 10px 8px;border-bottom:1px solid #2b3a36}
+  .mobile-nav-head .brand{display:flex!important;border:0;margin:0;padding:6px 5px;justify-content:flex-start}
+  .mobile-nav-head .brand>div:last-child{display:block!important}
+  .mobile-nav-head button{border:0;background:transparent;color:#fff;width:40px;height:40px;display:grid;place-items:center;border-radius:6px}
+  .mobile-nav-drawer nav{display:grid;gap:2px;overflow-y:auto;padding:8px 10px;flex:1;align-content:start}
+  .mobile-nav-drawer nav a,.mobile-nav-bottom a,.mobile-nav-bottom .nav-btn{display:flex!important;align-items:center;gap:11px;min-height:44px;padding:10px 11px;border-radius:6px;color:#b7c7c3;text-decoration:none;font-size:13px;font-weight:550;width:100%}
+  .mobile-nav-drawer nav a.active{background:#2b3d38;color:#fff;box-shadow:inset 2px 0 0 #72b7a5}
+  .mobile-nav-drawer nav a:hover,.mobile-nav-bottom a:hover,.mobile-nav-bottom .nav-btn:hover{background:var(--nav-hover);color:#fff}
+  .mobile-nav-bottom{border-top:1px solid #2b3a36;padding:8px 10px}
+  .page{padding:16px 12px 28px;max-width:100%;overflow-x:hidden}
+  .page-actions{gap:10px;margin-bottom:16px}
+  .page-actions>div,.page-actions>.search,.page-actions>.button-row,.page-actions>.btn{max-width:100%}
+  .card{min-width:0;max-width:100%;overflow-wrap:anywhere}
+  .list-row{align-items:flex-start;flex-direction:column}
+  .list-row>div{max-width:100%;min-width:0}
+  .list-row>.button-row{width:100%}
+  .button-row{align-items:stretch}
+  .button-row .btn{min-width:0;white-space:normal}
+  .tabs{overflow-x:auto;overflow-y:hidden;white-space:nowrap;-webkit-overflow-scrolling:touch}
+  .tabs button{flex:0 0 auto}
+  .table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .table-wrap table{min-width:620px}
+  .sequence-step{grid-template-columns:1fr}
+  .step-number{grid-row:auto}
+  .sequence-step .full{grid-column:auto}
+  .fee-preview{align-items:flex-start;gap:8px;flex-direction:column}
+  .card-head{align-items:flex-start;flex-direction:column}
+  .card-head>.button-row{width:100%}
+  .review-profile-grid{grid-template-columns:1fr!important}
+  .workspace-welcome h2{font-size:24px}
+  .quick-start{display:grid;grid-template-columns:1fr;width:100%}
+  .quick-start a{min-width:0}
+}
+@media(max-width:390px){
+  .metrics{grid-template-columns:1fr}
+  .metric{border-right:0!important;border-bottom:1px solid var(--border)!important}
+  .metric:last-child{border-bottom:0!important}
+  .button-row{display:grid;grid-template-columns:1fr;width:100%}
+  .button-row .btn,.button-row select,.button-row input{width:100%}
+  .topbar-product strong{font-size:11px}
+}
