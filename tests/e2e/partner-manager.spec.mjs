@@ -8,6 +8,24 @@ test.describe.serial('Vorlen partner and manager production E2E',()=>{
   test.beforeAll(async()=>{if(FULL){requireFull();fx=await setupFixture()}});
   test.afterAll(async()=>{if(FULL&&fx)await cleanupFixture(fx)});
 
+  test('public mobile surfaces fit and keep navigation reachable',async({page})=>{
+    const errors=diagnostics(page);
+    await page.setViewportSize({width:375,height:812});
+    for(const path of ['/','/employers','/candidates','/careers','/contact','/privacy','/login']){
+      await page.goto(BASE+path);
+      await expect(page.locator('body')).toContainText(/Vorlen/i);
+      const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>document.documentElement.clientWidth+2);
+      expect(overflow,'horizontal overflow at '+path).toBe(false);
+    }
+    await page.goto(BASE+'/');
+    await expect(page.getByRole('link',{name:'Employers'})).toBeVisible();
+    await page.goto(BASE+'/employers');
+    await expect(page.getByRole('link',{name:'Careers'})).toBeVisible();
+    await page.goto(BASE+'/careers');
+    await expect(page.getByRole('link',{name:'Candidate guide'})).toBeVisible();
+    expect(errors.filter(x=>!x.includes('favicon'))).toEqual([]);
+  });
+
   test('public production surfaces are healthy',async({page})=>{
     const errors=diagnostics(page);
     for(const path of ['/','/login','/careers']){
