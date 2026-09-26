@@ -104,6 +104,10 @@ Deno.serve(async(req)=>{
    await admin.rpc('internal_provider_oauth_test_result',{p_company:me.company_id,p_provider:provider,p_ok:r.ok,p_result:msg});
    return json(req,{ok:r.ok,message:msg},r.ok?200:502);
   }
+  if(action==='disconnect'){
+   const{error:e}=await admin.rpc('internal_provider_oauth_disconnect',{p_company:me.company_id,p_provider:provider});if(e)throw e;
+   return json(req,{ok:true,message:'Provider account disconnected. OAuth app settings were retained.'});
+  }
   return json(req,{error:'Unknown action'},400);
  }catch(e){const m=e instanceof Error?e.message:'Provider OAuth failed';console.error('provider-oauth',m);return json(req,{error:m},(e as any)?.status||500)}
 });
