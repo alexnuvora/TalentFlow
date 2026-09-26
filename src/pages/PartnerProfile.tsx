@@ -28,7 +28,7 @@ export default function PartnerProfile(){
    supabase.from('partner_onboarding').select('*').eq('partner_id',u.id).maybeSingle(),
    supabase.from('partner_agreements').select('*').eq('partner_id',u.id).order('created_at',{ascending:false}).limit(1).maybeSingle(),
    supabase.from('partner_assignments').select('client_id,job_id,candidate_id,completed_at').eq('partner_id',u.id),
-   supabase.from('partner_attributions').select('placement_id').eq('partner_id',u.id).eq('attribution_type','placement_owner').eq('status','active'),
+   supabase.from('partner_attributions').select('placement_id,attribution_type').eq('partner_id',u.id).in('attribution_type',['client_commission_owner','candidate_commission_owner']).eq('status','active'),
    supabase.from('partner_commissions').select('amount,status').eq('partner_user_id',u.id),
    supabase.from('partner_commission_adjustments').select('amount,status').eq('partner_user_id',u.id)
   ]);
@@ -92,7 +92,7 @@ export default function PartnerProfile(){
 
  return <div className="page partner-page">
   <div className="page-actions"><div><div className="eyebrow">PARTNER PROFILE</div><h2>Your Vorlen partner account</h2><p>Personal details, partnership status, permissions, preferences, payment administration and account security.</p></div><Badge tone={active?'green':'amber'}>{String(onboarding.status).replaceAll('_',' ')}</Badge></div>
-  {error&&<div className="notice error">{error}</div>}
+  {error&&<div className="notice error">{error}</div>}{agreement?.status==='pending'&&agreement?.commission_model==='split_15_15'&&<div className="notice"><strong>Updated commission terms ready.</strong> Vorlen has moved to a 15% Client Development + 15% Candidate Delivery model. Review and accept the new agreement before new split commission can accrue. <Link to="/dashboard/partner-onboarding">Review agreement</Link></div>}
 
   <Card>
    <div className="profile-hero">
@@ -103,7 +103,7 @@ export default function PartnerProfile(){
 
   <div className="grid three">
    <Card><span className="muted">Partner agreement</span><h3>{accepted?'Accepted':'Pending'}</h3><p>{agreement?.version||'No agreement version'}{agreement?.accepted_at?' · '+new Date(agreement.accepted_at).toLocaleDateString('en-GB'):''}</p></Card>
-   <Card><span className="muted">Commission share</span><h2>{Number(agreement?.commission_percent||0).toFixed(0)}%</h2><p>of qualifying fees actually received and retained by Vorlen</p></Card>
+   <Card><span className="muted">Commission share</span><h2>{agreement?.commission_model==='split_15_15'?'15% + 15%':Number(agreement?.commission_percent||0).toFixed(0)+'%'}</h2><p>{agreement?.commission_model==='split_15_15'?'15% Client Development + 15% Candidate Delivery; up to 30% when you own both sides':'Legacy agreement terms; accept the latest split-commission agreement before new split commission can accrue'}</p></Card>
    <Card><span className="muted">Commercial authority</span><h3>Vorlen management only</h3><p>You may develop employer relationships and gather requirements, but you cannot bind Vorlen to client terms.</p></Card>
   </div>
 
