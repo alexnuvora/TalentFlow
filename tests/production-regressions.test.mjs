@@ -86,3 +86,6 @@ test('CEO user deletion terminates partner relationship and surfaces backend det
 
 
 test('mobile workspace navigation exposes every allowed route without hidden overflow traps',()=>{const layout=read('src/components/Layout.tsx'),css=read('src/v9.css');assert.match(layout,/mobile-nav-drawer/);assert.match(layout,/mobileLinks\.map/);assert.match(layout,/mobile-menu-trigger/);assert.match(layout,/aria-label="Open workspace menu"/);assert.match(layout,/Settings/);assert.match(layout,/Sign out/);assert.doesNotMatch(css,/\.sidebar nav a:nth-child\(n\+6\)\{display:none\}/);assert.match(css,/@media\(max-width:620px\)/);assert.match(css,/\.tabs\{overflow-x:auto/);assert.match(css,/\.table-wrap\{max-width:100%;overflow-x:auto/);assert.match(css,/\.list-row\{align-items:flex-start;flex-direction:column\}/);assert.match(css,/@media\(max-width:390px\)/);});
+
+
+test('mobile bottom navigation mirrors all permitted sidebar destinations',()=>{const layout=read('src/components/Layout.tsx'),css=read('src/v9.css');assert.match(layout,/mobile-bottom-nav/);assert.match(layout,/mobileLinks\.map/);assert.match(layout,/bottom-/);assert.match(layout,/Open all workspace navigation/);assert.match(layout,/dashboard\/settings/);assert.match(css,/\.mobile-bottom-scroll\{display:flex/);assert.match(css,/overflow-x:auto/);assert.doesNotMatch(css,/nth-child\(n\+6\).*display:none/);});
