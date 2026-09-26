@@ -36,24 +36,63 @@ Deno.serve(async(req)=>{
       service.from('candidate_submissions').select('id,job_id,status,client_decision,client_feedback,client_rating,submitted_at,client_decision_at').eq('company_id',profile.company_id).eq('candidate_id',candidateId).order('created_at',{ascending:false}),
       service.from('interviews').select('id,job_id,client_id,scheduled_at,duration_minutes,meeting_url,status,recruiter_notes,client_notes,updated_at').eq('company_id',profile.company_id).eq('candidate_id',candidateId).order('scheduled_at',{ascending:false}),
       service.from('partner_communication_events').select('id,job_id,event_type,channel,direction,subject,summary,occurred_at,metadata').eq('company_id',profile.company_id).eq('candidate_id',candidateId).order('occurred_at',{ascending:false}).limit(100),
-      service.from('partner_tasks').select('id,job_id,title,description,task_type,due_at,priority,status,completed_at').eq('company_id',profile.company_id).eq('partner_id',user.id).eq('candidate_id',candidateId).order('due_at',{ascending:true,nullsFirst:false})
+      service.from('partner_tasks').select('id,job_id,title,description,task_type,due_at,priority,status,completed_at').eq('company_id',profile.company_id).eq('partner_id',user.id).eq('candidate_id',candidateId).order('due_at',{ascending:true,nullsFirst:false}),
+      service.from('partner_candidate_offers').select('id,job_id,status,offer_type,salary,currency,proposed_start_date,evidence,notes,placement_review_status,placement_id,created_at,updated_at').eq('company_id',profile.company_id).eq('partner_id',user.id).eq('candidate_id',candidateId).order('updated_at',{ascending:false}),
+      service.from('partner_attributions').select('placement_id,attribution_type').eq('company_id',profile.company_id).eq('partner_id',user.id).eq('status','active').in('attribution_type',['placement_owner','client_commission_owner','candidate_commission_owner']).not('placement_id','is',null)
     ]);
     for(const r of results)if(r.error)throw r.error;
-    const[pipeline,apps,subs,interviews,events,tasks]=results.map(r=>r.data||[]);
+    const[pipeline,apps,subs,interviews,events,tasks,offers,attrs]=results.map(r=>r.data||[]);
     const jobIds=[...new Set([...pipeline,...apps,...subs,...interviews].map((x:any)=>x.job_id).filter(Boolean))] as string[];
     const jr=jobIds.length?await service.from('jobs').select('id,client_id,title,status,location').eq('company_id',profile.company_id).in('id',jobIds):{data:[],error:null};if(jr.error)throw jr.error;
     const jobs=jr.data||[],clientIds=[...new Set(jobs.map((x:any)=>x.client_id).filter(Boolean))] as string[];
     const cr=clientIds.length?await service.from('clients').select('id,company_name').eq('company_id',profile.company_id).in('id',clientIds):{data:[],error:null};if(cr.error)throw cr.error;
-    return json(req,{candidate,pipeline,applications:apps,submissions:subs,interviews,events,tasks,jobs,clients:cr.data||[]});
+    const placementIds=[...new Set((attrs||[]).map((x:any)=>x.placement_id).filter(Boolean))] as string[];
+    const pr=placementIds.length?await service.from('placements').select('id,client_id,job_id,candidate_id,start_date,annual_salary,fee_amount,currency,invoice_status,guarantee_end,created_at').eq('company_id',profile.company_id).eq('candidate_id',candidateId).in('id',placementIds):{data:[],error:null};if(pr.error)throw pr.error;
+    return json(req,{candidate,pipeline,applications:apps,submissions:subs,interviews,events,tasks,offers,placements:pr.data||[],jobs,clients:cr.data||[]});
+  }
+
+  if(action==='upsert_offer'){
+    const jobId=String(body?.job_id||'').trim(),status=String(body?.status||'extended'),offerType=String(body?.offer_type||'verbal');
+    const evidence=clean(body?.evidence,5000),notes=clean(body?.notes,5000),salary=body?.salary==null||body?.salary===''?null:Number(body.salary);
+    const startDate=body?.proposed_start_date?String(body.proposed_start_date):null;
+    if(!jobId)return json(req,{error:'Assigned vacancy is required'},400);
+    if(!['extended','accepted','declined','withdrawn'].includes(status))return json(req,{error:'Invalid offer status'},400);
+    if(!['verbal','written'].includes(offerType))return json(req,{error:'Invalid offer type'},400);
+    if(!evidence||evidence.length<10)return json(req,{error:'Record evidence of the client offer and candidate response'},400);
+    if(salary!=null&&(!Number.isFinite(salary)||salary<0))return json(req,{error:'Salary must be a valid positive amount'},400);
+    const ar=await service.from('partner_assignments').select('id').eq('company_id',profile.company_id).eq('partner_id',user.id).eq('job_id',jobId).is('completed_at',null).limit(1);
+    if(ar.error)throw ar.error;if(!ar.data?.length)return json(req,{error:'Assigned vacancy required'},403);
+    const sr=await service.from('candidate_submissions').select('id').eq('company_id',profile.company_id).eq('candidate_id',candidateId).eq('job_id',jobId).not('status','in','("draft","withdrawn")').limit(1);
+    if(sr.error)throw sr.error;if(!sr.data?.length)return json(req,{error:'A client submission must exist before an offer can be recorded'},409);
+    const existing=await service.from('partner_candidate_offers').select('id,placement_review_status,placement_id').eq('company_id',profile.company_id).eq('partner_id',user.id).eq('candidate_id',candidateId).eq('job_id',jobId).maybeSingle();
+    if(existing.error)throw existing.error;if(existing.data?.placement_review_status==='completed')return json(req,{error:'This offer is linked to a confirmed placement and is locked'},409);
+    const placementReview=status==='accepted'?'requested':'none';
+    const or=await service.from('partner_candidate_offers').upsert({
+      company_id:profile.company_id,partner_id:user.id,candidate_id:candidateId,job_id:jobId,status,offer_type:offerType,salary,
+      currency:String(body?.currency||'GBP').slice(0,3).toUpperCase(),proposed_start_date:startDate,evidence,notes,
+      placement_review_status:placementReview,updated_at:new Date().toISOString()
+    },{onConflict:'company_id,partner_id,candidate_id,job_id'}).select('id').single();
+    if(or.error)throw or.error;
+    const er=await service.from('partner_communication_events').insert({company_id:profile.company_id,partner_id:user.id,candidate_id:candidateId,job_id:jobId,event_type:'note',channel:'internal',direction:'internal',subject:'Offer '+status,summary:(status==='accepted'?'Candidate accepted offer. Placement confirmation requested. ':'Offer status updated. ')+evidence,metadata:{workflow_kind:'offer',offer_id:or.data.id,status}});
+    if(er.error)throw er.error;
+    if(status==='accepted'){
+      const openTask=await service.from('partner_tasks').select('id').eq('company_id',profile.company_id).eq('partner_id',user.id).eq('candidate_id',candidateId).eq('job_id',jobId).eq('title','Confirm placement and start details with Vorlen').in('status',['open','in_progress']).limit(1);
+      if(openTask.error)throw openTask.error;
+      if(!openTask.data?.length){
+        const tr=await service.from('partner_tasks').insert({company_id:profile.company_id,partner_id:user.id,candidate_id:candidateId,job_id:jobId,title:'Confirm placement and start details with Vorlen',task_type:'follow_up',priority:'high',due_at:new Date(Date.now()+86400000).toISOString()});
+        if(tr.error)throw tr.error;
+      }
+    }
+    return json(req,{ok:true,id:or.data.id});
   }
 
   if(action==='log_event'){
     const jobId=body?.job_id?String(body.job_id):null;
     if(jobId){const r=await service.from('partner_assignments').select('id').eq('company_id',profile.company_id).eq('partner_id',user.id).eq('job_id',jobId).is('completed_at',null).limit(1);if(r.error)throw r.error;if(!r.data?.length)return json(req,{error:'Assigned vacancy required'},403)}
     const kind=String(body?.kind||'note');
-    const map:Record<string,{event_type:string,channel:string,direction:string}>={call:{event_type:'call',channel:'phone',direction:'outbound'},email:{event_type:'email',channel:'email',direction:'outbound'},sms:{event_type:'sms',channel:'sms',direction:'outbound'},linkedin:{event_type:'linkedin',channel:'linkedin',direction:'outbound'},inbound:{event_type:'note',channel:'internal',direction:'inbound'},meeting:{event_type:'meeting',channel:'meeting',direction:'outbound'},interview:{event_type:'interview',channel:'meeting',direction:'internal'},offer:{event_type:'note',channel:'internal',direction:'internal'},withdrawal:{event_type:'note',channel:'internal',direction:'internal'},note:{event_type:'note',channel:'internal',direction:'internal'}};
+    const map:Record<string,{event_type:string,channel:string,direction:string}>={call:{event_type:'call',channel:'phone',direction:'outbound'},email:{event_type:'email',channel:'email',direction:'outbound'},sms:{event_type:'sms',channel:'sms',direction:'outbound'},linkedin:{event_type:'linkedin',channel:'linkedin',direction:'outbound'},inbound:{event_type:'note',channel:'internal',direction:'inbound'},meeting:{event_type:'meeting',channel:'meeting',direction:'outbound'},interview:{event_type:'interview',channel:'meeting',direction:'internal'},offer:{event_type:'note',channel:'internal',direction:'internal'},withdrawal:{event_type:'note',channel:'internal',direction:'internal'},aftercare:{event_type:'note',channel:'internal',direction:'internal'},note:{event_type:'note',channel:'internal',direction:'internal'}};
     const cfg=map[kind],summary=clean(body?.summary);if(!cfg)return json(req,{error:'Invalid candidate activity type'},400);if(!summary)return json(req,{error:'Activity summary is required'},400);
-    const subject=clean(body?.subject,500)||({offer:'Offer update',withdrawal:'Candidate withdrawal / availability update'} as Record<string,string>)[kind]||null;
+    const subject=clean(body?.subject,500)||({offer:'Offer update',withdrawal:'Candidate withdrawal / availability update',aftercare:'Post-placement aftercare'} as Record<string,string>)[kind]||null;
     const r=await service.from('partner_communication_events').insert({company_id:profile.company_id,partner_id:user.id,candidate_id:candidateId,job_id:jobId,event_type:cfg.event_type,channel:cfg.channel,direction:cfg.direction,subject,summary,metadata:{workflow_kind:kind}}).select('id').single();
     if(r.error)throw r.error;return json(req,{ok:true,id:r.data.id});
   }
