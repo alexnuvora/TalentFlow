@@ -28,7 +28,7 @@ Deno.serve(async(req)=>{
       service.rpc('candidate_processing_allowed',{p_company_id:profile.company_id})
     ]);
     if(partnerError)throw partnerError;if(onboardingError)throw onboardingError;if(processingError)throw processingError;
-    if(!partner?.active||onboarding?.status!=='active'||!['candidate_sourcer','hybrid'].includes(partner.specialism||''))return json(req,{error:'Candidate sourcing access required'},403);
+    const candidateCapable=['candidate_sourcer','hybrid'].includes(partner?.specialism||'');const clientCloser=['lead_closer','hybrid'].includes(partner?.specialism||'');if(!partner?.active||onboarding?.status!=='active'||(!candidateCapable&&!clientCloser))return json(req,{error:'Recruitment delivery access required'},403);
     if(processing!==true)return json(req,{error:'Candidate processing is not currently active.'},409);
 
     const{data:assignments,error:assignmentError}=await service.from('partner_assignments')
@@ -38,7 +38,7 @@ Deno.serve(async(req)=>{
       .is('completed_at',null);
     if(assignmentError)throw assignmentError;
 
-    const candidateIds=[...new Set((assignments||[]).map(a=>a.candidate_id).filter(Boolean))] as string[];
+    const candidateIds=candidateCapable?[...new Set((assignments||[]).map(a=>a.candidate_id).filter(Boolean))] as string[]:[];
     const jobIds=[...new Set((assignments||[]).map(a=>a.job_id).filter(Boolean))] as string[];
     if(!candidateIds.length&&!jobIds.length)return json(req,{applications:[]});
 
@@ -50,7 +50,13 @@ Deno.serve(async(req)=>{
 
     const appMap=new Map<string,any>();
     for(const result of results)for(const app of result.data||[])appMap.set(app.id,app);
-    const apps=[...appMap.values()].sort((a,b)=>new Date(b.submitted_at).getTime()-new Date(a.submitted_at).getTime());
+    let apps=[...appMap.values()].sort((a,b)=>new Date(b.submitted_at).getTime()-new Date(a.submitted_at).getTime());
+    if(clientCloser&&!candidateCapable&&apps.length){
+      const{submissionRows,error:submissionError}=await (async()=>{const r=await service.from('candidate_submissions').select('candidate_id,job_id').eq('company_id',profile.company_id).in('job_id',jobIds);return{submissionRows:r.data||[],error:r.error}})();
+      if(submissionError)throw submissionError;
+      const submittedKeys=new Set(submissionRows.map((s:any)=>s.candidate_id+'|'+s.job_id));
+      apps=apps.filter(a=>submittedKeys.has(a.candidate_id+'|'+a.job_id));
+    }
     if(!apps.length)return json(req,{applications:[]});
 
     const appCandidateIds=[...new Set(apps.map(a=>a.candidate_id).filter(Boolean))] as string[];
@@ -80,8 +86,8 @@ Deno.serve(async(req)=>{
         status:app.status,
         source:app.source,
         submitted_at:app.submitted_at,
-        scope:candidateAssigned&&vacancyAssigned?'candidate_and_vacancy':candidateAssigned?'candidate':'vacancy',
-        candidate:candidateMap.get(app.candidate_id)||null,
+        scope:candidateAssigned&&vacancyAssigned?'candidate_and_vacancy':candidateAssigned?'candidate':candidateCapable?'vacancy':'client_submission',
+        candidate:(()=>{const c=candidateMap.get(app.candidate_id)||null;if(!c)return null;return candidateAssigned||candidateCapable?c:{id:c.id,full_name:c.full_name}})(),
         job:job?{id:job.id,title:job.title,status:job.status,client:clientMap.get(job.client_id)||null}:null
       };
     });
