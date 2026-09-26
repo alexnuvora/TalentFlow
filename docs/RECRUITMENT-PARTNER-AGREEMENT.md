@@ -109,7 +109,7 @@ Either party may end the relationship on **7 days' written notice**.
 
 Vorlen may suspend or terminate access immediately for compliance, security, fraud, candidate charging, client misrepresentation, confidentiality/data-protection breach or serious conduct concerns.
 
-No new commission accrues from unauthorised activity after termination. Valid commission already earned on qualifying fees remains governed by these terms and the recorded attribution/adjustment ledger.
+Termination blocks new partner activity and new commission-side attribution. Where a commission side was validly attributed before the recorded termination time, later qualifying client receipts for that pre-termination placement remain eligible for reconciliation under the accepted agreement terms. No commission is earned for post-termination activity. Valid accrued, approved or paid commission remains governed by these terms and the recorded attribution/adjustment ledger.
 
 ## 15. Governing law, changes and acceptance
 
