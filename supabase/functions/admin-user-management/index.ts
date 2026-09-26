@@ -181,19 +181,29 @@ Deno.serve(async req=>{
       }
 
       if(target.role==='partner'){
-        const{data:onboarding}=await db.from('partner_onboarding').select('status').eq('partner_id',target.id).eq('company_id',me.company_id).maybeSingle();
+        const{data:onboarding,error:onboardingReadError}=await db.from('partner_onboarding').select('status').eq('partner_id',target.id).eq('company_id',me.company_id).maybeSingle();
+        if(onboardingReadError)return json({error:'Partner status could not be checked.',detail:onboardingReadError.message},400);
         if(onboarding&&onboarding.status!=='terminated'){
-          return json({error:'Terminate the partner relationship in Partner Management before deleting this user.'},409);
+          const{error:terminateError}=await db.from('partner_onboarding').update({
+            status:'terminated',
+            reviewed_by:user.id,
+            reviewed_at:new Date().toISOString(),
+            updated_at:new Date().toISOString()
+          }).eq('partner_id',target.id).eq('company_id',me.company_id);
+          if(terminateError)return json({error:'Partner relationship could not be terminated before deletion.',detail:terminateError.message},409);
         }
       }
 
       const{error:authDeleteError}=await db.auth.admin.deleteUser(target.id);
-      if(authDeleteError)return json({error:'Authentication account could not be deleted.',detail:authDeleteError.message},400);
+      if(authDeleteError){
+        return json({
+          error:'This user could not be hard-deleted because retained audit, financial or recruitment records still reference the account.',
+          detail:authDeleteError.message,
+          code:'retained_records_block_delete'
+        },409);
+      }
 
-      const{error:profileDeleteError}=await db.from('profiles').delete().eq('id',target.id).eq('company_id',me.company_id);
-      if(profileDeleteError)return json({error:'Authentication account was deleted, but the workspace profile could not be removed.',detail:profileDeleteError.message},500);
-
-      return json({ok:true,user_id:target.id,message:`Deleted ${target.full_name||'workspace user'}`});
+      return json({ok:true,user_id:target.id,message:`Deleted ${target.full_name||'workspace user'} and removed their login access.`});
     }
 
     if(b.action==='role'){
