@@ -2,7 +2,7 @@
   
 Multi-client recruitment infrastructure for candidate acquisition, qualification, scheduling, placement fees and measurable campaign ROI.
     
-## V8 audited release 
+## V8 audited release  
  
 - Multi-client jobs and candidate pipeline
 - Public careers and candidate portals
