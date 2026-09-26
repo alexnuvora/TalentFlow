@@ -52,7 +52,7 @@ Deno.serve(async(req)=>{
     for(const result of results)for(const app of result.data||[])appMap.set(app.id,app);
     let apps=[...appMap.values()].sort((a,b)=>new Date(b.submitted_at).getTime()-new Date(a.submitted_at).getTime());
     if(clientCloser&&!candidateCapable&&apps.length){
-      const{submissionRows,error:submissionError}=await (async()=>{const r=await service.from('candidate_submissions').select('candidate_id,job_id').eq('company_id',profile.company_id).in('job_id',jobIds);return{submissionRows:r.data||[],error:r.error}})();
+      const{submissionRows,error:submissionError}=await (async()=>{const r=await service.from('candidate_submissions').select('candidate_id,job_id').eq('company_id',profile.company_id).in('job_id',jobIds).in('status',['submitted','reviewing','approved','rejected','interview_requested']);return{submissionRows:r.data||[],error:r.error}})();
       if(submissionError)throw submissionError;
       const submittedKeys=new Set(submissionRows.map((s:any)=>s.candidate_id+'|'+s.job_id));
       apps=apps.filter(a=>submittedKeys.has(a.candidate_id+'|'+a.job_id));
