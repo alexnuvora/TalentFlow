@@ -408,3 +408,80 @@ where o.status not in ('suspended','terminated')
     where a.partner_id=o.partner_id and a.company_id=o.company_id
       and a.version='partner-2026-09-26-split-v2'
   );
+
+
+create or replace function public.set_partner_status(p_partner uuid,p_status text)
+returns void
+language plpgsql
+set search_path=''
+as $$
+declare
+  v_company uuid:=private.current_company_id();
+  v_onboarding public.partner_onboarding%rowtype;
+begin
+  if not private.is_manager() then raise exception 'Manager access required'; end if;
+  if p_status not in ('active','suspended','terminated') then raise exception 'Invalid partner status'; end if;
+
+  select * into v_onboarding
+  from public.partner_onboarding
+  where partner_id=p_partner and company_id=v_company
+  for update;
+
+  if v_onboarding.partner_id is null then raise exception 'Partner onboarding record not found'; end if;
+
+  if p_status='active' then
+    if v_onboarding.status<>'suspended' then raise exception 'Only suspended partners can be reactivated'; end if;
+    if not exists(
+      select 1 from public.partner_agreements a
+      where a.id=v_onboarding.agreement_id and a.partner_id=p_partner and a.company_id=v_company
+        and a.status='accepted' and a.accepted_at is not null and a.accepted_terms_hash is not null
+    ) then raise exception 'Accepted partner agreement required before reactivation'; end if;
+
+    update public.partner_onboarding
+    set status='active',reviewed_by=auth.uid(),reviewed_at=now(),updated_at=now()
+    where partner_id=p_partner and company_id=v_company;
+
+    update public.partner_profiles
+    set active=true,updated_at=now()
+    where user_id=p_partner and company_id=v_company;
+    return;
+  end if;
+
+  if p_status='suspended' then
+    if v_onboarding.status<>'active' then raise exception 'Only active partners can be suspended'; end if;
+
+    update public.partner_onboarding
+    set status='suspended',updated_at=now()
+    where partner_id=p_partner and company_id=v_company;
+
+    update public.partner_profiles
+    set active=false,updated_at=now()
+    where user_id=p_partner and company_id=v_company;
+    return;
+  end if;
+
+  if v_onboarding.status not in ('active','suspended') then
+    raise exception 'Partner is not in a state that can be terminated';
+  end if;
+
+  update public.partner_onboarding
+  set status='terminated',updated_at=now()
+  where partner_id=p_partner and company_id=v_company;
+
+  update public.partner_profiles
+  set active=false,updated_at=now()
+  where user_id=p_partner and company_id=v_company;
+
+  update public.partner_agreements
+  set status='terminated'
+  where partner_id=p_partner and company_id=v_company and status in ('accepted','pending');
+
+  update public.partner_assignments
+  set completed_at=coalesce(completed_at,now())
+  where partner_id=p_partner and company_id=v_company and completed_at is null;
+
+  update public.partner_tasks
+  set status='cancelled',completed_at=coalesce(completed_at,now())
+  where partner_id=p_partner and company_id=v_company and status in ('open','in_progress');
+end
+$$;
