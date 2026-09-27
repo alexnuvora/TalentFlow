@@ -13,7 +13,8 @@ const statusTone=(v:boolean):'green'|'neutral'=>v?'green':'neutral';
 export default function PartnerProfile(){
  const access=useWorkspaceAccess(),toast=useToast(),navigate=useNavigate();
  const[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState('');
- const[payment,setPayment]=useState<any>({configured:false}),[bank,setBank]=useState({account_name:'',bank_name:'',account_number:'',sort_code:'',currency:'GBP'});\n const[user,setUser]=useState<any>(null),[profile,setProfile]=useState<any>(null),[partnerProfile,setPartnerProfile]=useState<any>(null),[onboarding,setOnboarding]=useState<any>(null),[agreement,setAgreement]=useState<any>(null),[pendingAgreement,setPendingAgreement]=useState<any>(null);
+ const[payment,setPayment]=useState<any>({configured:false}),[bank,setBank]=useState({account_name:'',bank_name:'',account_number:'',sort_code:'',currency:'GBP'});
+ const[user,setUser]=useState<any>(null),[profile,setProfile]=useState<any>(null),[partnerProfile,setPartnerProfile]=useState<any>(null),[onboarding,setOnboarding]=useState<any>(null),[agreement,setAgreement]=useState<any>(null),[pendingAgreement,setPendingAgreement]=useState<any>(null);
  const[stats,setStats]=useState({clients:0,jobs:0,candidates:0,placements:0,paid:0});
  const[form,setForm]=useState({display_name:'',phone:'',country:'',address:'',trading_name:'',linkedin_url:'',timezone:'UTC',sectors:'',regions:'',role_types:'',availability_hours:'',profile_photo_url:'',payment_method:'',payment_account_name:'',payment_currency:'GBP',payment_details_reference:''});
 
@@ -21,7 +22,8 @@ export default function PartnerProfile(){
   setLoading(true);setError('');
   const{data:{user:u},error:ue}=await supabase.auth.getUser();
   if(ue||!u){setError(ue?.message||'Your session has expired.');setLoading(false);return}
-  setUser(u);\n  const{data:pay}=await supabase.rpc('partner_payment_profile');setPayment(pay||{configured:false});if(pay?.configured)setBank(b=>({...b,account_name:pay.account_name||'',bank_name:pay.bank_name||'',currency:pay.currency||'GBP'}));
+  setUser(u);
+  const{data:pay}=await supabase.rpc('partner_payment_profile');setPayment(pay||{configured:false});if(pay?.configured)setBank(b=>({...b,account_name:pay.account_name||'',bank_name:pay.bank_name||'',currency:pay.currency||'GBP'}));
   const[{data:p,error:pe},{data:pp,error:ppe},{data:o,error:oe},{data:a,error:ae},{data:assign,error:ase},{data:attrs,error:ate},{data:comm,error:ce},{data:adj,error:adje}]=await Promise.all([
    supabase.from('profiles').select('id,full_name,role,created_at').eq('id',u.id).maybeSingle(),
    supabase.from('partner_profiles').select('*').eq('user_id',u.id).maybeSingle(),
