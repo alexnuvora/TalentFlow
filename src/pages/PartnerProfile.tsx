@@ -13,7 +13,7 @@ const statusTone=(v:boolean):'green'|'neutral'=>v?'green':'neutral';
 export default function PartnerProfile(){
  const access=useWorkspaceAccess(),toast=useToast(),navigate=useNavigate();
  const[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState('');
- const[user,setUser]=useState<any>(null),[profile,setProfile]=useState<any>(null),[partnerProfile,setPartnerProfile]=useState<any>(null),[onboarding,setOnboarding]=useState<any>(null),[agreement,setAgreement]=useState<any>(null),[pendingAgreement,setPendingAgreement]=useState<any>(null);
+ const[payment,setPayment]=useState<any>({configured:false}),[bank,setBank]=useState({account_name:'',bank_name:'',account_number:'',sort_code:'',currency:'GBP'});\n const[user,setUser]=useState<any>(null),[profile,setProfile]=useState<any>(null),[partnerProfile,setPartnerProfile]=useState<any>(null),[onboarding,setOnboarding]=useState<any>(null),[agreement,setAgreement]=useState<any>(null),[pendingAgreement,setPendingAgreement]=useState<any>(null);
  const[stats,setStats]=useState({clients:0,jobs:0,candidates:0,placements:0,paid:0});
  const[form,setForm]=useState({display_name:'',phone:'',country:'',address:'',trading_name:'',linkedin_url:'',timezone:'UTC',sectors:'',regions:'',role_types:'',availability_hours:'',profile_photo_url:'',payment_method:'',payment_account_name:'',payment_currency:'GBP',payment_details_reference:''});
 
@@ -21,7 +21,7 @@ export default function PartnerProfile(){
   setLoading(true);setError('');
   const{data:{user:u},error:ue}=await supabase.auth.getUser();
   if(ue||!u){setError(ue?.message||'Your session has expired.');setLoading(false);return}
-  setUser(u);
+  setUser(u);\n  const{data:pay}=await supabase.rpc('partner_payment_profile');setPayment(pay||{configured:false});if(pay?.configured)setBank(b=>({...b,account_name:pay.account_name||'',bank_name:pay.bank_name||'',currency:pay.currency||'GBP'}));
   const[{data:p,error:pe},{data:pp,error:ppe},{data:o,error:oe},{data:a,error:ae},{data:assign,error:ase},{data:attrs,error:ate},{data:comm,error:ce},{data:adj,error:adje}]=await Promise.all([
    supabase.from('profiles').select('id,full_name,role,created_at').eq('id',u.id).maybeSingle(),
    supabase.from('partner_profiles').select('*').eq('user_id',u.id).maybeSingle(),
@@ -68,6 +68,8 @@ export default function PartnerProfile(){
   setBusy(false);if(er)return setError(er.message);
   toast('Partner profile updated.');await load();
  }
+
+ async function saveBank(e:any){e.preventDefault();setBusy(true);setError('');const{error:er}=await supabase.rpc('update_partner_payment_details',{p_account_name:bank.account_name,p_account_number:bank.account_number,p_sort_code:bank.sort_code,p_bank_name:bank.bank_name||null,p_currency:bank.currency||'GBP',p_country_code:'GB'});setBusy(false);if(er)return setError(er.message);setBank(b=>({...b,account_number:'',sort_code:''}));toast('Secure payment details updated.');await load();}
 
  const accepted=agreement?.status==='accepted';
  const personalComplete=Boolean(onboarding?.legal_name&&onboarding?.country&&onboarding?.address&&onboarding?.phone);
@@ -134,7 +136,7 @@ export default function PartnerProfile(){
     <label>UK regions<input value={form.regions} onChange={e=>setForm({...form,regions:e.target.value})} placeholder="North West, London, UK-wide"/></label>
     <label>Role types<input value={form.role_types} onChange={e=>setForm({...form,role_types:e.target.value})} placeholder="Software, DevOps, Operations"/></label>
     <label>Availability / working hours<input value={form.availability_hours} onChange={e=>setForm({...form,availability_hours:e.target.value})} placeholder="Mon-Fri 09:00-17:00 UK overlap"/></label>
-    <div className="full form-divider"><strong>Payment administration</strong><p className="muted">Use a safe payout/invoicing reference only. Do not enter passwords, card PINs or online-banking credentials.</p></div>
+    <div className="full form-divider"><strong>Payment administration</strong><p className="muted">General payout preferences only. Secure UK bank details are managed separately below and are never displayed in full after saving.</p></div>
     <label>Payment method<input value={form.payment_method} onChange={e=>setForm({...form,payment_method:e.target.value})} placeholder="Bank transfer / Wise / invoice"/></label>
     <label>Payment account name<input value={form.payment_account_name} onChange={e=>setForm({...form,payment_account_name:e.target.value})}/></label>
     <label>Payment currency<input maxLength={3} value={form.payment_currency} onChange={e=>setForm({...form,payment_currency:e.target.value.toUpperCase()})}/></label>
@@ -142,6 +144,8 @@ export default function PartnerProfile(){
     <Button type="submit" disabled={busy}>Save profile</Button>
    </form>:<div><p>Your editable partner profile unlocks after activation.</p><Button onClick={()=>navigate('/dashboard/partner-onboarding')}>Continue onboarding</Button></div>}
   </Card>
+
+  {active&&<Card><div className="card-head"><div><h3><LockKeyhole size={18}/> Secure bank details</h3><p>Used by Vorlen finance for BACS commission payments. Account number and sort code are encrypted in Supabase Vault and are not returned to this page after saving.</p></div><Badge tone={payment?.configured?'green':'amber'}>{payment?.configured?'On file':'Required'}</Badge></div>{payment?.configured&&<div className="notice"><strong>Bank details on file.</strong> Account ending •••• {payment.account_number_last4||'—'} · sort code ending ••{payment.sort_code_last2||'—'}{payment.verified?' · verified by Vorlen':' · awaiting finance verification'}. Enter the details again only when you want to replace them.</div>}<form className="form-grid" onSubmit={saveBank}><label>Account holder name<input required value={bank.account_name} onChange={e=>setBank({...bank,account_name:e.target.value})}/></label><label>Bank name<input value={bank.bank_name} onChange={e=>setBank({...bank,bank_name:e.target.value})}/></label><label>UK account number<input required inputMode="numeric" autoComplete="off" pattern="[0-9 ]{8,12}" value={bank.account_number} onChange={e=>setBank({...bank,account_number:e.target.value})} placeholder={payment?.configured?'Enter new 8-digit account number':'8 digits'}/></label><label>UK sort code<input required inputMode="numeric" autoComplete="off" value={bank.sort_code} onChange={e=>setBank({...bank,sort_code:e.target.value})} placeholder={payment?.configured?'Enter new sort code':'00-00-00'}/></label><label>Currency<input value={bank.currency} maxLength={3} onChange={e=>setBank({...bank,currency:e.target.value.toUpperCase()})}/></label><div className="full notice"><strong>Security:</strong> Never enter your online-banking password, PIN, card number, CVV or one-time security codes. Vorlen only needs payout account details.</div><Button type="submit" disabled={busy||!bank.account_name||!bank.account_number||!bank.sort_code}>{payment?.configured?'Replace bank details':'Save bank details securely'}</Button></form></Card>}
 
   <div className="grid two">
    <Card><h3>Legal & business record</h3><p className="muted">Read-only partnership administration. Changes to legal identity, registration or tax details should be reviewed by Vorlen and must not silently alter an accepted agreement.</p>
