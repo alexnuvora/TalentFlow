@@ -21,6 +21,8 @@ create table if not exists public.partner_email_approvals (
 create index if not exists partner_email_approvals_company_status_idx on public.partner_email_approvals(company_id,status,submitted_at desc);
 create index if not exists partner_email_approvals_partner_idx on public.partner_email_approvals(partner_id,submitted_at desc);
 create index if not exists partner_email_approvals_task_idx on public.partner_email_approvals(task_id) where task_id is not null;
+create unique index if not exists partner_email_approvals_one_open_manual_idx on public.partner_email_approvals(partner_id,client_id,email_status) where task_id is null and status in ('pending','sending');
+create unique index if not exists partner_email_approvals_one_open_task_idx on public.partner_email_approvals(task_id) where task_id is not null and status in ('pending','sending');
 alter table public.partner_email_approvals enable row level security;
 revoke all on public.partner_email_approvals from anon, authenticated;
 grant select on public.partner_email_approvals to authenticated;
