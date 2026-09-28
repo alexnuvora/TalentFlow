@@ -46,3 +46,8 @@ verify_jwt = true
 # Authenticated partner-only candidate delivery workspace.
 [functions.partner-candidate-workspace]
 verify_jwt = true
+
+
+# Authenticated partner-only self-directing recruitment work queue.
+[functions.partner-work-queue]
+verify_jwt = true
