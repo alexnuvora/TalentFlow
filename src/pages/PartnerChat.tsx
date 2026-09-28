@@ -33,7 +33,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
  const [partnerSearch,setPartnerSearch]=useState(''),[messageSearch,setMessageSearch]=useState(''),[searchResults,setSearchResults]=useState<Message[]>([]);
  const [showContext,setShowContext]=useState(false),[contextType,setContextType]=useState(''),[contextOptions,setContextOptions]=useState<ContextOption[]>([]),[context,setContext]=useState<ContextOption|null>(null);
  const [notifySupported,setNotifySupported]=useState(false),[now,setNow]=useState(Date.now()),[mobileSearchOpen,setMobileSearchOpen]=useState(false);
- const fileRef=useRef<HTMLInputElement>(null),bottomRef=useRef<HTMLDivElement>(null),typingTimer=useRef<number|null>(null),refreshTimer=useRef<number|null>(null);
+ const fileRef=useRef<HTMLInputElement>(null),messagesRef=useRef<HTMLDivElement>(null),composerRef=useRef<HTMLTextAreaElement>(null),typingTimer=useRef<number|null>(null),refreshTimer=useRef<number|null>(null);
 
  const selected=useMemo(()=>conversations.find(c=>c.conversation_id===conversationId)||null,[conversations,conversationId]);
  const partnerUserId=mode==='partner'?me:(selected?.partner_id||partnerId);
@@ -68,6 +68,10 @@ export default function PartnerChat({mode}:{mode:Mode}){
   return await Promise.all(rows.map(async(a:any)=>{const{data}=await supabase.storage.from('partner-chat').createSignedUrl(a.storage_path,3600);return{...a,signed_url:data?.signedUrl||undefined} as Attachment}));
  },[]);
 
+ const isNearChatBottom=useCallback(()=>{const el=messagesRef.current;if(!el)return true;return el.scrollHeight-el.scrollTop-el.clientHeight<120},[]);
+ const scrollChatToBottom=useCallback((behavior:ScrollBehavior='auto')=>{const el=messagesRef.current;if(!el)return;el.scrollTo({top:el.scrollHeight,behavior})},[]);
+ const focusComposer=useCallback(()=>{window.setTimeout(()=>composerRef.current?.focus({preventScroll:true}),0)},[]);
+
  const markIncoming=useCallback(async(msgs:Message[],existing:Receipt[])=>{
   if(!me||!conversationId)return;const incoming=msgs.filter(m=>m.sender_id!==me&&!m.deleted_at);if(!incoming.length)return;
   const byId=new Map(existing.filter(r=>r.user_id===me).map(r=>[r.message_id,r]));
@@ -75,8 +79,13 @@ export default function PartnerChat({mode}:{mode:Mode}){
   const{error:e}=await supabase.from('partner_message_receipts').upsert(rows,{onConflict:'message_id,user_id'});if(!e&&document.visibilityState==='visible')window.dispatchEvent(new Event('partner-chat-read'));
  },[me,conversationId]);
 
- const loadConversation=useCallback(async(older=false)=>{
-  if(!conversationId)return;setLoadingMessages(true);setError('');
+ const loadConversation=useCallback(async(older=false,forceBottom=false)=>{
+  if(!conversationId)return;
+  const scroller=messagesRef.current;
+  const previousHeight=scroller?.scrollHeight||0;
+  const previousTop=scroller?.scrollTop||0;
+  const shouldFollow=forceBottom||(!older&&isNearChatBottom());
+  setLoadingMessages(true);setError('');
   let q=supabase.from('partner_messages').select('*').eq('conversation_id',conversationId).order('created_at',{ascending:false}).limit(80);
   if(older&&messages.length)q=q.lt('created_at',messages[0].created_at);
   const{data:m,error:e}=await q;if(e){setError(e.message);setLoadingMessages(false);return}
@@ -91,10 +100,14 @@ export default function PartnerChat({mode}:{mode:Mode}){
   const signed=await signAttachments(a.data||[]);setAttachments(signed);setReceipts((r.data||[]) as Receipt[]);setStates((s.data||[]) as UserState[]);
   await markIncoming(combined,(r.data||[]) as Receipt[]);
   setLoadingMessages(false);
-  if(!older)window.setTimeout(()=>bottomRef.current?.scrollIntoView({block:'end'}),30);
- },[conversationId,messages,markIncoming,signAttachments]);
+  window.requestAnimationFrame(()=>window.requestAnimationFrame(()=>{
+   const el=messagesRef.current;if(!el)return;
+   if(older){el.scrollTop=Math.max(0,el.scrollHeight-previousHeight+previousTop)}
+   else if(shouldFollow){el.scrollTop=el.scrollHeight}
+  }));
+ },[conversationId,messages,markIncoming,signAttachments,isNearChatBottom]);
 
- useEffect(()=>{if(conversationId)void loadConversation(false)},[conversationId]);
+ useEffect(()=>{if(conversationId)void loadConversation(false,true)},[conversationId]);
 
  const touchState=useCallback(async(typing=false)=>{
   if(!conversationId||!me)return;const t=new Date(),typingUntil=typing?new Date(t.getTime()+4500).toISOString():null;
@@ -142,20 +155,20 @@ export default function PartnerChat({mode}:{mode:Mode}){
   const{data:m,error:e}=await supabase.from('partner_messages').insert(payload).select('*').single();if(e||!m){setSending(false);setError(e?.message||'Message could not be sent.');return}
   const uploaded:string[]=[],attachmentRows:string[]=[];try{for(const f of files){const path=`${access.companyId}/${conversationId}/${m.id}/${crypto.randomUUID()}-${safeName(f.name)}`;const up=await supabase.storage.from('partner-chat').upload(path,f,{contentType:f.type,upsert:false});if(up.error)throw up.error;uploaded.push(path);const row=await supabase.from('partner_message_attachments').insert({company_id:access.companyId,conversation_id:conversationId,message_id:m.id,uploaded_by:me,storage_path:path,filename:f.name,mime_type:f.type,size_bytes:f.size}).select('id').single();if(row.error)throw row.error;if(row.data?.id)attachmentRows.push(row.data.id)}}
   catch(err){if(uploaded.length)await supabase.storage.from('partner-chat').remove(uploaded);if(attachmentRows.length)await supabase.from('partner_message_attachments').delete().in('id',attachmentRows);await supabase.from('partner_messages').update({deleted_at:new Date().toISOString()}).eq('id',m.id);setSending(false);setError(err instanceof Error?err.message:'Attachment upload failed.');return}
-  setBody('');setFiles([]);setReplyTo(null);setContext(null);setContextType('');setShowContext(false);await touchState(false);setSending(false);await loadConversation(false);if(mode==='manager')await refreshList();
+  setBody('');setFiles([]);setReplyTo(null);setContext(null);setContextType('');setShowContext(false);await touchState(false);setSending(false);await loadConversation(false,true);if(mode==='manager')await refreshList();
  }
 
  async function removeMessage(m:Message){if(!confirm('Delete this message? The audit record will be retained.'))return;const{error:e}=await supabase.from('partner_messages').update({deleted_at:new Date().toISOString()}).eq('id',m.id);if(e)setError(e.message);else toast('Message deleted.')}
  async function togglePin(m:Message){const{error:e}=await supabase.from('partner_messages').update({pinned_at:m.pinned_at?null:new Date().toISOString(),pinned_by:null}).eq('id',m.id);if(e)setError(e.message);else toast(m.pinned_at?'Message unpinned.':'Message pinned.')}
  async function enableNotifications(){if(!notifySupported)return;const p=await Notification.requestPermission();toast(p==='granted'?'Chat notifications enabled.':'Notifications were not enabled.',{tone:p==='granted'?'success':'warning'})}
 
- function startEdit(m:Message){setEditing(m);setReplyTo(null);setFiles([]);setBody(m.body);window.setTimeout(()=>document.querySelector<HTMLTextAreaElement>('.chat-compose textarea')?.focus(),0)}
- function startReply(m:Message){setReplyTo(m);setEditing(null);window.setTimeout(()=>document.querySelector<HTMLTextAreaElement>('.chat-compose textarea')?.focus(),0)}
+ function startEdit(m:Message){setEditing(m);setReplyTo(null);setFiles([]);setBody(m.body);focusComposer()}
+ function startReply(m:Message){setReplyTo(m);setEditing(null);focusComposer()}
  function attachmentFor(id:string){return attachments.filter(a=>a.message_id===id)}
  function statusFor(m:Message){if(m.sender_id!==me)return'';const rs=receipts.filter(r=>r.message_id===m.id&&r.user_id!==me);return rs.some(r=>r.read_at)?'Read':rs.some(r=>r.delivered_at)?'Delivered':'Sent'}
  function canChange(m:Message){return m.sender_id===me&&!m.deleted_at&&Date.now()-new Date(m.created_at).getTime()<=15*60000}
  function messageSide(m:Message){if(mode==='partner')return m.sender_id===me?'out':'in';return m.sender_id===partnerUserId?'in':'out'}
- function scrollTo(id:string){document.querySelector(`[data-message-id="${id}"]`)?.scrollIntoView({behavior:'smooth',block:'center'});setMessageSearch('');setSearchResults([])}
+ function scrollTo(id:string){const container=messagesRef.current,el=document.querySelector<HTMLElement>(`[data-message-id="${id}"]`);if(container&&el){const cr=container.getBoundingClientRect(),er=el.getBoundingClientRect();container.scrollTo({top:container.scrollTop+(er.top-cr.top)-(container.clientHeight-el.clientHeight)/2,behavior:'smooth'})}setMessageSearch('');setSearchResults([])}
  const headerName=mode==='partner'?'Vorlen management':selected?.partner_name||'Partner';
  const headerSub=otherTyping?'typing…':otherOnline?'online':mode==='manager'&&selected?.partner_last_seen_at?'last active '+fmt(selected.partner_last_seen_at):'Secure partner channel';
 
@@ -174,7 +187,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
     {!conversationId?<div className="chat-empty"><MessageCircle size={32}/><h3>Select a partner</h3><p>Choose a conversation to start messaging.</p></div>:<>
      <><header className="chat-header">{mode==='manager'&&<button className="chat-back" aria-label="Back to partner conversations" onClick={()=>setConversationId('')}><ChevronLeft size={20}/></button>}<span className="chat-avatar"><span>{headerName.split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase()}</span></span><div className="chat-header-copy"><strong>{headerName}</strong><span className={otherOnline?'online':''}>{headerSub}</span></div><div className="chat-header-actions">{notifySupported&&Notification.permission!=='granted'&&<button className="chat-header-notification" aria-label="Enable chat notifications" onClick={enableNotifications}><Bell size={17}/></button>}<div className="search chat-message-search"><Search size={14}/><input value={messageSearch} onChange={e=>void searchMessages(e.target.value)} placeholder="Search messages"/></div><button className="chat-mobile-search-toggle" aria-label={mobileSearchOpen?'Close message search':'Search messages'} aria-expanded={mobileSearchOpen} onClick={()=>setMobileSearchOpen(v=>!v)}>{mobileSearchOpen?<X size={18}/>:<Search size={18}/>}</button></div></header>{mobileSearchOpen&&<div className="chat-mobile-search"><Search size={15}/><input autoFocus value={messageSearch} onChange={e=>void searchMessages(e.target.value)} placeholder="Search messages"/></div>}</>
      {pinned.length>0&&<div className="chat-pinned"><Pin size={14}/><div>{pinned.map(m=><button key={m.id} onClick={()=>scrollTo(m.id)}>{m.context_label||m.body||'Pinned attachment'}</button>)}</div></div>}
-     <div className="chat-messages">
+     <div ref={messagesRef} className="chat-messages">
       {hasMore&&!messageSearch&&<button className="chat-load-more" disabled={loadingMessages} onClick={()=>void loadConversation(true)}>{loadingMessages?'Loading…':'Load older messages'}</button>}
       {visibleMessages.map((m,i)=>{const previous=visibleMessages[i-1],showDay=!previous||dayKey(previous.created_at)!==dayKey(m.created_at),side=messageSide(m),reply=messages.find(x=>x.id===m.reply_to_id),atts=attachmentFor(m.id);return <div key={m.id}>{showDay&&<div className="chat-day"><span>{dayKey(m.created_at)}</span></div>}<article data-message-id={m.id} className={`chat-message ${side} ${m.pinned_at?'pinned':''} ${m.deleted_at?'deleted':''}`}>
        <div className="chat-bubble">{m.pinned_at&&<span className="chat-pin"><Pin size={11}/> Pinned</span>}{reply&&<button className="chat-reply-preview" onClick={()=>scrollTo(reply.id)}><strong>{reply.sender_id===me?'You':mode==='partner'?'Vorlen management':selected?.partner_name||'Partner'}</strong><span>{reply.deleted_at?'Deleted message':reply.body||'Attachment'}</span></button>}
@@ -184,13 +197,13 @@ export default function PartnerChat({mode}:{mode:Mode}){
        {!m.deleted_at&&<div className="chat-actions"><button title="Reply" onClick={()=>startReply(m)}><Reply size={13}/></button>{canChange(m)&&<button title="Edit" onClick={()=>startEdit(m)}><Pencil size={13}/></button>}{canChange(m)&&<button title="Delete" onClick={()=>void removeMessage(m)}><Trash2 size={13}/></button>}{mode==='manager'&&<button title={m.pinned_at?'Unpin':'Pin'} onClick={()=>void togglePin(m)}><Pin size={13}/></button>}</div>}
       </article></div>})}
       {!visibleMessages.length&&!loadingMessages&&<div className="chat-empty small"><MessageCircle size={24}/><h3>{messageSearch?'No matching messages':'No messages yet'}</h3><p>{messageSearch?'Try another search.':'Send the first message in this private channel.'}</p></div>}
-      <div ref={bottomRef}/>
+      <div className="chat-scroll-end" aria-hidden="true"/>
      </div>
      <div className="chat-compose-wrap">{(replyTo||editing)&&<div className="chat-compose-state"><div><strong>{editing?'Editing message':'Replying to '+(replyTo?.sender_id===me?'yourself':mode==='partner'?'Vorlen management':selected?.partner_name||'partner')}</strong><span>{editing?editing.body:replyTo?.body||'Attachment'}</span></div><button onClick={()=>{setReplyTo(null);if(editing){setEditing(null);setBody('')}}}><X size={16}/></button></div>}
       {context&&<div className="chat-compose-context"><Link2 size={14}/><span><small>{contextType.replaceAll('_',' ')}</small><strong>{context.label}</strong></span><button onClick={()=>{setContext(null);setContextType('')}}><X size={14}/></button></div>}
       {files.length>0&&<div className="chat-file-chips">{files.map((f,i)=><span key={f.name+i}><Paperclip size={12}/>{f.name}<button onClick={()=>setFiles(v=>v.filter((_,x)=>x!==i))}><X size={12}/></button></span>)}</div>}
       {showContext&&!editing&&<div className="chat-context-picker"><select value={contextType} onChange={e=>void loadContextOptions(e.target.value)}><option value="">Choose context type…</option>{contextTypes.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>{contextType&&<select value={context?.id||''} onChange={e=>setContext(contextOptions.find(x=>x.id===e.target.value)||null)}><option value="">Choose item…</option>{contextOptions.map(x=><option key={x.id} value={x.id}>{x.label}</option>)}</select>}<button onClick={()=>setShowContext(false)}><X size={14}/></button></div>}
-      <div className="chat-compose"><input ref={fileRef} hidden type="file" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.pdf,.txt,.doc,.docx,.xls,.xlsx" onChange={e=>{chooseFiles(e.target.files);e.target.value=''}}/><button title="Attach file" disabled={!!editing} onClick={()=>fileRef.current?.click()}><Paperclip size={19}/></button><button title="Link Vorlen record" disabled={!!editing} onClick={()=>setShowContext(v=>!v)}><Link2 size={18}/></button><textarea rows={1} maxLength={8000} value={body} onChange={e=>typeBody(e.target.value)} onInput={e=>{const el=e.currentTarget;el.style.height='40px';el.style.height=Math.min(el.scrollHeight,96)+'px'}} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void sendMessage()}}} placeholder={editing?'Edit message…':'Type a message…'}/><button className="chat-send" disabled={sending||(!body.trim()&&!files.length)} onClick={()=>void sendMessage()}><Send size={18}/></button></div>
+      <div className="chat-compose"><input ref={fileRef} hidden type="file" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.pdf,.txt,.doc,.docx,.xls,.xlsx" onChange={e=>{chooseFiles(e.target.files);e.target.value=''}}/><button title="Attach file" disabled={!!editing} onClick={()=>fileRef.current?.click()}><Paperclip size={19}/></button><button title="Link Vorlen record" disabled={!!editing} onClick={()=>setShowContext(v=>!v)}><Link2 size={18}/></button><textarea ref={composerRef} rows={1} maxLength={8000} value={body} onChange={e=>typeBody(e.target.value)} onInput={e=>{const el=e.currentTarget;el.style.height='40px';el.style.height=Math.min(el.scrollHeight,96)+'px'}} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void sendMessage()}}} placeholder={editing?'Edit message…':'Type a message…'}/><button className="chat-send" disabled={sending||(!body.trim()&&!files.length)} onClick={()=>void sendMessage()}><Send size={18}/></button></div>
       <small className="chat-compose-note">Enter to send · Shift+Enter for a new line · files up to 10 MB</small>
      </div>
     </>}
