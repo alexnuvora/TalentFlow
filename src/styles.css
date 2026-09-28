@@ -529,3 +529,11 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
  .client-portal-access .detail-list>div{align-items:flex-start;flex-direction:column}
  .client-portal-access .detail-list strong{width:100%}
 }
+
+/* Actionable partner work indicator */
+.work-queue-badge{margin-left:auto;min-width:21px;height:21px;padding:0 6px;border-radius:999px;background:#dc2626;color:#fff!important;display:inline-flex!important;align-items:center;justify-content:center;font-size:10px!important;font-weight:900!important;line-height:1;box-shadow:0 0 0 0 rgba(220,38,38,.5);animation:work-queue-pulse 1.7s ease-in-out infinite}
+@keyframes work-queue-pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(220,38,38,.45)}50%{transform:scale(1.08);box-shadow:0 0 0 6px rgba(220,38,38,0)}}
+@media (prefers-reduced-motion:reduce){.work-queue-badge{animation:none}}
+.mobile-bottom-nav .work-queue-badge{position:absolute;top:3px;right:calc(50% - 22px);margin-left:0;min-width:18px;height:18px;padding:0 5px;font-size:9px!important}
+.mobile-bottom-nav a{position:relative}
+@media(max-width:800px){.sidebar nav .work-queue-badge{position:absolute;top:5px;right:5px;margin-left:0}.sidebar nav a{position:relative}}
