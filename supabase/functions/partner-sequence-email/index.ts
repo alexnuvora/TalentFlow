@@ -62,23 +62,6 @@ Deno.serve(async req=>{
   if(approvalError||!approval)return json({error:'Could not submit sequence email for management approval.'},500);
   return json({ok:true,submitted:true,approval_id:approval.id,recipient,subject,message:'Sequence email submitted to Vorlen management for approval. Nothing has been sent to the client.'});
  }catch(e){
-    await db.from('outbound_deliveries').update({status:'failed',last_error:e instanceof Error?e.message:'Network error'}).eq('id',deliveryId);
-    return json({error:'Unable to reach the email provider.'},502);
-  }
-  const out=await response.json().catch(()=>({}));
-  if(!response.ok){
-    await db.from('outbound_deliveries').update({status:'failed',last_error:String(out?.message||'Email delivery failed')}).eq('id',deliveryId);
-    return json({error:out?.message||'Email delivery failed'},502);
-  }
-
-  const now=new Date().toISOString();
-  await db.from('outbound_deliveries').update({status:'sent',provider_message_id:out.id,sent_at:now,last_error:null}).eq('id',deliveryId);
-  const{error:logError}=await udb.rpc('partner_log_communication',{p_client:client.id,p_event_type:'email',p_summary:'Sequence email sent: '+subject,p_channel:'email',p_direction:'outbound',p_contact:contact?.id||null,p_candidate:null,p_job:null,p_subject:subject,p_occurred_at:now,p_metadata:{provider:'resend',message_id:out.id,delivery_id:deliveryId,task_id:task.id,enrollment_id:enrollment.id}});
-  if(logError)return json({error:'Email was sent but the account timeline could not be updated. Do not resend automatically.',email_id:out.id,detail:logError.message},500);
-  const{error:taskError}=await db.from('partner_tasks').update({status:'done',completed_at:now}).eq('id',task.id).eq('partner_id',user.id).eq('company_id',p.company_id);
-  if(taskError)return json({error:'Email was sent but the sequence task could not be completed. Do not resend automatically.',email_id:out.id,detail:taskError.message},500);
-  return json({ok:true,id:out.id,recipient,subject});
- }catch(e){
-  return json({error:e instanceof Error?e.message:'Sequence email failed'},500);
+  return json({error:e instanceof Error?e.message:'Sequence email approval submission failed'},500);
  }
 });
