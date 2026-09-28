@@ -172,3 +172,5 @@ test('partner chat composer stays docked on mobile',()=>{const css=read('src/sty
 test('partner chat desktop composer stays docked',()=>{const css=read('src/styles.css');assert.match(css,/Partner chat desktop layout correction/);assert.match(css,/@media\(min-width:851px\)/);assert.match(css,/\.chat-conversation\{display:flex!important;flex-direction:column!important/);assert.match(css,/\.chat-messages\{flex:1 1 auto;min-height:0\}/);assert.match(css,/max-height:820px/);});
 
 test('chat avatars keep initials centered inside circles',()=>{const page=read('src/pages/PartnerChat.tsx'),css=read('src/styles.css');assert.match(page,/chat-avatar"><span>/);assert.match(css,/Chat avatar alignment/);assert.match(css,/place-items:center/);assert.match(css,/\.chat-avatar>span\{/);assert.match(css,/font-size:14px/);});
+
+test('chat avatar initials are mathematically centered',()=>{const css=read('src/styles.css');assert.match(css,/Chat avatar exact centering/);assert.match(css,/top:50%!important/);assert.match(css,/left:50%!important/);assert.match(css,/translate\(-50%,-50%\)!important/);});
