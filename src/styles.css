@@ -659,3 +659,9 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
  .chat-page-head .chat-notification-cta{display:none!important}
  .chat-shell{overflow:hidden}
 }
+
+.chat-header-notification{display:none;border:0;background:transparent;color:#405a52}
+@media(max-width:850px){
+ .chat-header-notification{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#f1f5f3;cursor:pointer}
+ .chat-header-notification:hover{background:#e7efec}
+}
