@@ -14,12 +14,12 @@ Deno.serve(async req=>{
   const{data:{user}}=await udb.auth.getUser();if(!user)return json({error:'Authentication required'},401);
   const{data:profile}=await udb.from('profiles').select('company_id,role,full_name').eq('id',user.id).maybeSingle();
   if(!profile||profile.role!=='partner')return json({error:'Partner access required'},403);
-  const[{data:active},{data:canDevelop},{data:canClose},{data:canSource}]=await Promise.all([
-   udb.rpc('partner_is_active'),udb.rpc('partner_can_develop_clients'),udb.rpc('partner_can_close_clients'),udb.rpc('partner_can_source_candidates')
+  const[{data:active},{data:canDevelop},{data:canClose},{data:canSource},{data:candidatePhase}]=await Promise.all([
+   udb.rpc('partner_is_active'),udb.rpc('partner_can_develop_clients'),udb.rpc('partner_can_close_clients'),udb.rpc('partner_can_source_candidates'),udb.rpc('candidate_processing_allowed',{p_company_id:profile.company_id})
   ]);
   if(active!==true)return json({error:'Partner activation required'},403);
 
-  const company=profile.company_id;
+  const company=profile.company_id;const canSourceNow=canSource===true&&candidatePhase===true;
   const [
    {data:assignments},{data:tasks},{data:clients},{data:activity},{data:jobs},{data:pipeline},
    {data:candidates},{data:submissions},{data:offers},{data:interviews},{data:placements},{data:handoffs}
@@ -76,10 +76,11 @@ Deno.serve(async req=>{
    if(a.objective)add({...base,key:'objective:job:'+a.id,kind:'job',source:'assignment',title:a.objective,detail:'Manager-assigned objective for '+j.title,route:route('job'),action_label:'Open vacancy'});
    const rows=(pipeline||[]).filter((x:any)=>x.job_id===j.id);
    const activeRows=rows.filter((x:any)=>!['rejected','paused'].includes(x.stage));
-   if(canSource===true&&['draft','published'].includes(String(j.status))&&activeRows.length===0){
+   if(canSource===true&&candidatePhase!==true&&['draft','published'].includes(String(j.status)))add({...base,key:'job:phase:'+j.id,kind:'pipeline',source:'derived',title:'Candidate processing not yet active · '+j.title,detail:'Vorlen compliance has not activated candidate processing for this workspace, so sourcing actions are intentionally blocked.',priority:'normal',route:route('job'),action_label:'View vacancy'},true);
+   if(canSourceNow&&['draft','published'].includes(String(j.status))&&activeRows.length===0){
      add({...base,key:'job:source:'+j.id,kind:'pipeline',source:'derived',title:'Start sourcing · '+j.title,detail:(j.status==='draft'?'Approved for internal delivery. ':'Published vacancy. ')+'Search Vorlen candidates first, then source externally as needed.',priority:'high',route:route('pipeline',j.id),action_label:'Start sourcing'});
    }
-   if(canSource===true){
+   if(canSourceNow){
     for(const row of activeRows){
       const cand=candMap.get(row.candidate_id);if(!cand)continue;const b={...base,candidate_id:cand.id,candidate_name:cand.full_name,kind:'candidate',source:'derived',route:route('candidate',cand.id),action_label:'Open candidate'};
       if(row.next_action)add({...b,key:'pipe:next:'+row.id,title:row.next_action,detail:'Explicit next action for '+cand.full_name+' on '+j.title,priority:row.next_action_at&&new Date(row.next_action_at)<=new Date()?'urgent':'normal',due_at:row.next_action_at});
@@ -102,7 +103,7 @@ Deno.serve(async req=>{
      if(canClose===true&&assignedJobs.has(s.job_id))add({key:'submission:feedback:'+s.id,kind:'application',source:'derived',title:'Chase client feedback · '+cand.full_name,detail:(c?.company_name||'Client')+' has '+cand.full_name+' for '+j.title+'. Record feedback or the agreed next step.',priority:'high',client_id:s.client_id,job_id:s.job_id,candidate_id:s.candidate_id,route:route('application'),action_label:'Open applications'});
      else add({key:'submission:wait:'+s.id,kind:'application',source:'derived',title:'Client feedback pending · '+cand.full_name,detail:'The official submission is with '+(c?.company_name||'the client')+'.',priority:'normal',job_id:s.job_id,candidate_id:s.candidate_id,route:route('application'),action_label:'Open applications'},true);
    }
-   if(s.status==='interview_requested'&&canSource===true)add({key:'submission:interview:'+s.id,kind:'candidate',source:'derived',title:'Arrange interview · '+cand.full_name,detail:'Client requested an interview for '+j.title+'. Coordinate the authorised interview workflow.',priority:'urgent',job_id:s.job_id,candidate_id:s.candidate_id,route:route('candidate',cand.id),action_label:'Open candidate'});
+   if(s.status==='interview_requested'&&canSourceNow)add({key:'submission:interview:'+s.id,kind:'candidate',source:'derived',title:'Arrange interview · '+cand.full_name,detail:'Client requested an interview for '+j.title+'. Coordinate the authorised interview workflow.',priority:'urgent',job_id:s.job_id,candidate_id:s.candidate_id,route:route('candidate',cand.id),action_label:'Open candidate'});
   }
 
   for(const i of interviews||[]){
@@ -128,7 +129,7 @@ Deno.serve(async req=>{
   queue.sort(sort);waiting.sort(sort);
   return json({
    generated_at:new Date().toISOString(),
-   role:{can_develop_clients:canDevelop===true,can_close_clients:canClose===true,can_source_candidates:canSource===true},
+   role:{can_develop_clients:canDevelop===true,can_close_clients:canClose===true,can_source_candidates:canSource===true,candidate_processing_active:candidatePhase===true},
    summary:{ready_now:queue.length,waiting:waiting.length,urgent:queue.filter(x=>x.priority==='urgent').length,high:queue.filter(x=>x.priority==='high').length},
    actions:queue.slice(0,80),waiting:waiting.slice(0,50)
   });
