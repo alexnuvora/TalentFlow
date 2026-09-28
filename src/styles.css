@@ -688,3 +688,44 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
  .chat-shell{grid-template-columns:300px minmax(0,1fr)}
  .chat-page{max-width:1500px;margin:0 auto}
 }
+
+/* Chat avatar alignment */
+.chat-avatar{
+ width:44px;
+ height:44px;
+ min-width:44px;
+ min-height:44px;
+ border-radius:50%;
+ background:#cfe2dc;
+ color:#5b6f69;
+ display:grid;
+ place-items:center;
+ overflow:hidden;
+ flex-shrink:0;
+ user-select:none
+}
+.chat-avatar>span{
+ display:block;
+ font-size:13px;
+ font-weight:800;
+ line-height:1;
+ letter-spacing:.02em;
+ margin:0;
+ padding:0
+}
+.chat-partners .chat-avatar{
+ width:40px;
+ height:40px;
+ min-width:40px;
+ min-height:40px
+}
+.chat-partners .chat-avatar>span{font-size:12px}
+@media(max-width:850px){
+ .chat-header .chat-avatar{
+  width:46px;
+  height:46px;
+  min-width:46px;
+  min-height:46px
+ }
+ .chat-header .chat-avatar>span{font-size:14px}
+}
