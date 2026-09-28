@@ -69,7 +69,6 @@ export default function PartnerChat({mode}:{mode:Mode}){
  },[]);
 
  const isNearChatBottom=useCallback(()=>{const el=messagesRef.current;if(!el)return true;return el.scrollHeight-el.scrollTop-el.clientHeight<120},[]);
- const scrollChatToBottom=useCallback((behavior:ScrollBehavior='auto')=>{const el=messagesRef.current;if(!el)return;el.scrollTo({top:el.scrollHeight,behavior})},[]);
  const focusComposer=useCallback(()=>{window.setTimeout(()=>composerRef.current?.focus({preventScroll:true}),0)},[]);
 
  const markIncoming=useCallback(async(msgs:Message[],existing:Receipt[])=>{
