@@ -30,7 +30,7 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
    supabase.from('clients').select('id,company_name,contact_name,email,phone,status').order('company_name'),
    supabase.from('partner_prospects').select('*').order('updated_at',{ascending:false}),
    supabase.from('jobs').select('id,client_id,title,slug,status,location,salary_min,salary_max,employment_type,application_mode,description,requirements,duties,required_qualifications,work_days_hours,start_date,duration_text,minimum_remuneration_text,notice_period,created_at').order('created_at',{ascending:false}),
-   supabase.from('candidates').select('id,full_name,email,phone,location,stage,next_action,next_action_at,work_seeker_terms_agreed_at,created_at').order('created_at',{ascending:false}),
+   supabase.from('candidates').select('id,full_name,email,phone,location,stage,next_action,next_action_at,work_seeker_terms_agreed_at,resume_path,created_at').order('created_at',{ascending:false}),
    supabase.from('partner_candidate_pipeline').select('*').order('updated_at',{ascending:false}),
    supabase.from('partner_commercial_handoffs').select('*').order('updated_at',{ascending:false}),
    supabase.from('placements').select('id,client_id,job_id,candidate_id,fee_amount,currency,invoice_status,start_date,paid_at,created_at').order('created_at',{ascending:false}),
@@ -82,8 +82,12 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
   setNewPipeline({candidate_id:'',job_id:''});toast('Candidate added to the vacancy pipeline.');await load();
  }
  async function movePipeline(row:any,stage:string){
+  const cand=candidateById.get(row.candidate_id);
+  if(stage==='recommended'&&!cand?.work_seeker_terms_agreed_at)return setError('Record the candidate work-seeker terms before recommendation.');
+  if(stage==='recommended'&&!cand?.resume_path)return setError('Upload the candidate-provided or authorised CV before recommendation.');
   setBusy(true);setError('');
-  const{error:e}=await supabase.from('partner_candidate_pipeline').update({stage}).eq('id',row.id);
+  const patch:any={stage};if(stage==='recommended'){patch.manager_status='pending';patch.manager_notes=null;patch.reviewed_by=null;patch.reviewed_at=null}else if(row.stage==='recommended'&&row.manager_status==='pending'){patch.manager_status='none';patch.manager_notes=null;patch.reviewed_by=null;patch.reviewed_at=null}
+  const{error:e}=await supabase.from('partner_candidate_pipeline').update(patch).eq('id',row.id);
   setBusy(false);if(e)return setError(e.message);
   toast(stage==='recommended'?'Candidate recommended to Vorlen for human review.':'Pipeline updated.');await load();
  }
