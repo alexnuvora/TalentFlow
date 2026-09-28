@@ -22,7 +22,7 @@ Deno.serve(async req=>{
   const company=profile.company_id;const canSourceNow=canSource===true&&candidatePhase===true;
   const [
    {data:assignments},{data:tasks},{data:clients},{data:activity},{data:jobs},{data:pipeline},
-   {data:candidates},{data:submissions},{data:offers},{data:interviews},{data:placements},{data:handoffs}
+   {data:candidates},{data:submissions},{data:packs},{data:offers},{data:interviews},{data:placements},{data:handoffs}
   ]=await Promise.all([
    db.from('partner_assignments').select('id,client_id,candidate_id,job_id,priority,objective,due_at,assigned_at').eq('company_id',company).eq('partner_id',user.id).is('completed_at',null),
    db.from('partner_tasks').select('id,title,description,task_type,client_id,candidate_id,job_id,due_at,priority,status,outreach_channel,outreach_enrollment_id').eq('company_id',company).eq('partner_id',user.id).not('status','in','("done","cancelled")'),
@@ -32,6 +32,7 @@ Deno.serve(async req=>{
    db.from('partner_candidate_pipeline').select('id,candidate_id,job_id,stage,next_action,next_action_at,manager_status,updated_at').eq('company_id',company).eq('partner_id',user.id),
    db.from('candidates').select('id,full_name,resume_path,work_seeker_terms_agreed_at,stage').eq('company_id',company).is('erased_at',null),
    db.from('candidate_submissions').select('id,client_id,job_id,candidate_id,status,client_feedback,client_feedback_at,submitted_at,updated_at').eq('company_id',company),
+   db.from('partner_submission_packs').select('id,job_id,candidate_id,status,manager_notes,candidate_submission_id,updated_at').eq('company_id',company).eq('partner_id',user.id),
    db.from('partner_candidate_offers').select('id,candidate_id,job_id,status,placement_review_status,placement_id,proposed_start_date,updated_at').eq('company_id',company).eq('partner_id',user.id),
    db.from('interviews').select('id,client_id,job_id,candidate_id,scheduled_at,status,updated_at').eq('company_id',company),
    db.from('placements').select('id,client_id,job_id,candidate_id,start_date,invoice_status,created_at').eq('company_id',company),
@@ -91,7 +92,14 @@ Deno.serve(async req=>{
       else if(row.stage==='screening')add({...b,key:'pipe:qualify:'+row.id,title:'Complete qualification · '+cand.full_name,detail:'Finish screening and move only evidenced suitable candidates to qualified.',priority:'high'});
       else if(row.stage==='qualified')add({...b,key:'pipe:recommend:'+row.id,title:'Recommend '+cand.full_name+' to Vorlen',detail:'Prepare the evidence-based recommendation for human review. This is not yet a client submission.',priority:'high'});
       else if(row.stage==='recommended'&&['none','pending'].includes(row.manager_status||'none'))add({...b,key:'pipe:review:'+row.id,title:'Vorlen review pending · '+cand.full_name,detail:'Recommendation is with Vorlen for human review. No duplicate action is needed.',priority:'normal'},true);
-      else if(row.stage==='recommended'&&row.manager_status==='approved'&&!(submissions||[]).some((s:any)=>s.job_id===j.id&&s.candidate_id===cand.id&&!['draft','withdrawn'].includes(s.status)))add({...b,key:'pipe:submission:'+row.id,title:'Prepare submission pack · '+cand.full_name,detail:'Vorlen approved the recommendation. Complete the controlled submission workflow for '+j.title+'.',priority:'high',route:'/dashboard/partner/talent?job='+encodeURIComponent(j.id)+'&candidate='+encodeURIComponent(cand.id),action_label:'Prepare submission'});
+      else if(row.stage==='recommended'&&row.manager_status==='approved'){
+        const pack=(packs||[]).find((x:any)=>x.job_id===j.id&&x.candidate_id===cand.id);
+        const official=(submissions||[]).find((x:any)=>x.job_id===j.id&&x.candidate_id===cand.id&&x.status!=='withdrawn');
+        if(!pack&&!official)add({...b,key:'pipe:submission:'+row.id,title:'Prepare submission pack · '+cand.full_name,detail:'Vorlen approved the recommendation. Complete the controlled submission workflow for '+j.title+'.',priority:'high',route:'/dashboard/partner/talent?job='+encodeURIComponent(j.id)+'&candidate='+encodeURIComponent(cand.id),action_label:'Prepare submission'});
+        else if(pack?.status==='declined'&&!official)add({...b,key:'pipe:submission-revise:'+row.id,title:'Revise submission pack · '+cand.full_name,detail:pack.manager_notes?'Vorlen feedback: '+pack.manager_notes:'Vorlen declined the previous pack. Review the evidence and resubmit when ready.',priority:'high',route:'/dashboard/partner/talent?job='+encodeURIComponent(j.id)+'&candidate='+encodeURIComponent(cand.id),action_label:'Revise pack'});
+        else if(pack&&!official)add({...b,key:'pipe:submission-wait:'+row.id,title:'Submission pack with Vorlen · '+cand.full_name,detail:pack.status==='approved'?'Pack approved; Vorlen is completing the controlled client-introduction checks.':'Pack submitted for Vorlen human/compliance review.',priority:'normal',route:'/dashboard/partner/talent?job='+encodeURIComponent(j.id)+'&candidate='+encodeURIComponent(cand.id),action_label:'View pack'},true);
+        else if(official&&['draft','approved_to_send'].includes(official.status))add({...b,key:'pipe:official-wait:'+row.id,title:'Client submission being prepared · '+cand.full_name,detail:'Vorlen has created the controlled submission and is completing the required introduction checks before client delivery.',priority:'normal',route:'/dashboard/partner/applications',action_label:'View applications'},true);
+      }
     }
    }
   }
