@@ -20,7 +20,7 @@ const fmt=(v?:string|null)=>v?new Intl.DateTimeFormat('en-GB',{day:'2-digit',mon
 const clock=(v:string)=>new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit'}).format(new Date(v));
 const dayKey=(v:string)=>new Date(v).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
 const safeName=(v:string)=>v.replace(/[^a-zA-Z0-9._-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,120)||'file';
-const size=(n:number)=>n<1024?\`${n} B\`:n<1024*1024?\`${(n/1024).toFixed(1)} KB\`:\`${(n/1024/1024).toFixed(1)} MB\`;
+const size=(n:number)=>n<1024?`${n} B`:n<1024*1024?`${(n/1024).toFixed(1)} KB`:`${(n/1024/1024).toFixed(1)} MB`;
 
 export default function PartnerChat({mode}:{mode:Mode}){
  const access=useWorkspaceAccess(),toast=useToast(),[params,setParams]=useSearchParams();
@@ -104,31 +104,31 @@ export default function PartnerChat({mode}:{mode:Mode}){
  useEffect(()=>{if(mode!=='manager'||!me)return;const ch=supabase.channel('partner-chat-manager-list-'+me).on('postgres_changes',{event:'INSERT',schema:'public',table:'partner_messages'},()=>void refreshList()).subscribe();return()=>{void supabase.removeChannel(ch)}},[mode,me,refreshList]);
 
  useEffect(()=>{if(!conversationId||!me)return;const schedule=()=>{if(refreshTimer.current)window.clearTimeout(refreshTimer.current);refreshTimer.current=window.setTimeout(()=>{void loadConversation(false);if(mode==='manager')void refreshList()},120)};
-  const ch=supabase.channel(\`partner-chat-db-${conversationId}-${me}\`)
-   .on('postgres_changes',{event:'*',schema:'public',table:'partner_messages',filter:\`conversation_id=eq.${conversationId}\`},(payload:any)=>{if(payload.eventType==='INSERT'&&payload.new?.sender_id!==me&&document.hidden&&'Notification'in window&&Notification.permission==='granted'){new Notification(mode==='manager'?(selected?.partner_name||'Partner message'):'Vorlen management',{body:String(payload.new?.body||'New attachment').slice(0,160)})}schedule()})
-   .on('postgres_changes',{event:'*',schema:'public',table:'partner_message_receipts',filter:\`conversation_id=eq.${conversationId}\`},schedule)
-   .on('postgres_changes',{event:'*',schema:'public',table:'partner_chat_user_state',filter:\`conversation_id=eq.${conversationId}\`},schedule)
+  const ch=supabase.channel(`partner-chat-db-${conversationId}-${me}`)
+   .on('postgres_changes',{event:'*',schema:'public',table:'partner_messages',filter:`conversation_id=eq.${conversationId}`},schedule)
+   .on('postgres_changes',{event:'*',schema:'public',table:'partner_message_receipts',filter:`conversation_id=eq.${conversationId}`},schedule)
+   .on('postgres_changes',{event:'*',schema:'public',table:'partner_chat_user_state',filter:`conversation_id=eq.${conversationId}`},schedule)
    .subscribe();
   return()=>{if(refreshTimer.current)window.clearTimeout(refreshTimer.current);void supabase.removeChannel(ch)}
  },[conversationId,me,mode,selected?.partner_name,loadConversation,refreshList]);
 
  useEffect(()=>{const t=window.setInterval(()=>setNow(Date.now()),2000);setNotifySupported(typeof window!=='undefined'&&'Notification'in window);return()=>window.clearInterval(t)},[]);
 
- async function searchMessages(v:string){setMessageSearch(v);if(v.trim().length<2){setSearchResults([]);return}const{data,error:e}=await supabase.from('partner_messages').select('*').eq('conversation_id',conversationId).ilike('body',\`%${v.trim().replace(/[%_]/g,'')}%\`).order('created_at',{ascending:false}).limit(100);if(e)setError(e.message);else setSearchResults(((data||[]) as Message[]).reverse())}
+ async function searchMessages(v:string){setMessageSearch(v);if(v.trim().length<2){setSearchResults([]);return}const{data,error:e}=await supabase.from('partner_messages').select('*').eq('conversation_id',conversationId).ilike('body',`%${v.trim().replace(/[%_]/g,'')}%`).order('created_at',{ascending:false}).limit(100);if(e)setError(e.message);else setSearchResults(((data||[]) as Message[]).reverse())}
 
  async function loadContextOptions(type:string){setContextType(type);setContext(null);setContextOptions([]);if(!type)return;if(type==='task'){setContextOptions([{id:'work-queue',label:'Work queue',path:mode==='partner'?'/dashboard/partner/tasks':'/dashboard/partner-management'}]);return}
   const configs:any={
-   client:{table:'clients',select:'id,company_name',label:(x:any)=>x.company_name,path:(x:any)=>mode==='partner'?\`/dashboard/partner/clients?client=${x.id}\`:\`/dashboard/clients/${x.id}\`},
-   job:{table:'jobs',select:'id,title',label:(x:any)=>x.title,path:(x:any)=>mode==='partner'?\`/dashboard/partner/vacancies?job=${x.id}\`:'/dashboard/jobs'},
-   candidate:{table:'candidates',select:'id,full_name',label:(x:any)=>x.full_name,path:(x:any)=>mode==='partner'?\`/dashboard/partner/candidates/${x.id}\`:\`/dashboard/candidates/${x.id}\`},
-   application:{table:'applications',select:'id,status',label:(x:any)=>\`Application · ${String(x.id).slice(0,8)} · ${x.status}\`,path:()=>mode==='partner'?'/dashboard/partner/applications':'/dashboard/applications'},
-   submission:{table:'partner_submission_packs',select:'id,status',label:(x:any)=>\`Submission pack · ${String(x.id).slice(0,8)} · ${x.status}\`,path:()=>mode==='partner'?'/dashboard/partner/talent':'/dashboard/partner-management'},
-   handoff:{table:'partner_commercial_handoffs',select:'id,status',label:(x:any)=>\`Commercial handoff · ${String(x.id).slice(0,8)} · ${x.status}\`,path:()=>mode==='partner'?'/dashboard/partner/handoffs':'/dashboard/partner-management'},
-   placement:{table:'placements',select:'id,start_date',label:(x:any)=>\`Placement · ${String(x.id).slice(0,8)}${x.start_date?' · '+x.start_date:''}\`,path:()=>mode==='partner'?'/dashboard/partner/earnings':'/dashboard/commercial'},
-   commission:{table:'partner_commissions',select:'id,amount,status',label:(x:any)=>\`Commission · £${Number(x.amount||0).toFixed(2)} · ${x.status}\`,path:()=>mode==='partner'?'/dashboard/partner/earnings':'/dashboard/commercial'}
+   client:{table:'clients',select:'id,company_name',label:(x:any)=>x.company_name,path:(x:any)=>mode==='partner'?`/dashboard/partner/clients?client=${x.id}`:`/dashboard/clients/${x.id}`},
+   job:{table:'jobs',select:'id,title',label:(x:any)=>x.title,path:(x:any)=>mode==='partner'?`/dashboard/partner/vacancies?job=${x.id}`:'/dashboard/jobs'},
+   candidate:{table:'candidates',select:'id,full_name',label:(x:any)=>x.full_name,path:(x:any)=>mode==='partner'?`/dashboard/partner/candidates/${x.id}`:`/dashboard/candidates/${x.id}`},
+   application:{table:'applications',select:'id,status',label:(x:any)=>`Application · ${String(x.id).slice(0,8)} · ${x.status}`,path:()=>mode==='partner'?'/dashboard/partner/applications':'/dashboard/applications'},
+   submission:{table:'partner_submission_packs',select:'id,status',label:(x:any)=>`Submission pack · ${String(x.id).slice(0,8)} · ${x.status}`,path:()=>mode==='partner'?'/dashboard/partner/talent':'/dashboard/partner-management'},
+   handoff:{table:'partner_commercial_handoffs',select:'id,status',label:(x:any)=>`Commercial handoff · ${String(x.id).slice(0,8)} · ${x.status}`,path:()=>mode==='partner'?'/dashboard/partner/handoffs':'/dashboard/partner-management'},
+   placement:{table:'placements',select:'id,start_date',label:(x:any)=>`Placement · ${String(x.id).slice(0,8)}${x.start_date?' · '+x.start_date:''}`,path:()=>mode==='partner'?'/dashboard/partner/earnings':'/dashboard/commercial'},
+   commission:{table:'partner_commissions',select:'id,amount,status',label:(x:any)=>`Commission · £${Number(x.amount||0).toFixed(2)} · ${x.status}`,path:()=>mode==='partner'?'/dashboard/partner/earnings':'/dashboard/commercial'}
   };const c=configs[type];if(!c)return;const{data,error:e}=await supabase.from(c.table).select(c.select).limit(100);if(e){setError('Context items could not be loaded: '+e.message);return}setContextOptions((data||[]).map((x:any)=>({id:x.id,label:c.label(x),path:c.path(x)})))}
 
- function chooseFiles(list:FileList|null){if(!list)return;const accepted:File[]=[];for(const f of Array.from(list)){if(f.size>maxFile){toast(\`${f.name} is larger than 10 MB.\`,{tone:'error'});continue}if(!allowedTypes.has(f.type)){toast(\`${f.name} is not a supported image, PDF or Office document.\`,{tone:'error'});continue}accepted.push(f)}setFiles(v=>[...v,...accepted].slice(0,5))}
+ function chooseFiles(list:FileList|null){if(!list)return;const accepted:File[]=[];for(const f of Array.from(list)){if(f.size>maxFile){toast(`${f.name} is larger than 10 MB.`,{tone:'error'});continue}if(!allowedTypes.has(f.type)){toast(`${f.name} is not a supported image, PDF or Office document.`,{tone:'error'});continue}accepted.push(f)}setFiles(v=>[...v,...accepted].slice(0,5))}
 
  function typeBody(v:string){setBody(v);if(editing)return;if(typingTimer.current)window.clearTimeout(typingTimer.current);void touchState(true);typingTimer.current=window.setTimeout(()=>void touchState(false),4800)}
 
@@ -138,8 +138,8 @@ export default function PartnerChat({mode}:{mode:Mode}){
   const payload:any={conversation_id:conversationId,company_id:access.companyId,sender_id:me,body:body.trim(),message_type:files.length?'attachment':'text',reply_to_id:replyTo?.id||null};
   if(context){payload.context_type=contextType;payload.context_id=contextType==='task'?null:context.id;payload.context_label=context.label;payload.context_path=context.path}
   const{data:m,error:e}=await supabase.from('partner_messages').insert(payload).select('*').single();if(e||!m){setSending(false);setError(e?.message||'Message could not be sent.');return}
-  const uploaded:string[]=[];try{for(const f of files){const path=\`${access.companyId}/${conversationId}/${m.id}/${crypto.randomUUID()}-${safeName(f.name)}\`;const up=await supabase.storage.from('partner-chat').upload(path,f,{contentType:f.type,upsert:false});if(up.error)throw up.error;uploaded.push(path);const row=await supabase.from('partner_message_attachments').insert({company_id:access.companyId,conversation_id:conversationId,message_id:m.id,uploaded_by:me,storage_path:path,filename:f.name,mime_type:f.type,size_bytes:f.size});if(row.error)throw row.error}}
-  catch(err){if(uploaded.length)await supabase.storage.from('partner-chat').remove(uploaded);await supabase.from('partner_messages').update({deleted_at:new Date().toISOString()}).eq('id',m.id);setSending(false);setError(err instanceof Error?err.message:'Attachment upload failed.');return}
+  const uploaded:string[]=[],attachmentRows:string[]=[];try{for(const f of files){const path=`${access.companyId}/${conversationId}/${m.id}/${crypto.randomUUID()}-${safeName(f.name)}`;const up=await supabase.storage.from('partner-chat').upload(path,f,{contentType:f.type,upsert:false});if(up.error)throw up.error;uploaded.push(path);const row=await supabase.from('partner_message_attachments').insert({company_id:access.companyId,conversation_id:conversationId,message_id:m.id,uploaded_by:me,storage_path:path,filename:f.name,mime_type:f.type,size_bytes:f.size}).select('id').single();if(row.error)throw row.error;if(row.data?.id)attachmentRows.push(row.data.id)}}
+  catch(err){if(uploaded.length)await supabase.storage.from('partner-chat').remove(uploaded);if(attachmentRows.length)await supabase.from('partner_message_attachments').delete().in('id',attachmentRows);await supabase.from('partner_messages').update({deleted_at:new Date().toISOString()}).eq('id',m.id);setSending(false);setError(err instanceof Error?err.message:'Attachment upload failed.');return}
   setBody('');setFiles([]);setReplyTo(null);setContext(null);setContextType('');setShowContext(false);await touchState(false);setSending(false);await loadConversation(false);if(mode==='manager')await refreshList();
  }
 
@@ -153,7 +153,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
  function statusFor(m:Message){if(m.sender_id!==me)return'';const rs=receipts.filter(r=>r.message_id===m.id&&r.user_id!==me);return rs.some(r=>r.read_at)?'Read':rs.some(r=>r.delivered_at)?'Delivered':'Sent'}
  function canChange(m:Message){return m.sender_id===me&&!m.deleted_at&&Date.now()-new Date(m.created_at).getTime()<=15*60000}
  function messageSide(m:Message){if(mode==='partner')return m.sender_id===me?'out':'in';return m.sender_id===partnerUserId?'in':'out'}
- function scrollTo(id:string){document.querySelector(\`[data-message-id="${id}"]\`)?.scrollIntoView({behavior:'smooth',block:'center'});setMessageSearch('');setSearchResults([])}
+ function scrollTo(id:string){document.querySelector(`[data-message-id="${id}"]`)?.scrollIntoView({behavior:'smooth',block:'center'});setMessageSearch('');setSearchResults([])}
  const headerName=mode==='partner'?'Vorlen management':selected?.partner_name||'Partner';
  const headerSub=otherTyping?'typing…':otherOnline?'online':mode==='manager'&&selected?.partner_last_seen_at?'last active '+fmt(selected.partner_last_seen_at):'Secure partner channel';
 
@@ -161,22 +161,22 @@ export default function PartnerChat({mode}:{mode:Mode}){
  return <div className="page chat-page">
   <div className="page-actions chat-page-head"><div><div className="eyebrow">PARTNER COMMUNICATIONS</div><h2>{mode==='partner'?'Chat with Vorlen':'Partner messages'}</h2><p>{mode==='partner'?'Private 1-to-1 communication with Vorlen management.':'Live partner conversations, linked directly to operational work.'}</p></div>{notifySupported&&Notification.permission!=='granted'&&<Button variant="ghost" onClick={enableNotifications}><Bell size={15}/> Enable notifications</Button>}</div>
   {error&&<div className="alert error" role="alert">{error}</div>}
-  <div className={\`chat-shell ${mode==='partner'?'partner-only':''}\`}>
-   {mode==='manager'&&<aside className={\`chat-list ${conversationId?'has-selection':''}\`}>
+  <div className={`chat-shell ${mode==='partner'?'partner-only':''}`}>
+   {mode==='manager'&&<aside className={`chat-list ${conversationId?'has-selection':''}`}>
     <div className="chat-list-head"><div className="search"><Search size={15}/><input value={partnerSearch} onChange={e=>setPartnerSearch(e.target.value)} placeholder="Search partners"/></div></div>
     <div className="chat-partners">{filteredConversations.map(c=><button key={c.conversation_id} className={c.conversation_id===conversationId?'active':''} onClick={()=>{setConversationId(c.conversation_id);setPartnerId(c.partner_id);setParams(c.partner_id?{partner:c.partner_id}:{})}}>
       <span className="chat-avatar">{c.partner_name?.split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase()||'P'}</span><span className="chat-partner-copy"><strong>{c.partner_name}</strong><small>{String(c.specialism||'partner').replaceAll('_',' ')}</small><em>{c.last_message||'Start a conversation'}</em></span><span className="chat-list-meta"><time>{c.last_message_at?clock(c.last_message_at):''}</time>{Number(c.unread_count||0)>0&&<b>{Number(c.unread_count)>99?'99+':c.unread_count}</b>}</span>
      </button>)}</div>
    </aside>}
-   <section className={\`chat-conversation ${!conversationId?'empty-chat':''}\`}>
+   <section className={`chat-conversation ${!conversationId?'empty-chat':''}`}>
     {!conversationId?<div className="chat-empty"><MessageCircle size={32}/><h3>Select a partner</h3><p>Choose a conversation to start messaging.</p></div>:<>
      <header className="chat-header">{mode==='manager'&&<button className="chat-back" onClick={()=>setConversationId('')}><ChevronLeft size={20}/></button>}<span className="chat-avatar">{headerName.split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase()}</span><div><strong>{headerName}</strong><span className={otherOnline?'online':''}>{headerSub}</span></div><div className="chat-header-actions"><div className="search chat-message-search"><Search size={14}/><input value={messageSearch} onChange={e=>void searchMessages(e.target.value)} placeholder="Search messages"/></div></div></header>
      {pinned.length>0&&<div className="chat-pinned"><Pin size={14}/><div>{pinned.map(m=><button key={m.id} onClick={()=>scrollTo(m.id)}>{m.context_label||m.body||'Pinned attachment'}</button>)}</div></div>}
      <div className="chat-messages">
       {hasMore&&!messageSearch&&<button className="chat-load-more" disabled={loadingMessages} onClick={()=>void loadConversation(true)}>{loadingMessages?'Loading…':'Load older messages'}</button>}
-      {visibleMessages.map((m,i)=>{const previous=visibleMessages[i-1],showDay=!previous||dayKey(previous.created_at)!==dayKey(m.created_at),side=messageSide(m),reply=messages.find(x=>x.id===m.reply_to_id),atts=attachmentFor(m.id);return <div key={m.id}>{showDay&&<div className="chat-day"><span>{dayKey(m.created_at)}</span></div>}<article data-message-id={m.id} className={\`chat-message ${side} ${m.pinned_at?'pinned':''} ${m.deleted_at?'deleted':''}\`}>
+      {visibleMessages.map((m,i)=>{const previous=visibleMessages[i-1],showDay=!previous||dayKey(previous.created_at)!==dayKey(m.created_at),side=messageSide(m),reply=messages.find(x=>x.id===m.reply_to_id),atts=attachmentFor(m.id);return <div key={m.id}>{showDay&&<div className="chat-day"><span>{dayKey(m.created_at)}</span></div>}<article data-message-id={m.id} className={`chat-message ${side} ${m.pinned_at?'pinned':''} ${m.deleted_at?'deleted':''}`}>
        <div className="chat-bubble">{m.pinned_at&&<span className="chat-pin"><Pin size={11}/> Pinned</span>}{reply&&<button className="chat-reply-preview" onClick={()=>scrollTo(reply.id)}><strong>{reply.sender_id===me?'You':mode==='partner'?'Vorlen management':selected?.partner_name||'Partner'}</strong><span>{reply.deleted_at?'Deleted message':reply.body||'Attachment'}</span></button>}
-        {m.deleted_at?<p className="chat-deleted">This message was deleted</p>:<>{m.body&&<p>{m.body}</p>}{m.context_label&&m.context_path&&<Link className="chat-context" to={m.context_path}><Link2 size={14}/><span><small>{String(m.context_type||'context').replaceAll('_',' ')}</small><strong>{m.context_label}</strong></span></Link>}{atts.map(a=><a key={a.id} className={\`chat-attachment ${a.mime_type.startsWith('image/')?'image':''}\`} href={a.signed_url||'#'} target="_blank" rel="noreferrer">{a.mime_type.startsWith('image/')&&a.signed_url?<img src={a.signed_url} alt={a.filename}/>:a.mime_type.startsWith('image/')?<ImageIcon size={18}/>:<FileText size={18}/>}<span><strong>{a.filename}</strong><small>{size(a.size_bytes)}</small></span></a>)}</>}
+        {m.deleted_at?<p className="chat-deleted">This message was deleted</p>:<>{m.body&&<p>{m.body}</p>}{m.context_label&&m.context_path&&<Link className="chat-context" to={m.context_path}><Link2 size={14}/><span><small>{String(m.context_type||'context').replaceAll('_',' ')}</small><strong>{m.context_label}</strong></span></Link>}{atts.map(a=><a key={a.id} className={`chat-attachment ${a.mime_type.startsWith('image/')?'image':''}`} href={a.signed_url||'#'} target="_blank" rel="noreferrer">{a.mime_type.startsWith('image/')&&a.signed_url?<img src={a.signed_url} alt={a.filename}/>:a.mime_type.startsWith('image/')?<ImageIcon size={18}/>:<FileText size={18}/>}<span><strong>{a.filename}</strong><small>{size(a.size_bytes)}</small></span></a>)}</>}
         <footer><time>{clock(m.created_at)}</time>{m.edited_at&&!m.deleted_at&&<span>edited</span>}{m.sender_id===me&&<span className="chat-status">{statusFor(m)}</span>}</footer>
        </div>
        {!m.deleted_at&&<div className="chat-actions"><button title="Reply" onClick={()=>startReply(m)}><Reply size={13}/></button>{canChange(m)&&<button title="Edit" onClick={()=>startEdit(m)}><Pencil size={13}/></button>}{canChange(m)&&<button title="Delete" onClick={()=>void removeMessage(m)}><Trash2 size={13}/></button>}{mode==='manager'&&<button title={m.pinned_at?'Unpin':'Pin'} onClick={()=>void togglePin(m)}><Pin size={13}/></button>}</div>}
