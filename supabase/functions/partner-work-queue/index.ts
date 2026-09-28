@@ -90,7 +90,7 @@ Deno.serve(async req=>{
       else if(row.stage==='contacted')add({...b,key:'pipe:screen:'+row.id,title:'Screen '+cand.full_name,detail:'Assess explicit evidence against '+j.title+' and record gaps/next action.',priority:'high'});
       else if(row.stage==='screening')add({...b,key:'pipe:qualify:'+row.id,title:'Complete qualification · '+cand.full_name,detail:'Finish screening and move only evidenced suitable candidates to qualified.',priority:'high'});
       else if(row.stage==='qualified')add({...b,key:'pipe:recommend:'+row.id,title:'Recommend '+cand.full_name+' to Vorlen',detail:'Prepare the evidence-based recommendation for human review. This is not yet a client submission.',priority:'high'});
-      else if(row.stage==='recommended'&&row.manager_status==='pending')add({...b,key:'pipe:review:'+row.id,title:'Vorlen review pending · '+cand.full_name,detail:'Recommendation is with Vorlen for human review. No duplicate action is needed.',priority:'normal'},true);
+      else if(row.stage==='recommended'&&['none','pending'].includes(row.manager_status||'none'))add({...b,key:'pipe:review:'+row.id,title:'Vorlen review pending · '+cand.full_name,detail:'Recommendation is with Vorlen for human review. No duplicate action is needed.',priority:'normal'},true);
       else if(row.stage==='recommended'&&row.manager_status==='approved'&&!(submissions||[]).some((s:any)=>s.job_id===j.id&&s.candidate_id===cand.id&&!['draft','withdrawn'].includes(s.status)))add({...b,key:'pipe:submission:'+row.id,title:'Prepare submission pack · '+cand.full_name,detail:'Vorlen approved the recommendation. Complete the controlled submission workflow for '+j.title+'.',priority:'high'});
     }
    }
