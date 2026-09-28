@@ -92,7 +92,7 @@ alter table public.partner_message_audit enable row level security;
 
 grant select,insert on public.partner_conversations to authenticated;
 grant select,insert,update on public.partner_messages to authenticated;
-grant select,insert on public.partner_message_attachments to authenticated;
+grant select,insert,delete on public.partner_message_attachments to authenticated;
 grant select,insert,update on public.partner_message_receipts to authenticated;
 grant select,insert,update on public.partner_chat_user_state to authenticated;
 grant select on public.partner_message_audit to authenticated;
@@ -135,6 +135,14 @@ create policy "partner attachments add" on public.partner_message_attachments fo
 with check(uploaded_by=(select auth.uid()) and company_id=public.current_company_id()
  and private.partner_chat_can_access(conversation_id,(select auth.uid()))
  and exists(select 1 from public.partner_messages m where m.id=message_id and m.conversation_id=conversation_id and m.sender_id=(select auth.uid()) and m.deleted_at is null));
+
+drop policy if exists "partner attachments delete own recent" on public.partner_message_attachments;
+create policy "partner attachments delete own recent" on public.partner_message_attachments for delete to authenticated
+using(
+ uploaded_by=(select auth.uid())
+ and private.partner_chat_can_access(conversation_id,(select auth.uid()))
+ and exists(select 1 from public.partner_messages m where m.id=message_id and m.conversation_id=conversation_id and m.sender_id=(select auth.uid()) and now()<=m.created_at+interval '15 minutes')
+);
 
 drop policy if exists "partner receipts read" on public.partner_message_receipts;
 create policy "partner receipts read" on public.partner_message_receipts for select to authenticated
