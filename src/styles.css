@@ -650,3 +650,12 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
  .chat-compose{grid-template-columns:32px 32px minmax(0,1fr) 38px}
  .chat-compose>button{width:32px}
 }
+
+/* Partner chat mobile layout correction */
+@media(max-width:850px){
+ .chat-conversation{display:flex!important;flex-direction:column!important;min-height:0}
+ .chat-header,.chat-mobile-search,.chat-pinned,.chat-compose-wrap{flex:0 0 auto}
+ .chat-messages{flex:1 1 auto;min-height:0}
+ .chat-page-head .chat-notification-cta{display:none!important}
+ .chat-shell{overflow:hidden}
+}
