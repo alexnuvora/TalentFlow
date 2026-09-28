@@ -15,7 +15,7 @@ Deno.serve(async(req)=>{
   const db=createClient(url,service);const {data:p}=await db.from('profiles').select('company_id,role').eq('id',user.id).maybeSingle();
   if(!p?.company_id||p.role!=='owner')return json({error:'Owner access required'},403);
   const cid=p.company_id, since24=new Date(Date.now()-86400000).toISOString(), staleCutoff=new Date(Date.now()-5*60000).toISOString();
-  const [events,clients,jobs,candidates,apps,interviews,placements,invoices,payments,commissions,subs,billingEvents,campaigns,dialerItems,callRequests,transcripts,externalVacancies,activities]=await Promise.all([
+  const [events,clients,jobs,candidates,apps,interviews,placements,invoices,payments,commissions,subs,billingEvents,campaigns,dialerItems,callRequests,transcripts,externalVacancies,activities,partnerProfiles,partnerPublicProfiles,partnerOnboarding]=await Promise.all([
    db.from('client_acquisition_events').select('client_id,event_type,occurred_at').eq('company_id',cid),
    db.from('clients').select('id,company_name,status,call_status,last_contacted_at,next_call_at,call_attempts,last_call_outcome,recruitment_fee_percent,payment_terms_days').eq('company_id',cid),
    db.from('jobs').select('id,client_id,title,status,created_at,genuine_vacancy_confirmed_at').eq('company_id',cid),
@@ -33,12 +33,21 @@ Deno.serve(async(req)=>{
    db.from('call_gateway_requests').select('id,phone_number,status,claimed_at,completed_at,error,created_at').eq('company_id',cid).order('created_at',{ascending:false}).limit(200),
    db.from('ai_call_transcripts').select('id,client_id,campaign_id,dialer_item_id,call_request_id,status,started_at,ended_at,summary,transcript_text,updated_at').eq('company_id',cid).order('started_at',{ascending:false}).limit(25),
    db.from('client_external_vacancies').select('id,client_id,title,location,status,last_verified_at,expires_at,source_url').eq('company_id',cid).order('last_verified_at',{ascending:false}).limit(100),
-   db.from('activity_log').select('id,event_type,detail,created_at').eq('company_id',cid).order('created_at',{ascending:false}).limit(30)
+   db.from('activity_log').select('id,event_type,detail,created_at').eq('company_id',cid).order('created_at',{ascending:false}).limit(30),
+   db.from('profiles').select('id,full_name').eq('company_id',cid).eq('role','partner'),
+   db.from('partner_profiles').select('user_id,specialism,active').eq('company_id',cid),
+   db.from('partner_onboarding').select('partner_id,status').eq('company_id',cid)
   ]);
-  const all=[events,clients,jobs,candidates,apps,interviews,placements,invoices,payments,commissions,subs,billingEvents,campaigns,dialerItems,callRequests,transcripts,externalVacancies,activities];
+  const all=[events,clients,jobs,candidates,apps,interviews,placements,invoices,payments,commissions,subs,billingEvents,campaigns,dialerItems,callRequests,transcripts,externalVacancies,activities,partnerProfiles,partnerPublicProfiles,partnerOnboarding];
   for(const x of all)if(x.error)throw x.error;
   const ev=events.data||[],cl=clients.data||[],jb=jobs.data||[],cand=candidates.data||[],ap=apps.data||[],iv=interviews.data||[],pl=placements.data||[],ins=invoices.data||[],pay=payments.data||[],com=commissions.data||[];
   const camps=campaigns.data||[],items=dialerItems.data||[],calls=callRequests.data||[],tx=transcripts.data||[],ext=externalVacancies.data||[],acts=activities.data||[];
+  const ppRows=partnerPublicProfiles.data||[],poRows=partnerOnboarding.data||[],partnerRows=partnerProfiles.data||[];
+  const authUsers:any[]=[];for(let page=1;page<=20;page++){const{data,error}=await db.auth.admin.listUsers({page,perPage:1000});if(error)throw error;const rows=data?.users||[];authUsers.push(...rows);if(rows.length<1000)break}
+  const authById=new Map(authUsers.map((x:any)=>[x.id,x]));
+  const ppById=new Map(ppRows.map((x:any)=>[x.user_id,x]));
+  const poById=new Map(poRows.map((x:any)=>[x.partner_id,x]));
+  const partnerActivity=partnerRows.map((x:any)=>{const au:any=authById.get(x.id),pp:any=ppById.get(x.id),po:any=poById.get(x.id),last=au?.last_sign_in_at||null;const ageMs=last?Date.now()-new Date(last).getTime():null;return{id:x.id,full_name:x.full_name||au?.email||'Partner',email:au?.email||null,specialism:pp?.specialism||null,active:pp?.active===true,onboarding_status:po?.status||null,last_sign_in_at:last,activity_status:last?(ageMs!<7*86400000?'recent':ageMs!<30*86400000?'stale':'inactive'):'never'}}).sort((a:any,b:any)=>new Date(b.last_sign_in_at||0).getTime()-new Date(a.last_sign_in_at||0).getTime());
   const clientMap=new Map(cl.map((x:any)=>[x.id,x]));
   const distinct=(type:string)=>new Set(ev.filter((e:any)=>e.event_type===type).map((e:any)=>e.client_id).filter(Boolean)).size;
   const contacted=distinct('contacted'),conversations=distinct('conversation'),qualified=Math.max(distinct('qualified'),cl.filter((c:any)=>['active','qualified'].includes(String(c.status))).length);
@@ -89,6 +98,7 @@ Deno.serve(async(req)=>{
    funnel,
    subscriptions:{active:activeSubs,trialing:ss.filter((s:any)=>s.status==='trialing').length,cancelling,failed_payments:failedPayments},
    finance:{fees_invoiced:feesInvoiced,cash_collected:cashCollected,partner_commission:partnerCommission,gross_profit:grossProfit,outstanding:ins.reduce((s:number,i:any)=>s+n(i.amount_due),0),placements:placementCount},
+   partners:{activity:partnerActivity,active:partnerActivity.filter((x:any)=>x.active).length,recent_7d:partnerActivity.filter((x:any)=>x.activity_status==='recent').length,never_signed_in:partnerActivity.filter((x:any)=>x.activity_status==='never').length},
    generated_at:new Date().toISOString()
   });
  }catch(e){console.error('ceo-dashboard',e);return json({error:e instanceof Error?e.message:'Unable to load CEO dashboard'},500)}
