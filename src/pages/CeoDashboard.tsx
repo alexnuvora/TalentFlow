@@ -80,6 +80,13 @@ export default function CeoDashboard(){
     <div className="ceo-metric"><span>Genuine vacancies</span><strong>{v.genuine_confirmed||0}</strong><small>Confirmed by client</small></div>
    </div>
 
+
+   <Card>
+    <div className="card-head"><div><h2>Partner activity</h2><p>Last successful sign-in from Supabase Auth. Use this alongside work output, not as a productivity score.</p></div><span className="badge blue">{data.partners?.active||0} active</span></div>
+    <div className="partner-login-summary"><span>{data.partners?.recent_7d||0} signed in within 7 days</span><span>{data.partners?.never_signed_in||0} never signed in</span></div>
+    {(data.partners?.activity||[]).length?<div className="table-wrap"><table><thead><tr><th>Partner</th><th>Role</th><th>Status</th><th>Last login</th></tr></thead><tbody>{(data.partners.activity||[]).map((x:any)=><tr key={x.id}><td><strong>{x.full_name}</strong><span>{x.email||'—'}</span></td><td>{String(x.specialism||'partner').replaceAll('_',' ')}</td><td><span className={'badge '+(x.activity_status==='recent'?'green':x.activity_status==='stale'?'amber':x.activity_status==='never'?'neutral':'red')}>{x.activity_status==='recent'?'Recent':x.activity_status==='stale'?'7–30 days':x.activity_status==='inactive'?'30+ days':'Never'}</span>{!x.active&&<span className="badge neutral">inactive partner</span>}</td><td>{when(x.last_sign_in_at)}</td></tr>)}</tbody></table></div>:<div className="empty small">No partner accounts found.</div>}
+   </Card>
+
    <Card>
     <div className="card-head"><div><h2>Commercial funnel</h2><p>From first employer contact through to placement.</p></div></div>
     <div className="ceo-funnel">{data.funnel.map((x:any,i:number)=><div className="ceo-funnel-step" key={x.label}><span>{x.label}</span><strong>{Number(x.value).toLocaleString()}</strong>{i>0&&<small>{x.conversion===null?'—':x.conversion+'% from previous'}</small>}</div>)}</div>
