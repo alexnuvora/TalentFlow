@@ -101,6 +101,8 @@ export default function PartnerChat({mode}:{mode:Mode}){
 
  useEffect(()=>{if(!conversationId||!me)return;void touchState(false);const timer=window.setInterval(()=>void touchState(false),30000);const vis=()=>{if(document.visibilityState==='visible'){void touchState(false);void loadConversation(false)}};document.addEventListener('visibilitychange',vis);return()=>{window.clearInterval(timer);document.removeEventListener('visibilitychange',vis)}},[conversationId,me,touchState]);
 
+ useEffect(()=>{if(mode!=='manager'||!me)return;const ch=supabase.channel('partner-chat-manager-list-'+me).on('postgres_changes',{event:'INSERT',schema:'public',table:'partner_messages'},()=>void refreshList()).subscribe();return()=>{void supabase.removeChannel(ch)}},[mode,me,refreshList]);
+
  useEffect(()=>{if(!conversationId||!me)return;const schedule=()=>{if(refreshTimer.current)window.clearTimeout(refreshTimer.current);refreshTimer.current=window.setTimeout(()=>{void loadConversation(false);if(mode==='manager')void refreshList()},120)};
   const ch=supabase.channel(\`partner-chat-db-${conversationId}-${me}\`)
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_messages',filter:\`conversation_id=eq.${conversationId}\`},(payload:any)=>{if(payload.eventType==='INSERT'&&payload.new?.sender_id!==me&&document.hidden&&'Notification'in window&&Notification.permission==='granted'){new Notification(mode==='manager'?(selected?.partner_name||'Partner message'):'Vorlen management',{body:String(payload.new?.body||'New attachment').slice(0,160)})}schedule()})
