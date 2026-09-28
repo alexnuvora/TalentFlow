@@ -748,3 +748,22 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
  top:50%!important;
  margin:0!important
 }
+
+/* Partner-only chat fill correction */
+.chat-shell.partner-only{align-items:stretch}
+.partner-only .chat-conversation{
+ width:100%;
+ max-width:1100px;
+ height:100%;
+ min-height:0;
+ margin:0 auto!important;
+ align-self:stretch;
+ justify-self:stretch
+}
+@media(max-width:850px){
+ .partner-only .chat-conversation{
+  max-width:none;
+  height:100%;
+  margin:0!important
+ }
+}
