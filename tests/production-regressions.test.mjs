@@ -183,4 +183,4 @@ test('partner management nav does not stay active on partner chat',()=>{const la
 
 test('chat autoscroll is isolated to the message pane',()=>{const page=read('src/pages/PartnerChat.tsx'),css=read('src/styles.css');assert.doesNotMatch(page,/scrollIntoView/);assert.match(page,/messagesRef/);assert.match(page,/scrollChatToBottom|scrollTop=el\.scrollHeight/);assert.match(page,/focus\(\{preventScroll:true\}\)/);assert.match(page,/el\.scrollHeight-previousHeight\+previousTop/);assert.match(page,/isNearChatBottom/);assert.match(css,/Chat scroll isolation/);assert.match(css,/overscroll-behavior:contain/);assert.match(css,/overflow-anchor:none/);});
 
-test('partner email preview button does not pass click event as status',()=>{const page=read('src/pages/PartnerClients.tsx');assert.doesNotMatch(page,/onClick=\{previewEmail\}/);assert.match(page,/onClick=\{\(\)=>void previewEmail\(\)\}/);});
+test('partner email preview button does not pass click event as status',()=>{const page=read('src/pages/PartnerClients.tsx');assert.doesNotMatch(page,/onClick=\{previewEmail\}/);assert.match(page,/onClick=\{\(\)=>\s*(?:void\s+)?previewEmail\(\)\}/);});
