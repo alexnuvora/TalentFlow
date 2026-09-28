@@ -1,15 +1,16 @@
-import {useEffect,useState} from 'react';
+import {useEffect,useState,type ReactNode} from 'react';
 import {ArrowLeft,ExternalLink,Pencil,Send,Trash2,UserPlus,ShieldCheck} from 'lucide-react';
 import {Link,useNavigate,useParams} from 'react-router-dom';
 import {Badge,Button,Card,Empty,SkeletonCards,useToast} from '../components/Ui';
 import {supabase} from '../lib/supabase';
+import {useWorkspaceAccess} from '../lib/access';
 
 const TERMS_VERSION='client-tob-2026-09-21';
 const blank={company_name:'',contact_name:'',email:'',phone:'',website:'',status:'prospect',business_nature:'',recruitment_fee_percent:'',payment_terms_days:'30',rebate_terms:'',terms_accepted:false,terms_accepted_by:'',terms_acceptance_method:'email',terms_evidence:'',pecr_subscriber_type:'unknown',email_marketing_basis:'none',email_marketing_evidence:'',tps_ctps_screened_at:'',tps_ctps_clear:false,tps_ctps_evidence:'',marketing_call_consent_at:''};
-function ActionGate({reason,label,children}:{reason?:string;label:string;children:React.ReactNode}){return <span className={`action-gate${reason?' locked':''}`} tabIndex={reason?0:undefined} aria-label={reason?`${label} unavailable: ${reason}`:undefined} data-tooltip={reason||undefined}>{children}</span>}
+function ActionGate({reason,label,children}:{reason?:string;label:string;children:ReactNode}){return <span className={`action-gate${reason?' locked':''}`} tabIndex={reason?0:undefined} aria-label={reason?`${label} unavailable: ${reason}`:undefined} data-tooltip={reason||undefined}>{children}</span>}
 
 export default function ClientDetail(){
- const {id}=useParams(),navigate=useNavigate(),toast=useToast();
+ const {id}=useParams(),navigate=useNavigate(),toast=useToast(),access=useWorkspaceAccess();
  const[client,setClient]=useState<any>(null),[jobs,setJobs]=useState<any[]>([]),[notes,setNotes]=useState<any[]>([]),[recruitmentContacts,setRecruitmentContacts]=useState<any[]>([]),[portalMembers,setPortalMembers]=useState<any[]>([]),[portalRole,setPortalRole]=useState('hiring_manager'),[portalContactId,setPortalContactId]=useState(''),[loading,setLoading]=useState(true),[editing,setEditing]=useState(false),[f,setF]=useState<any>(blank),[busy,setBusy]=useState(''),[error,setError]=useState('');
  const load=async()=>{if(!id)return;setLoading(true);setError('');const [c,j,n,rc,pm]=await Promise.all([
   supabase.from('clients').select('*').eq('id',id).maybeSingle(),
@@ -31,9 +32,10 @@ export default function ClientDetail(){
  if(loading)return <div className="page"><SkeletonCards count={4}/></div>;
  if(!client)return <div className="page"><Link className="text-link" to="/dashboard/clients"><ArrowLeft size={14}/> Back to clients</Link><Empty title="Client not found" text={error||'This client may have been removed.'}/></div>;
  const commercialReady=!!String(client.company_name||'').trim()&&!!String(client.contact_name||'').trim()&&!!String(client.email||'').trim()&&!!String(client.business_nature||'').trim()&&client.recruitment_fee_percent!=null&&client.payment_terms_days!=null&&!!String(client.rebate_terms||'').trim();
- const sendTobReason=client.terms_accepted_at?'The current Terms of Business have already been accepted. Clear/supersede the acceptance before issuing revised terms.':!client.email?'Add a client contact email first.':!commercialReady?'Complete the client identity, business nature, fee, payment terms and rebate/replacement terms first.':'';
- const partnerTobReason=client.terms_accepted_at?'Partner send authorisation is no longer required because the client has already accepted the current Terms of Business.':!commercialReady?'Complete the client identity, recipient and commercial terms before authorising a partner send.':'';
- const portalInviteReason=!client.terms_accepted_at?'Available after the client accepts the Terms of Business.':client.status!=='active'?'Set the client status to active before inviting portal access.':!client.email?'Add a primary client email before sending a portal invite.':'';
+ const doNotContact=String(client.call_status||'').toLowerCase()==='do_not_contact';
+ const sendTobReason=client.terms_accepted_at?'The current Terms of Business have already been accepted. Clear/supersede the acceptance before issuing revised terms.':doNotContact?'This client is marked do not contact. Remove the suppression only after a valid business reason has been reviewed.':!client.email?'Add a client contact email first.':!commercialReady?'Complete the client identity, business nature, fee, payment terms and rebate/replacement terms first.':'';
+ const partnerTobReason=client.terms_accepted_at?'Partner send authorisation is no longer required because the client has already accepted the current Terms of Business.':doNotContact?'This client is marked do not contact, so partner TOB sending cannot be authorised.':!commercialReady?'Complete the client identity, recipient and commercial terms before authorising a partner send.':'';
+ const portalInviteReason=access.loading?'Checking client portal entitlement…':!access.canUseClientPortal?'Client portal access is not included in the current active subscription.':!client.terms_accepted_at?'Available after the client accepts the Terms of Business.':client.status!=='active'?'Set the client status to active before inviting portal access.':!client.email?'Add a primary client email before sending a portal invite.':'';
  const portalUnlocked=!portalInviteReason;
  return <div className="page client-detail-page">
   <div className="client-detail-back"><Link className="text-link" to="/dashboard/clients"><ArrowLeft size={14}/> Back to clients</Link></div>
