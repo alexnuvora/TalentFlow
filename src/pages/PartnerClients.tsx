@@ -47,6 +47,7 @@ export default function PartnerClients({defaultView='overview'}:{defaultView?:Pa
   setClients(c||[]);setActivity(a||[]);setCandidates(ca||[]);setJobs(j||[]);setTasks(t||[]);setWorkQueue(wq||{summary:{ready_now:0,waiting:0,urgent:0,high:0},actions:[],waiting:[]});setHandoffs(h||[]);setProspects(pr||[]);setProfile(p||null);setPerformance(perf||null);setLoading(false);
  }
  useEffect(()=>{if(!access.loading&&access.role==='partner')void load()},[access.loading,access.role]);
+ useEffect(()=>{if(loading||view!=='clients'||selected)return;const clientId=params.get('client');if(!clientId)return;const c=clients.find(x=>x.id===clientId);if(c)void openClient(c)},[loading,view,params,clients,selected]);
  useEffect(()=>{if(!access.loading&&!loading){setSlowLoading(false);return}const t=window.setTimeout(()=>setSlowLoading(true),7000);return()=>window.clearTimeout(t)},[access.loading,loading]);
  const byClient=useMemo(()=>new Map(activity.map(a=>[a.client_id,a])),[activity]);
  const reminders=activity.filter(a=>a.status==='call_back'&&a.callback_at).sort((a,b)=>+new Date(a.callback_at)-+new Date(b.callback_at));
