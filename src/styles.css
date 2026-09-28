@@ -769,3 +769,13 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
  .mobile-nav-drawer nav .work-queue-badge,
  .mobile-nav-drawer nav .chat-unread-badge{margin-left:auto}
 }
+
+/* Chat scroll isolation */
+.chat-messages{
+ overscroll-behavior:contain;
+ overflow-anchor:none;
+ touch-action:pan-y;
+ scrollbar-gutter:stable
+}
+.chat-scroll-end{height:1px;width:1px;pointer-events:none}
+.chat-compose-wrap{overflow-anchor:none}
