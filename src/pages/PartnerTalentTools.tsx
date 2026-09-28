@@ -1,17 +1,18 @@
 import {useEffect,useMemo,useState} from 'react';
+import {useSearchParams} from 'react-router-dom';
 import {BrainCircuit,FileSearch,Users,Send,CalendarDays,ClipboardCheck,Plug,Share2,RefreshCw} from 'lucide-react';
 import {supabase} from '../lib/supabase';
 import {Badge,Button,Card,SkeletonRows,useToast} from '../components/Ui';
 
 const fmt=(v:any)=>v?new Date(v).toLocaleString('en-GB'):'—';
 export default function PartnerTalentTools(){
- const toast=useToast();
+ const toast=useToast();const[params]=useSearchParams();
  const[data,setData]=useState<any>(null),[aiStatus,setAiStatus]=useState<any>(null),[integrationRequests,setIntegrationRequests]=useState<any[]>([]),[loading,setLoading]=useState(true),[busy,setBusy]=useState(''),[error,setError]=useState('');
  const[jobId,setJobId]=useState(''),[candidateId,setCandidateId]=useState(''),[cvFile,setCvFile]=useState<File|null>(null),[cvEvidence,setCvEvidence]=useState(''),[matches,setMatches]=useState<any[]>([]),[aiMatches,setAiMatches]=useState<any[]>([]),[parsePreview,setParsePreview]=useState<any>(null);
  const[pack,setPack]=useState({summary:'',headline:'',strengths:'',concerns:''});
  const[assessment,setAssessment]=useState({template_id:'',summary:'',recommendation:'',score:''}),[assessmentAnswers,setAssessmentAnswers]=useState<Record<string,string>>({});
  const[interview,setInterview]=useState({scheduled_at:'',duration:'45',meeting_url:'',notes:''});
- async function load(){setLoading(true);setError('');const[{data:d,error:e},{data:ais,error:aie},{data:ir,error:ire}]=await Promise.all([supabase.rpc('partner_talent_snapshot'),supabase.rpc('partner_ai_capability_status'),supabase.rpc('partner_integration_requests')]);if(e||aie||ire){setError(e?.message||aie?.message||ire?.message||'Unable to load talent tools');setData(null)}else{setData(d);setAiStatus(ais||null);setIntegrationRequests(Array.isArray(ir)?ir:[]);setJobId((v:string)=>v||(d?.jobs?.[0]?.id||''));setCandidateId((v:string)=>v||(d?.candidates?.[0]?.id||''));setAssessment((v:any)=>({...v,template_id:v.template_id||(d?.assessment_templates?.[0]?.id||'')}))}setLoading(false)}
+ async function load(){setLoading(true);setError('');const[{data:d,error:e},{data:ais,error:aie},{data:ir,error:ire}]=await Promise.all([supabase.rpc('partner_talent_snapshot'),supabase.rpc('partner_ai_capability_status'),supabase.rpc('partner_integration_requests')]);if(e||aie||ire){setError(e?.message||aie?.message||ire?.message||'Unable to load talent tools');setData(null)}else{setData(d);setAiStatus(ais||null);setIntegrationRequests(Array.isArray(ir)?ir:[]);const requestedJob=params.get('job'),requestedCandidate=params.get('candidate');setJobId((v:string)=>v||((d?.jobs||[]).some((x:any)=>x.id===requestedJob)?requestedJob:'')||(d?.jobs?.[0]?.id||''));setCandidateId((v:string)=>v||((d?.candidates||[]).some((x:any)=>x.id===requestedCandidate)?requestedCandidate:'')||(d?.candidates?.[0]?.id||''));setAssessment((v:any)=>({...v,template_id:v.template_id||(d?.assessment_templates?.[0]?.id||'')}))}setLoading(false)}
  useEffect(()=>{void load()},[]);
  const jobs=data?.jobs||[],candidates=data?.candidates||[],pools=data?.pools||[],packs=data?.submission_packs||[],submissions=data?.submissions||[],interviews=data?.interviews||[],templates=data?.assessment_templates||[],results=data?.assessment_results||[],integrations=data?.integrations||[],distributions=data?.distribution_requests||[];
  const job=jobs.find((j:any)=>j.id===jobId),candidate=candidates.find((c:any)=>c.id===candidateId);
