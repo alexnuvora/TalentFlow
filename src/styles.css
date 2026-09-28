@@ -665,3 +665,26 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
  .chat-header-notification{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#f1f5f3;cursor:pointer}
  .chat-header-notification:hover{background:#e7efec}
 }
+
+/* Partner chat desktop layout correction */
+@media(min-width:851px){
+ .chat-page{padding-top:18px;padding-bottom:18px}
+ .chat-page-head{margin-bottom:12px}
+ .chat-page-head h2{font-size:26px;line-height:1.08}
+ .chat-shell{height:calc(100vh - 148px);min-height:560px;max-height:820px}
+ .chat-conversation{display:flex!important;flex-direction:column!important;min-height:0}
+ .chat-header,.chat-pinned,.chat-compose-wrap{flex:0 0 auto}
+ .chat-messages{flex:1 1 auto;min-height:0}
+ .chat-compose-wrap{padding:9px 12px 10px}
+ .chat-compose{grid-template-columns:38px 38px minmax(0,1fr) 40px;align-items:end;gap:5px}
+ .chat-compose textarea{height:42px;min-height:42px;max-height:110px;resize:none;overflow-y:auto}
+ .chat-compose>button{width:38px;height:42px}
+ .chat-compose .chat-send{width:40px;height:40px}
+ .chat-message-search{width:190px}
+ .chat-list{min-height:0}
+ .chat-partners{flex:1 1 auto}
+}
+@media(min-width:1200px){
+ .chat-shell{grid-template-columns:300px minmax(0,1fr)}
+ .chat-page{max-width:1500px;margin:0 auto}
+}
