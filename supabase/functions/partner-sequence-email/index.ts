@@ -56,32 +56,12 @@ Deno.serve(async req=>{
 
   const subject=String(task.title||'Vorlen follow-up').trim().slice(0,300);
   const message=String(task.description||'Following up on our recent conversation.').trim().slice(0,10000);
-  const key=Deno.env.get('RESEND_API_KEY'),from=Deno.env.get('RESEND_FROM')||'Vorlen <contact@vorlen.co.uk>';
-  if(!key)return json({error:'Transactional email is not configured.'},503);
-
-  const idempotencyKey='partner-sequence-email:'+task.id;
-  const{data:existing}=await db.from('outbound_deliveries').select('id,status,provider_message_id,created_at').eq('company_id',p.company_id).eq('idempotency_key',idempotencyKey).maybeSingle();
-  if(existing?.status==='sent'){
-    await db.from('partner_tasks').update({status:'done',completed_at:new Date().toISOString()}).eq('id',task.id).eq('partner_id',user.id);
-    return json({ok:true,id:existing.provider_message_id,deduplicated:true});
-  }
-  if(existing?.status==='reserved'&&Date.now()-new Date(existing.created_at).getTime()<10*60*1000)return json({error:'This sequence email is already being sent.'},409);
-
-  let deliveryId:string;
-  if(existing){
-    deliveryId=existing.id;
-    const{data:claimed}=await db.from('outbound_deliveries').update({status:'reserved',last_error:null,recipient,payload:{task_id:task.id,enrollment_id:enrollment.id,subject},created_at:new Date().toISOString()}).eq('id',existing.id).eq('created_at',existing.created_at).select('id').maybeSingle();
-    if(!claimed)return json({error:'This sequence email is already being sent.'},409);
-  }else{
-    const{data:reserved,error:reserveError}=await db.from('outbound_deliveries').insert({company_id:p.company_id,kind:'partner_sequence_email',idempotency_key:idempotencyKey,recipient,provider:'resend',status:'reserved',payload:{task_id:task.id,enrollment_id:enrollment.id,subject}}).select('id').single();
-    if(reserveError||!reserved)return json({error:reserveError?.code==='23505'?'This sequence email is already being sent.':'Could not reserve email delivery'},reserveError?.code==='23505'?409:500);
-    deliveryId=reserved.id;
-  }
-
-  let response:Response;
-  try{
-    response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify({from,to:[recipient],reply_to:'contact@vorlen.co.uk',subject,html:vorlenEmailShell(subject,vorlenEmailBody(recipientName,message),subject),text:vorlenPlainText(recipientName,message)})});
-  }catch(e){
+  const{data:existingApproval}=await db.from('partner_email_approvals').select('id,status').eq('company_id',p.company_id).eq('partner_id',user.id).eq('task_id',task.id).in('status',['pending','sending']).maybeSingle();
+  if(existingApproval)return json({ok:true,submitted:true,deduplicated:true,approval_id:existingApproval.id,message:'This sequence email is already awaiting management approval.'});
+  const{data:approval,error:approvalError}=await db.from('partner_email_approvals').insert({company_id:p.company_id,partner_id:user.id,client_id:client.id,task_id:task.id,email_status:'follow_up',recipient,subject,message,status:'pending'}).select('id,status,submitted_at').single();
+  if(approvalError||!approval)return json({error:'Could not submit sequence email for management approval.'},500);
+  return json({ok:true,submitted:true,approval_id:approval.id,recipient,subject,message:'Sequence email submitted to Vorlen management for approval. Nothing has been sent to the client.'});
+ }catch(e){
     await db.from('outbound_deliveries').update({status:'failed',last_error:e instanceof Error?e.message:'Network error'}).eq('id',deliveryId);
     return json({error:'Unable to reach the email provider.'},502);
   }
