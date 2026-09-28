@@ -729,3 +729,22 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
  }
  .chat-header .chat-avatar>span{font-size:14px}
 }
+
+/* Chat avatar exact centering */
+.chat-avatar{position:relative!important;display:block!important}
+.chat-avatar>span{
+ position:absolute!important;
+ top:50%!important;
+ left:50%!important;
+ transform:translate(-50%,-50%)!important;
+ margin:0!important;
+ padding:0!important;
+ line-height:1!important;
+ width:max-content;
+ height:auto;
+ text-align:center
+}
+.chat-header .chat-avatar>span{
+ top:50%!important;
+ margin:0!important
+}
