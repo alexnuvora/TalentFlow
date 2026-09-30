@@ -34,7 +34,6 @@ function emailHtml(firstName:string,unreadCount:number){
 <tr><td style="padding:22px 30px;background:#f8faf9;border-top:1px solid #e3ebe7;font-size:11px;line-height:1.65;color:#60716a">
 <strong style="color:#11251f">VORLEN</strong> · Secure recruitment workspace<br>
 Ivy and Pearls Ltd trading as Vorlen · Company No. 17387520 · Registered in England and Wales<br>
-Registered office: 10 South Street, Rochdale, United Kingdom, OL16 2EP<br>
 <a href="https://www.vorlen.co.uk" style="color:#153b32;text-decoration:underline">Visit Vorlen</a> · <a href="mailto:contact@vorlen.co.uk" style="color:#153b32;text-decoration:underline">contact@vorlen.co.uk</a>
 </td></tr></table>
 </td></tr></table></body></html>`;
