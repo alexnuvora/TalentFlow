@@ -9,12 +9,12 @@ const json=(body:any,status=200)=>new Response(JSON.stringify(body),{status,head
 const esc=(v:string)=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]||c));
 const workspaceUrl='https://www.vorlen.co.uk/dashboard/partner/chat';
 
-function emailHtml(firstName:string){
+function emailHtml(firstName:string,unreadCount:number){
  return `<!doctype html>
 <html lang="en" dir="ltr">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>You have an unread message in Vorlen</title></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>Vorlen has messaged you</title></head>
 <body style="margin:0;padding:0;background:#f4f7f5;font-family:Arial,Helvetica,sans-serif;color:#11251f">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent">A message from Vorlen management is waiting in your partner workspace.</div>
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent">${unreadCount} unread ${unreadCount===1?'message':'messages'} from Vorlen management.</div>
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background:#f4f7f5"><tr><td align="center" style="padding:28px 12px">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:640px;background:#ffffff;border:1px solid #dce6e1;border-radius:14px;overflow:hidden">
 <tr><td style="padding:24px 30px;background:#11251f">
@@ -25,11 +25,11 @@ function emailHtml(firstName:string){
 </td></tr>
 <tr><td style="padding:36px 30px 38px">
 <div style="width:42px;height:4px;background:#b8e34b;margin-bottom:24px"></div>
-<h1 style="margin:0 0 18px;font-size:28px;line-height:1.18;color:#11251f">You have an unread message</h1>
+<h1 style="margin:0 0 18px;font-size:28px;line-height:1.18;color:#11251f">Vorlen has messaged you</h1>
 <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#11251f">Hi ${esc(firstName||'there')},</p>
-<p style="margin:0 0 16px;font-size:15px;line-height:1.75;color:#31463f">Vorlen management sent you a message in your partner workspace and it is still unread.</p>
+<p style="margin:0 0 12px;font-size:18px;line-height:1.55;font-weight:700;color:#11251f">${unreadCount} new ${unreadCount===1?'message':'messages'} from Vorlen management.</p><p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#31463f">Your messages are waiting for you in your Vorlen partner workspace.</p>
 <p style="margin:0 0 26px;font-size:13px;line-height:1.65;color:#65766f">For your privacy, the message content is not included in this email. Open your secure Vorlen workspace to read it and reply.</p>
-<p style="margin:0 0 8px"><a href="${workspaceUrl}" style="display:inline-block;padding:13px 20px;background:#0b6b55;color:#ffffff;text-decoration:none;font-size:14px;font-weight:800;border-radius:999px">Open Partner Chat</a></p>
+<p style="margin:0 0 8px"><a href="${workspaceUrl}" style="display:inline-block;padding:14px 24px;background:#0b6b55;color:#ffffff;text-decoration:none;font-size:14px;font-weight:800;border-radius:8px">View messages</a></p>
 </td></tr>
 <tr><td style="padding:22px 30px;background:#f8faf9;border-top:1px solid #e3ebe7;font-size:11px;line-height:1.65;color:#60716a">
 <strong style="color:#11251f">VORLEN</strong> · Secure recruitment workspace<br>
@@ -40,14 +40,16 @@ Registered office: 10 South Street, Rochdale, United Kingdom, OL16 2EP<br>
 </td></tr></table></body></html>`;
 }
 
-function emailText(firstName:string){
+function emailText(firstName:string,unreadCount:number){
  return `Hi ${firstName||'there'},
 
-Vorlen management sent you a message in your partner workspace and it is still unread.
+${unreadCount} new ${unreadCount===1?'message':'messages'} from Vorlen management.
+
+Your messages are waiting for you in your Vorlen partner workspace.
 
 For your privacy, the message content is not included in this email.
 
-Open Partner Chat:
+View messages:
 ${workspaceUrl}
 
 Kind regards,
@@ -99,6 +101,26 @@ Deno.serve(async(req)=>{
     const recipient=String(authUser?.user?.email||'').trim().toLowerCase();
     if(authError||!recipient)throw new Error('Partner email address is unavailable');
 
+    const{data:managementUsers,error:managementError}=await db.from('profiles').select('id').eq('company_id',r.company_id).in('role',['owner','manager']);
+    if(managementError)throw managementError;
+    const managementIds=(managementUsers||[]).map((x:any)=>x.id);
+    let unreadCount=0;
+    if(managementIds.length){
+      const{data:managementMessages,error:messageListError}=await db.from('partner_messages').select('id').eq('conversation_id',r.conversation_id).in('sender_id',managementIds).is('deleted_at',null);
+      if(messageListError)throw messageListError;
+      const messageIds=(managementMessages||[]).map((x:any)=>x.id);
+      if(messageIds.length){
+        const{data:readRows,error:readRowsError}=await db.from('partner_message_receipts').select('message_id').eq('user_id',r.partner_id).in('message_id',messageIds).not('read_at','is',null);
+        if(readRowsError)throw readRowsError;
+        const readIds=new Set((readRows||[]).map((x:any)=>x.message_id));
+        unreadCount=messageIds.filter((messageId:string)=>!readIds.has(messageId)).length;
+      }
+    }
+    if(unreadCount<1){
+      await db.from('partner_chat_email_reminders').update({status:'cancelled',cancelled_at:new Date().toISOString(),processing_started_at:null,updated_at:new Date().toISOString(),last_error:null}).eq('id',id).eq('status','processing');
+      results.push({id,status:'cancelled'});continue;
+    }
+
     // Re-check immediately before reserving/sending so a read receipt that arrived during processing cancels the reminder.
     const{data:latest}=await db.from('partner_chat_email_reminders').select('status').eq('id',id).maybeSingle();
     const{data:latestReceipt}=await db.from('partner_message_receipts').select('read_at').eq('message_id',r.message_id).eq('user_id',r.partner_id).maybeSingle();
@@ -135,7 +157,7 @@ Deno.serve(async(req)=>{
     deliveryId=delivery!.id;
 
     const firstName=String(partner.full_name||'there').trim().split(/\s+/)[0]||'there';
-    const subject='You have an unread message in Vorlen';
+    const subject='Vorlen has messaged you';
     const response=await fetch('https://api.resend.com/emails',{
       method:'POST',
       headers:{Authorization:`Bearer ${resendKey}`,'Content-Type':'application/json','Idempotency-Key':idem},
@@ -144,8 +166,8 @@ Deno.serve(async(req)=>{
         to:[recipient],
         reply_to:'contact@vorlen.co.uk',
         subject,
-        html:emailHtml(firstName),
-        text:emailText(firstName),
+        html:emailHtml(firstName,unreadCount),
+        text:emailText(firstName,unreadCount),
         headers:{'X-Entity-Ref-ID':r.message_id}
       })
     });
@@ -156,7 +178,7 @@ Deno.serve(async(req)=>{
     const sentAt=new Date().toISOString();
     await db.from('outbound_deliveries').update({status:'sent',provider_message_id:providerId,sent_at:sentAt,last_error:null}).eq('id',deliveryId);
     await db.from('partner_chat_email_reminders').update({status:'sent',sent_at:sentAt,provider_message_id:providerId,processing_started_at:null,last_error:null,updated_at:sentAt}).eq('id',id);
-    results.push({id,status:'sent'});
+    results.push({id,status:'sent',unread_count:unreadCount});
    }catch(error){
     const message=error instanceof Error?error.message:'Reminder send failed';
     const attempts=Number(reminder?.attempts||0)+1;
