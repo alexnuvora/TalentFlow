@@ -19,10 +19,14 @@ create table if not exists public.partner_chat_email_reminders(
 create index if not exists idx_partner_chat_email_reminders_due on public.partner_chat_email_reminders(status,due_at) where status in ('pending','processing');
 create index if not exists idx_partner_chat_email_reminders_partner on public.partner_chat_email_reminders(partner_id,created_at desc);
 create index if not exists idx_partner_chat_email_reminders_conversation on public.partner_chat_email_reminders(conversation_id,created_at desc);
+create index if not exists idx_partner_chat_email_reminders_company on public.partner_chat_email_reminders(company_id);
+create index if not exists idx_partner_chat_email_reminders_sender on public.partner_chat_email_reminders(sender_id);
 
 alter table public.partner_chat_email_reminders enable row level security;
 revoke all on public.partner_chat_email_reminders from anon,authenticated;
 grant select,insert,update,delete on public.partner_chat_email_reminders to service_role;
+drop policy if exists "partner chat reminders deny browser access" on public.partner_chat_email_reminders;
+create policy "partner chat reminders deny browser access" on public.partner_chat_email_reminders for all to authenticated using(false) with check(false);
 
 create or replace function private.queue_partner_chat_email_reminder()
 returns trigger
