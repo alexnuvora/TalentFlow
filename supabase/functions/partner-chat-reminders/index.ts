@@ -83,13 +83,14 @@ Deno.serve(async(req)=>{
     reminder=r;
     if(r.status!=='processing'){results.push({id,status:r.status});continue}
 
-    const[{data:message,error:me},{data:receipt,error:rce},{data:partner,error:pe}]=await Promise.all([
+    const[{data:message,error:me},{data:receipt,error:rce},{data:partner,error:pe},{data:onboarding,error:oe}]=await Promise.all([
       db.from('partner_messages').select('id,company_id,conversation_id,sender_id,created_at,deleted_at').eq('id',r.message_id).maybeSingle(),
       db.from('partner_message_receipts').select('read_at').eq('message_id',r.message_id).eq('user_id',r.partner_id).maybeSingle(),
-      db.from('profiles').select('id,company_id,role,full_name').eq('id',r.partner_id).eq('company_id',r.company_id).maybeSingle()
+      db.from('profiles').select('id,company_id,role,full_name').eq('id',r.partner_id).eq('company_id',r.company_id).maybeSingle(),
+      db.from('partner_onboarding').select('status').eq('partner_id',r.partner_id).eq('company_id',r.company_id).maybeSingle()
     ]);
-    if(me||rce||pe)throw me||rce||pe;
-    if(!message||message.deleted_at||receipt?.read_at||!partner||partner.role!=='partner'){
+    if(me||rce||pe||oe)throw me||rce||pe||oe;
+    if(!message||message.deleted_at||receipt?.read_at||!partner||partner.role!=='partner'||onboarding?.status!=='active'){
       await db.from('partner_chat_email_reminders').update({status:'cancelled',cancelled_at:new Date().toISOString(),processing_started_at:null,updated_at:new Date().toISOString(),last_error:null}).eq('id',id).eq('status','processing');
       results.push({id,status:'cancelled'});continue;
     }
