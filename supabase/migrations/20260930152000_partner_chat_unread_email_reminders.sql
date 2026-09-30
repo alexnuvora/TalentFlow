@@ -59,7 +59,7 @@ begin
 
  if v_sender_role in ('owner','manager') and v_partner_role='partner' and v_partner_active and new.sender_id<>v_partner then
   insert into public.partner_chat_email_reminders(company_id,message_id,conversation_id,partner_id,sender_id,due_at)
-  values(v_company,new.id,new.conversation_id,v_partner,new.sender_id,new.created_at+interval '1 hour')
+  values(v_company,new.id,new.conversation_id,v_partner,new.sender_id,new.created_at+interval '5 minutes')
   on conflict(message_id) do nothing;
  end if;
  return new;
