@@ -17,7 +17,6 @@ export const vorlenEmailShell=(title:string,bodyHtml:string,preheader='Recruitme
 <tr><td style="padding:22px 30px;background:#f8faf9;border-top:1px solid #e3ebe7;font-size:11px;line-height:1.65;color:#60716a">
 <strong style="color:#11251f">VORLEN</strong> · Recruitment &amp; Talent Solutions<br>
 Ivy and Pearls Ltd trading as Vorlen · Company No. 17387520 · Registered in England and Wales<br>
-Registered office: 10 South Street, Rochdale, United Kingdom, OL16 2EP<br>
 <a href="https://www.vorlen.co.uk" style="color:#153b32;text-decoration:underline">Visit Vorlen</a> · <a href="mailto:contact@vorlen.co.uk" style="color:#153b32;text-decoration:underline">contact@vorlen.co.uk</a> · <a href="https://www.vorlen.co.uk/privacy" style="color:#153b32;text-decoration:underline">Privacy notice</a><br>
 <span style="color:#718079">If you'd rather not receive recruitment-service marketing emails from Vorlen, reply “unsubscribe” or email contact@vorlen.co.uk.</span>
 </td></tr></table>
