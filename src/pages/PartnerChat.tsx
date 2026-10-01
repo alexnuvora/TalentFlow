@@ -103,7 +103,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
  const [body,setBody]=useState(''),[files,setFiles]=useState<File[]>([]),[replyTo,setReplyTo]=useState<Message|null>(null),[editing,setEditing]=useState<Message|null>(null);
  const [partnerSearch,setPartnerSearch]=useState(''),[messageSearch,setMessageSearch]=useState(''),[searchResults,setSearchResults]=useState<Message[]>([]);
  const [showContext,setShowContext]=useState(false),[contextType,setContextType]=useState(''),[contextOptions,setContextOptions]=useState<ContextOption[]>([]),[context,setContext]=useState<ContextOption|null>(null);
- const [notifySupported,setNotifySupported]=useState(false),[now,setNow]=useState(Date.now()),[typingSignalUntil,setTypingSignalUntil]=useState(0),[mobileSearchOpen,setMobileSearchOpen]=useState(false),[reactingTo,setReactingTo]=useState<string>(''),[reactionBusy,setReactionBusy]=useState<string>('');
+ const [notifySupported,setNotifySupported]=useState(false),[now,setNow]=useState(Date.now()),[typingSignalUntil,setTypingSignalUntil]=useState(0),[typingSignalUserId,setTypingSignalUserId]=useState(''),[mobileSearchOpen,setMobileSearchOpen]=useState(false),[reactingTo,setReactingTo]=useState<string>(''),[reactionBusy,setReactionBusy]=useState<string>('');
  const fileRef=useRef<HTMLInputElement>(null),messagesRef=useRef<HTMLDivElement>(null),composerRef=useRef<HTMLTextAreaElement>(null),chatChannelRef=useRef<any>(null),typingTimer=useRef<number|null>(null),typingRefreshTimer=useRef<number|null>(null),refreshTimer=useRef<number|null>(null),reactionPressTimer=useRef<number|null>(null),reactionPressStart=useRef<{x:number;y:number}|null>(null);
 
  const selected=useMemo(()=>conversations.find(c=>c.conversation_id===conversationId)||null,[conversations,conversationId]);
@@ -119,6 +119,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
  const relevantOtherStates=mode==='manager'&&partnerUserId?otherStates.filter(s=>s.user_id===partnerUserId):otherStates;
  const otherOnline=relevantOtherStates.some(s=>now-new Date(s.last_seen_at).getTime()<75000);
  const otherTyping=typingSignalUntil>now||relevantOtherStates.some(s=>!!s.typing_until&&new Date(s.typing_until).getTime()>now);
+ const typingSide: 'in'|'out'=typingSignalUserId?(mode==='partner'?(typingSignalUserId===me?'out':'in'):(typingSignalUserId===partnerUserId?'in':'out')):'in';
  const pinned=messages.filter(m=>m.pinned_at&&!m.deleted_at).slice(-3);
  const visibleMessages=messageSearch.trim()?searchResults:messages;
  const filteredConversations=conversations.filter(c=>(c.partner_name||'').toLowerCase().includes(partnerSearch.trim().toLowerCase()));
@@ -220,14 +221,14 @@ export default function PartnerChat({mode}:{mode:Mode}){
   const onState=(change:any)=>{const row=(change.new||change.old) as UserState|undefined;if(!row?.user_id)return reconcile();const followTyping=row.user_id!==me&&change.eventType!=='DELETE'&&!!row.typing_until&&new Date(row.typing_until).getTime()>Date.now()&&isNearChatBottom();setStates(rows=>change.eventType==='DELETE'?rows.filter(x=>x.user_id!==row.user_id):[...rows.filter(x=>x.user_id!==row.user_id),row]);if(followTyping)window.requestAnimationFrame(()=>window.requestAnimationFrame(()=>{const el=messagesRef.current;if(el)el.scrollTop=el.scrollHeight}))};
   const onReaction=(change:any)=>{const row=(change.new||change.old) as Reaction|undefined;if(!row?.id)return reconcile();setReactions(rows=>change.eventType==='DELETE'?rows.filter(x=>x.id!==row.id):[...rows.filter(x=>x.id!==row.id&&!(x.message_id===row.message_id&&x.user_id===row.user_id)),row])};
   const ch=supabase.channel(`partner-chat-db-${conversationId}`,{config:{broadcast:{ack:true}}})
-   .on('broadcast',{event:'typing'},({payload}:any)=>{if(!payload)return;const active=payload.active===true;setTypingSignalUntil(active?Date.now()+5000:0);if(active&&isNearChatBottom())window.requestAnimationFrame(()=>window.requestAnimationFrame(()=>{const el=messagesRef.current;if(el)el.scrollTop=el.scrollHeight}))})
+   .on('broadcast',{event:'typing'},({payload}:any)=>{if(!payload)return;const active=payload.active===true;setTypingSignalUserId(active?String(payload.user_id||''):'');setTypingSignalUntil(active?Date.now()+5000:0);if(active&&isNearChatBottom())window.requestAnimationFrame(()=>window.requestAnimationFrame(()=>{const el=messagesRef.current;if(el)el.scrollTop=el.scrollHeight}))})
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_messages',filter:`conversation_id=eq.${conversationId}`},onMessage)
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_message_receipts',filter:`conversation_id=eq.${conversationId}`},onReceipt)
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_chat_user_state',filter:`conversation_id=eq.${conversationId}`},onState)
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_message_reactions',filter:`conversation_id=eq.${conversationId}`},onReaction)
    .subscribe(status=>{if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')console.warn('Partner chat realtime channel',status)});
   chatChannelRef.current=ch;
-  return()=>{if(chatChannelRef.current===ch)chatChannelRef.current=null;setTypingSignalUntil(0);if(refreshTimer.current)window.clearTimeout(refreshTimer.current);void supabase.removeChannel(ch)}
+  return()=>{if(chatChannelRef.current===ch)chatChannelRef.current=null;setTypingSignalUntil(0);setTypingSignalUserId('');if(refreshTimer.current)window.clearTimeout(refreshTimer.current);void supabase.removeChannel(ch)}
  },[conversationId,me,mode,loadConversation,refreshList,markIncoming,isNearChatBottom]);
 
  useEffect(()=>{setReactingTo('');cancelReactionPress();return()=>cancelReactionPress()},[conversationId]);
@@ -414,7 +415,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
        {!m.deleted_at&&<div className="chat-actions"><button title="React" aria-label="React to message" onClick={()=>setReactingTo(v=>v===m.id?'':m.id)}><SmilePlus size={13}/></button><button title="Reply" onClick={()=>startReply(m)}><Reply size={13}/></button>{canChange(m)&&<button title="Edit" onClick={()=>startEdit(m)}><Pencil size={13}/></button>}{canChange(m)&&<button title="Delete" onClick={()=>void removeMessage(m)}><Trash2 size={13}/></button>}{mode==='manager'&&<button title={m.pinned_at?'Unpin':'Pin'} onClick={()=>void togglePin(m)}><Pin size={13}/></button>}</div>}
       </article></div>})}
       {!visibleMessages.length&&!loadingMessages&&<div className="chat-empty small"><MessageCircle size={24}/><h3>{messageSearch?'No matching messages':'No messages yet'}</h3><p>{messageSearch?'Try another search.':'Send the first message in this private channel.'}</p></div>}
-      {otherTyping&&!messageSearch&&<article className="chat-message in chat-typing-message" role="status" aria-live="polite" aria-label={headerName+' is typing'}><div className="chat-message-stack"><div className="chat-bubble chat-typing-bubble" aria-hidden="true"><span/><span/><span/></div></div></article>}
+      {otherTyping&&!messageSearch&&<article className={`chat-message ${typingSide} chat-typing-message`} role="status" aria-live="polite" aria-label={headerName+' is typing'}><div className="chat-message-stack"><div className="chat-bubble chat-typing-bubble" aria-hidden="true"><span/><span/><span/></div></div></article>}
       <div className="chat-scroll-end" aria-hidden="true"/>
      </div>
      <div className="chat-compose-wrap">{(replyTo||editing)&&<div className="chat-compose-state"><div><strong>{editing?'Editing message':'Replying to '+(replyTo?.sender_id===me?'yourself':mode==='partner'?'Vorlen management':selected?.partner_name||'partner')}</strong><span>{editing?plainMessagePreview(editing.body):plainMessagePreview(replyTo?.body)||'Attachment'}</span></div><button onClick={()=>{setReplyTo(null);if(editing){setEditing(null);setBody('')}}}><X size={16}/></button></div>}
