@@ -1,0 +1,1 @@
+insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types) values('staff-email-attachments','staff-email-attachments',false,26214400,null) on conflict(id) do update set public=false,file_size_limit=26214400;
