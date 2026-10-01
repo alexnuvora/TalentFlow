@@ -329,7 +329,11 @@ export default function PartnerChat({mode}:{mode:Mode}){
  }
 
  async function sendMessage(){
-  if(!conversationId||!me||sending)return;stopTyping();if(editing){const next=body.trim();if(!next)return;setSending(true);const{error:e}=await supabase.from('partner_messages').update({body:next}).eq('id',editing.id);setSending(false);if(e)return setError(e.message);setEditing(null);setBody('');toast('Message updated.');return}
+  if(!conversationId||!me||sending)return;
+  const{data:{user:currentUser}}=await supabase.auth.getUser();
+  if(!currentUser||currentUser.id!==me){setError('Your signed-in session changed. Refresh this page and sign in again before sending.');return}
+  if(mode==='partner'&&currentUser.id!==partnerUserId){setError('This chat is no longer using the partner account. Sign in as the partner before sending.');return}
+  if(mode==='manager'&&currentUser.id===partnerUserId){setError('This chat is no longer using a management account. Sign in as management before sending.');return}stopTyping();if(editing){const next=body.trim();if(!next)return;setSending(true);const{error:e}=await supabase.from('partner_messages').update({body:next}).eq('id',editing.id);setSending(false);if(e)return setError(e.message);setEditing(null);setBody('');toast('Message updated.');return}
   if(!body.trim()&&!files.length)return;setSending(true);setError('');
   const payload:any={conversation_id:conversationId,company_id:access.companyId,sender_id:me,body:body.trim(),message_type:files.length?'attachment':'text',reply_to_id:replyTo?.id||null};
   if(context){payload.context_type=contextType;payload.context_id=contextType==='task'?null:context.id;payload.context_label=context.label;payload.context_path=context.path}
