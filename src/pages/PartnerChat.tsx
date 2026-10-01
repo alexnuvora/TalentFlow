@@ -310,8 +310,9 @@ export default function PartnerChat({mode}:{mode:Mode}){
  }
  function chooseFiles(list:FileList|null){if(!list)return;const accepted:File[]=[];for(const f of Array.from(list)){if(f.size>maxFile){toast(`${f.name} is larger than 10 MB.`,{tone:'error'});continue}if(!allowedTypes.has(f.type)){toast(`${f.name} is not a supported image, PDF or Office document.`,{tone:'error'});continue}accepted.push(f)}setFiles(v=>[...v,...accepted].slice(0,5))}
 
- function stopTyping(){if(typingTimer.current){window.clearTimeout(typingTimer.current);typingTimer.current=null}if(typingRefreshTimer.current){window.clearInterval(typingRefreshTimer.current);typingRefreshTimer.current=null}void touchState(false)}
- function typeBody(v:string){setBody(v);if(editing)return;if(typingTimer.current)window.clearTimeout(typingTimer.current);if(!typingRefreshTimer.current){void touchState(true);typingRefreshTimer.current=window.setInterval(()=>void touchState(true),2500)}typingTimer.current=window.setTimeout(stopTyping,3200)}
+ function broadcastTyping(active:boolean){const channel=chatChannelRef.current;if(channel)void channel.send({type:'broadcast',event:'typing',payload:{user_id:me,active}})}
+ function stopTyping(){if(typingTimer.current){window.clearTimeout(typingTimer.current);typingTimer.current=null}if(typingRefreshTimer.current){window.clearInterval(typingRefreshTimer.current);typingRefreshTimer.current=null}broadcastTyping(false);void touchState(false)}
+ function typeBody(v:string){setBody(v);if(editing)return;if(typingTimer.current)window.clearTimeout(typingTimer.current);broadcastTyping(true);if(!typingRefreshTimer.current){void touchState(true);typingRefreshTimer.current=window.setInterval(()=>{broadcastTyping(true);void touchState(true)},2500)}typingTimer.current=window.setTimeout(stopTyping,3200)}
  function handleComposerPaste(e:any){
   const html=e.clipboardData?.getData('text/html')||'';
   if(!html)return;
