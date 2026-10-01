@@ -246,3 +246,6 @@ test('specialist recruitment sectors are routed and pre-rendered for search',()=
 
 
 test('homepage SEO is emitted directly into production HTML',()=>{const build=read('scripts/seo-build.mjs');assert.match(build,/const homePage=/);assert.match(build,/UK Permanent Recruitment Agency for Employers/);assert.match(build,/EmploymentAgency/);assert.match(build,/const homeHtml=inject/);assert.match(build,/fs\.writeFile\(path\.join\(dist,'index\.html'\),homeHtml\)/);assert.match(build,/canonical:\`\$\{base\}\/\`/);});
+
+
+test('public SEO canonical domain cannot be overridden by deployment environment',()=>{const seo=read('src/lib/seo.ts'),build=read('scripts/seo-build.mjs');assert.match(seo,/const CANONICAL='https:\/\/www\.vorlen\.co\.uk'/);assert.match(seo,/const base=\(\)=>CANONICAL/);assert.doesNotMatch(seo,/VITE_APP_URL\|\|CANONICAL/);assert.match(build,/const base='https:\/\/www\.vorlen\.co\.uk'/);assert.doesNotMatch(build,/VITE_APP_URL\|\|'https:\/\/www\.vorlen\.co\.uk'/);});
