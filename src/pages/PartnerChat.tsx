@@ -217,7 +217,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
    }
   };
   const onReceipt=(change:any)=>{const row=(change.new||change.old) as Receipt|undefined;if(!row?.message_id)return reconcile();setReceipts(rows=>change.eventType==='DELETE'?rows.filter(x=>!(x.message_id===row.message_id&&x.user_id===row.user_id)):[...rows.filter(x=>!(x.message_id===row.message_id&&x.user_id===row.user_id)),row])};
-  const onState=(change:any)=>{const row=(change.new||change.old) as UserState|undefined;if(!row?.user_id)return reconcile();setStates(rows=>change.eventType==='DELETE'?rows.filter(x=>x.user_id!==row.user_id):[...rows.filter(x=>x.user_id!==row.user_id),row])};
+  const onState=(change:any)=>{const row=(change.new||change.old) as UserState|undefined;if(!row?.user_id)return reconcile();const followTyping=row.user_id!==me&&change.eventType!=='DELETE'&&!!row.typing_until&&new Date(row.typing_until).getTime()>Date.now()&&isNearChatBottom();setStates(rows=>change.eventType==='DELETE'?rows.filter(x=>x.user_id!==row.user_id):[...rows.filter(x=>x.user_id!==row.user_id),row]);if(followTyping)window.requestAnimationFrame(()=>window.requestAnimationFrame(()=>{const el=messagesRef.current;if(el)el.scrollTop=el.scrollHeight}))};
   const onReaction=(change:any)=>{const row=(change.new||change.old) as Reaction|undefined;if(!row?.id)return reconcile();setReactions(rows=>change.eventType==='DELETE'?rows.filter(x=>x.id!==row.id):[...rows.filter(x=>x.id!==row.id&&!(x.message_id===row.message_id&&x.user_id===row.user_id)),row])};
   const ch=supabase.channel(`partner-chat-db-${conversationId}-${me}`)
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_messages',filter:`conversation_id=eq.${conversationId}`},onMessage)
