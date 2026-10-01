@@ -219,13 +219,14 @@ export default function PartnerChat({mode}:{mode:Mode}){
   const onReceipt=(change:any)=>{const row=(change.new||change.old) as Receipt|undefined;if(!row?.message_id)return reconcile();setReceipts(rows=>change.eventType==='DELETE'?rows.filter(x=>!(x.message_id===row.message_id&&x.user_id===row.user_id)):[...rows.filter(x=>!(x.message_id===row.message_id&&x.user_id===row.user_id)),row])};
   const onState=(change:any)=>{const row=(change.new||change.old) as UserState|undefined;if(!row?.user_id)return reconcile();const followTyping=row.user_id!==me&&change.eventType!=='DELETE'&&!!row.typing_until&&new Date(row.typing_until).getTime()>Date.now()&&isNearChatBottom();setStates(rows=>change.eventType==='DELETE'?rows.filter(x=>x.user_id!==row.user_id):[...rows.filter(x=>x.user_id!==row.user_id),row]);if(followTyping)window.requestAnimationFrame(()=>window.requestAnimationFrame(()=>{const el=messagesRef.current;if(el)el.scrollTop=el.scrollHeight}))};
   const onReaction=(change:any)=>{const row=(change.new||change.old) as Reaction|undefined;if(!row?.id)return reconcile();setReactions(rows=>change.eventType==='DELETE'?rows.filter(x=>x.id!==row.id):[...rows.filter(x=>x.id!==row.id&&!(x.message_id===row.message_id&&x.user_id===row.user_id)),row])};
-  const ch=supabase.channel(`partner-chat-db-${conversationId}`)
-   .on('broadcast',{event:'typing'},({payload}:any)=>{if(!payload||payload.user_id===me)return;const active=payload.active===true;setTypingSignalUntil(active?Date.now()+5000:0);if(active&&isNearChatBottom())window.requestAnimationFrame(()=>window.requestAnimationFrame(()=>{const el=messagesRef.current;if(el)el.scrollTop=el.scrollHeight}))})
+  const ch=supabase.channel(`partner-chat-db-${conversationId}`,{config:{broadcast:{ack:true}}})
+   .on('broadcast',{event:'typing'},({payload}:any)=>{if(!payload)return;const active=payload.active===true;setTypingSignalUntil(active?Date.now()+5000:0);if(active&&isNearChatBottom())window.requestAnimationFrame(()=>window.requestAnimationFrame(()=>{const el=messagesRef.current;if(el)el.scrollTop=el.scrollHeight}))})
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_messages',filter:`conversation_id=eq.${conversationId}`},onMessage)
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_message_receipts',filter:`conversation_id=eq.${conversationId}`},onReceipt)
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_chat_user_state',filter:`conversation_id=eq.${conversationId}`},onState)
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_message_reactions',filter:`conversation_id=eq.${conversationId}`},onReaction)
-   .subscribe(status=>{if(status==='SUBSCRIBED')chatChannelRef.current=ch});
+   .subscribe(status=>{if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')console.warn('Partner chat realtime channel',status)});
+  chatChannelRef.current=ch;
   return()=>{if(chatChannelRef.current===ch)chatChannelRef.current=null;setTypingSignalUntil(0);if(refreshTimer.current)window.clearTimeout(refreshTimer.current);void supabase.removeChannel(ch)}
  },[conversationId,me,mode,loadConversation,refreshList,markIncoming,isNearChatBottom]);
 
@@ -311,7 +312,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
  }
  function chooseFiles(list:FileList|null){if(!list)return;const accepted:File[]=[];for(const f of Array.from(list)){if(f.size>maxFile){toast(`${f.name} is larger than 10 MB.`,{tone:'error'});continue}if(!allowedTypes.has(f.type)){toast(`${f.name} is not a supported image, PDF or Office document.`,{tone:'error'});continue}accepted.push(f)}setFiles(v=>[...v,...accepted].slice(0,5))}
 
- function broadcastTyping(active:boolean){const channel=chatChannelRef.current;if(channel)void channel.send({type:'broadcast',event:'typing',payload:{user_id:me,active}})}
+ function broadcastTyping(active:boolean){const channel=chatChannelRef.current;if(!channel)return;void channel.send({type:'broadcast',event:'typing',payload:{user_id:me,active}}).then((status:any)=>{if(status!=='ok')console.warn('Partner chat typing broadcast failed',status)})}
  function stopTyping(){if(typingTimer.current){window.clearTimeout(typingTimer.current);typingTimer.current=null}if(typingRefreshTimer.current){window.clearInterval(typingRefreshTimer.current);typingRefreshTimer.current=null}broadcastTyping(false);void touchState(false)}
  function typeBody(v:string){setBody(v);if(editing)return;if(typingTimer.current)window.clearTimeout(typingTimer.current);broadcastTyping(true);if(!typingRefreshTimer.current){void touchState(true);typingRefreshTimer.current=window.setInterval(()=>{broadcastTyping(true);void touchState(true)},2500)}typingTimer.current=window.setTimeout(stopTyping,3200)}
  function handleComposerPaste(e:any){
