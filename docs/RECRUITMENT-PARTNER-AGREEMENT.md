@@ -4,7 +4,7 @@
 
 ## 1. Parties and status
 
-These terms are between **Ivy and Pearls Ltd trading as Vorlen**, company number **17387520**, registered in England and Wales with registered office at **10 South Street, Rochdale, United Kingdom, OL16 2EP** ("Vorlen"), and the recruitment partner identified in the accepted agreement record ("Partner").
+These terms are between **Ivy and Pearls Ltd trading as Vorlen**, company number **17387520**, registered in England and Wales with registered office at **Rochdale, OL16 2EP** ("Vorlen"), and the recruitment partner identified in the accepted agreement record ("Partner").
 
 The Partner acts as an independent recruitment/business-development contractor. Nothing in these terms creates employment, worker status, a legal partnership, or authority to bind Vorlen.
 
