@@ -222,3 +222,6 @@ test('partner typing uses a shared acknowledged realtime broadcast channel',()=>
 
 
 test('partner chat preserves the proven pre-typing message-side behavior',()=>{const chat=read('src/pages/PartnerChat.tsx');assert.match(chat,/function messageSide\(m:Message\)\{if\(mode==='partner'\)return m\.sender_id===me\?'out':'in';return m\.sender_id===partnerUserId\?'in':'out'\}/);assert.match(chat,/const typingSide: 'in'\|'out'=mode==='partner'\?\(typingSignalUserId===partnerUserId\?'out':'in'\):\(typingSignalUserId===partnerUserId\?'in':'out'\)/);});
+
+
+test('partner chat refuses sends after auth identity crosses portal roles',()=>{const chat=read('src/pages/PartnerChat.tsx');assert.match(chat,/currentUser\.id!==me/);assert.match(chat,/mode==='partner'&&currentUser\.id!==partnerUserId/);assert.match(chat,/mode==='manager'&&currentUser\.id===partnerUserId/);assert.match(chat,/signed-in session changed/);});
