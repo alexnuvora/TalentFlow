@@ -779,3 +779,12 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 }
 .chat-scroll-end{height:1px;width:1px;pointer-events:none}
 .chat-compose-wrap{overflow-anchor:none}
+
+/* Partner chat rich-text rendering */
+.chat-rich-body{display:block;white-space:normal}
+.chat-rich-body p{margin:0 0 6px;white-space:pre-wrap}
+.chat-rich-body p:last-child{margin-bottom:0}
+.chat-rich-body ul,.chat-rich-body ol{margin:4px 0 8px;padding-left:22px}
+.chat-rich-body li{margin:2px 0;line-height:1.45}
+.chat-rich-body u{text-underline-offset:2px}
+.chat-rich-gap{height:7px}
