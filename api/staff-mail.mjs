@@ -5,7 +5,8 @@ const USER=process.env.IONOS_MAIL_USERNAME||process.env.IONOS_MAIL_EMAIL||'hello
 const IMAP_HOST='imap.ionos.co.uk',IMAP_PORT=993,SMTP_HOST='smtp.ionos.co.uk',SMTP_PORT=587;
 const j=(res,status,data)=>{res.status(status).setHeader('content-type','application/json');res.end(JSON.stringify(data))};
 const esc=s=>String(s||'').replace(/\\/g,'\\\\').replace(/"/g,'\\"');
-const validEmail=s=>/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(String(s||''));const safeHeader=s=>String(s||'').replace(/[\r\n]+/g,' ').trim();\nconst norm=s=>String(s||'').replace(/^\s*((re|fw|fwd)\s*:\s*)+/i,'').trim().toLowerCase();
+const validEmail=s=>/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(String(s||''));const safeHeader=s=>String(s||'').replace(/[\r\n]+/g,' ').trim();
+const norm=s=>String(s||'').replace(/^\s*((re|fw|fwd)\s*:\s*)+/i,'').trim().toLowerCase();
 async function storeFile(path,data,type='application/octet-stream'){const r=await fetch(SUPA+'/storage/v1/object/staff-email-attachments/'+path,{method:'POST',headers:{apikey:SERVICE,authorization:'Bearer '+SERVICE,'content-type':type,'x-upsert':'true'},body:Buffer.from(data,'base64')});if(!r.ok)throw new Error('Attachment storage '+r.status+': '+await r.text());return 'storage:'+path}
 async function loadFile(path){const r=await fetch(SUPA+'/storage/v1/object/staff-email-attachments/'+path,{headers:{apikey:SERVICE,authorization:'Bearer '+SERVICE}});if(!r.ok)throw new Error('Attachment unavailable');return Buffer.from(await r.arrayBuffer()).toString('base64')}
 async function rest(path,opt={}){const r=await fetch(SUPA+'/rest/v1/'+path,{...opt,headers:{apikey:SERVICE,authorization:'Bearer '+SERVICE,'content-type':'application/json',prefer:'return=representation',...(opt.headers||{})}});const t=await r.text();if(!r.ok)throw new Error('Database '+r.status+': '+t.slice(0,300));return t?JSON.parse(t):null}
