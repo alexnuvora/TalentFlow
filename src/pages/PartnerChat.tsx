@@ -203,6 +203,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
    const row=(change.new||change.old) as Message|undefined;
    if(!row?.id)return reconcile();
    if(change.eventType==='DELETE'){setMessages(rows=>rows.filter(x=>x.id!==row.id));return}
+   if(change.eventType==='INSERT'&&row.message_type==='attachment'){reconcile();return}
    setMessages(rows=>{
     const index=rows.findIndex(x=>x.id===row.id);
     if(index>=0){const next=[...rows];next[index]={...next[index],...row};return next}
@@ -211,7 +212,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
    });
    if(change.eventType==='INSERT'){
     scrollIfFollowing();
-    if(row.sender_id!==me)void markIncoming([row],receipts);
+    if(row.sender_id!==me)void markIncoming([row],[]);
     if(mode==='manager')void refreshList();
    }
   };
@@ -225,7 +226,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_message_reactions',filter:`conversation_id=eq.${conversationId}`},onReaction)
    .subscribe();
   return()=>{if(refreshTimer.current)window.clearTimeout(refreshTimer.current);void supabase.removeChannel(ch)}
- },[conversationId,me,mode,loadConversation,refreshList,markIncoming,receipts,isNearChatBottom]);
+ },[conversationId,me,mode,loadConversation,refreshList,markIncoming,isNearChatBottom]);
 
  useEffect(()=>{setReactingTo('');cancelReactionPress();return()=>cancelReactionPress()},[conversationId]);
  useEffect(()=>{if(!reactingTo)return;const close=(e:PointerEvent)=>{const target=e.target as HTMLElement;if(target.closest('.chat-reaction-picker,.chat-actions,.chat-reactions'))return;setReactingTo('')};document.addEventListener('pointerdown',close,true);return()=>document.removeEventListener('pointerdown',close,true)},[reactingTo]);
