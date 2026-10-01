@@ -103,7 +103,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
  const [body,setBody]=useState(''),[files,setFiles]=useState<File[]>([]),[replyTo,setReplyTo]=useState<Message|null>(null),[editing,setEditing]=useState<Message|null>(null);
  const [partnerSearch,setPartnerSearch]=useState(''),[messageSearch,setMessageSearch]=useState(''),[searchResults,setSearchResults]=useState<Message[]>([]);
  const [showContext,setShowContext]=useState(false),[contextType,setContextType]=useState(''),[contextOptions,setContextOptions]=useState<ContextOption[]>([]),[context,setContext]=useState<ContextOption|null>(null);
- const [notifySupported,setNotifySupported]=useState(false),[now,setNow]=useState(Date.now()),[typingSignalUntil,setTypingSignalUntil]=useState(0),[typingSignalUserId,setTypingSignalUserId]=useState(''),[mobileSearchOpen,setMobileSearchOpen]=useState(false),[reactingTo,setReactingTo]=useState<string>(''),[reactionBusy,setReactionBusy]=useState<string>('');
+ const [notifySupported,setNotifySupported]=useState(false),[now,setNow]=useState(Date.now()),[typingSignalUntil,setTypingSignalUntil]=useState(0),[typingSignalUserId,setTypingSignalUserId]=useState(''),[mobileSearchOpen,setMobileSearchOpen]=useState(false),[reactingTo,setReactingTo]=useState<string>(''),[reactionPickerAbove,setReactionPickerAbove]=useState(false),[reactionBusy,setReactionBusy]=useState<string>('');
  const fileRef=useRef<HTMLInputElement>(null),messagesRef=useRef<HTMLDivElement>(null),composerRef=useRef<HTMLTextAreaElement>(null),chatChannelRef=useRef<any>(null),typingTimer=useRef<number|null>(null),typingRefreshTimer=useRef<number|null>(null),refreshTimer=useRef<number|null>(null),reactionPressTimer=useRef<number|null>(null),reactionPressStart=useRef<{x:number;y:number}|null>(null);
 
  const selected=useMemo(()=>conversations.find(c=>c.conversation_id===conversationId)||null,[conversations,conversationId]);
@@ -372,13 +372,26 @@ export default function PartnerChat({mode}:{mode:Mode}){
   return Array.from(map.values());
  }
  function cancelReactionPress(){if(reactionPressTimer.current){window.clearTimeout(reactionPressTimer.current);reactionPressTimer.current=null}reactionPressStart.current=null}
+ function openReactionPicker(messageId:string){
+  setReactingTo(messageId);
+  window.requestAnimationFrame(()=>{
+   const message=document.querySelector<HTMLElement>(`[data-message-id="${messageId}"]`);
+   const scroller=messagesRef.current;
+   if(!message||!scroller){setReactionPickerAbove(false);return}
+   const mr=message.getBoundingClientRect(),sr=scroller.getBoundingClientRect();
+   const estimatedPickerHeight=52,gap=8;
+   const roomBelow=Math.max(0,sr.bottom-mr.bottom);
+   const roomAbove=Math.max(0,mr.top-sr.top);
+   setReactionPickerAbove(roomBelow<estimatedPickerHeight+gap&&roomAbove>roomBelow);
+  })
+ }
  function startReactionPress(e:any,m:Message){
   if(m.deleted_at||e.pointerType==='mouse')return;
   const target=e.target as HTMLElement;
   if(target.closest('a,button,input,textarea,select,[role="button"]'))return;
   cancelReactionPress();
   reactionPressStart.current={x:e.clientX,y:e.clientY};
-  reactionPressTimer.current=window.setTimeout(()=>{setReactingTo(m.id);reactionPressTimer.current=null},500);
+  reactionPressTimer.current=window.setTimeout(()=>{openReactionPicker(m.id);reactionPressTimer.current=null},500);
  }
  function moveReactionPress(e:any){
   const start=reactionPressStart.current;if(!start)return;
@@ -412,7 +425,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
      <div ref={messagesRef} className="chat-messages">
       {hasMore&&!messageSearch&&<button className="chat-load-more" disabled={loadingMessages} onClick={()=>void loadConversation(true)}>{loadingMessages?'Loading…':'Load older messages'}</button>}
       {visibleMessages.map((m,i)=>{const previous=visibleMessages[i-1],showDay=!previous||dayKey(previous.created_at)!==dayKey(m.created_at),side=messageSide(m),reply=messages.find(x=>x.id===m.reply_to_id),atts=attachmentFor(m.id);return <div key={m.id}>{showDay&&<div className="chat-day"><span>{dayKey(m.created_at)}</span></div>}<article data-message-id={m.id} className={`chat-message ${side} ${m.pinned_at?'pinned':''} ${m.deleted_at?'deleted':''}`}>
-        <div className="chat-message-stack"><div className="chat-bubble" onPointerDown={e=>startReactionPress(e,m)} onPointerUp={cancelReactionPress} onPointerCancel={cancelReactionPress} onPointerMove={moveReactionPress} onContextMenu={e=>{if(!m.deleted_at)e.preventDefault()}}>{m.pinned_at&&<span className="chat-pin"><Pin size={11}/> Pinned</span>}{reactingTo===m.id&&!m.deleted_at&&<div className="chat-reaction-picker" role="menu" aria-label="React to message">{reactionEmojis.map(emoji=><button key={emoji} type="button" role="menuitem" aria-label={'React '+emoji} onPointerDown={e=>e.stopPropagation()} disabled={reactionBusy===m.id} onClick={()=>void setReaction(m,emoji)}>{emoji}</button>)}<button className="chat-reaction-close" type="button" aria-label="Close reactions" onPointerDown={e=>e.stopPropagation()} onClick={()=>setReactingTo('')}><X size={14}/></button></div>}{reply&&<button className="chat-reply-preview" onClick={()=>scrollTo(reply.id)}><strong>{reply.sender_id===me?'You':mode==='partner'?'Vorlen management':selected?.partner_name||'Partner'}</strong><span>{reply.deleted_at?'Deleted message':plainMessagePreview(reply.body)||'Attachment'}</span></button>}
+        <div className="chat-message-stack"><div className="chat-bubble" onPointerDown={e=>startReactionPress(e,m)} onPointerUp={cancelReactionPress} onPointerCancel={cancelReactionPress} onPointerMove={moveReactionPress} onContextMenu={e=>{if(!m.deleted_at)e.preventDefault()}}>{m.pinned_at&&<span className="chat-pin"><Pin size={11}/> Pinned</span>}{reactingTo===m.id&&!m.deleted_at&&<div className={`chat-reaction-picker ${reactionPickerAbove?'above':'below'}`} role="menu" aria-label="React to message">{reactionEmojis.map(emoji=><button key={emoji} type="button" role="menuitem" aria-label={'React '+emoji} onPointerDown={e=>e.stopPropagation()} disabled={reactionBusy===m.id} onClick={()=>void setReaction(m,emoji)}>{emoji}</button>)}<button className="chat-reaction-close" type="button" aria-label="Close reactions" onPointerDown={e=>e.stopPropagation()} onClick={()=>setReactingTo('')}><X size={14}/></button></div>}{reply&&<button className="chat-reply-preview" onClick={()=>scrollTo(reply.id)}><strong>{reply.sender_id===me?'You':mode==='partner'?'Vorlen management':selected?.partner_name||'Partner'}</strong><span>{reply.deleted_at?'Deleted message':plainMessagePreview(reply.body)||'Attachment'}</span></button>}
          {m.deleted_at?<p className="chat-deleted">This message was deleted</p>:<>{m.body&&renderMessageBody(m.body)}{m.context_label&&m.context_path&&<Link className="chat-context" to={contextHref(m)}><Link2 size={14}/><span><small>{String(m.context_type||'context').replaceAll('_',' ')}</small><strong>{m.context_label}</strong></span></Link>}{atts.map(a=><a key={a.id} className={`chat-attachment ${a.mime_type.startsWith('image/')?'image':''}`} href={a.signed_url||'#'} target="_blank" rel="noreferrer">{a.mime_type.startsWith('image/')&&a.signed_url?<img src={a.signed_url} alt={a.filename}/>:a.mime_type.startsWith('image/')?<ImageIcon size={18}/>:<FileText size={18}/>}<span><strong>{a.filename}</strong><small>{size(a.size_bytes)}</small></span></a>)}</>}
          <footer><time>{clock(m.created_at)}</time>{m.edited_at&&!m.deleted_at&&<span>edited</span>}{m.sender_id===me&&<span className="chat-status">{statusFor(m)}</span>}</footer>
         </div>{!m.deleted_at&&reactionGroups(m.id).length>0&&<div className="chat-reactions">{reactionGroups(m.id).map(r=><button type="button" key={r.emoji} className={r.mine?'mine':''} aria-label={`${r.emoji} reaction${r.count>1?'s':''}, ${r.count}`} onPointerDown={e=>e.stopPropagation()} disabled={reactionBusy===m.id} onClick={()=>void setReaction(m,r.emoji)}><span>{r.emoji}</span>{r.count>1&&<b>{r.count}</b>}</button>)}</div>}</div>
