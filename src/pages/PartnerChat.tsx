@@ -22,7 +22,48 @@ const dayKey=(v:string)=>new Date(v).toLocaleDateString('en-GB',{day:'numeric',m
 const safeName=(v:string)=>v.replace(/[^a-zA-Z0-9._-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,120)||'file';
 const size=(n:number)=>n<1024?`${n} B`:n<1024*1024?`${(n/1024).toFixed(1)} KB`:`${(n/1024/1024).toFixed(1)} MB`;
 const urlPattern=/(https?:\/\/[^\s<]+[^\s<.,:;!?'"\])}])/gi;
-function renderMessageBody(body:string){const parts=body.split(urlPattern);return <p>{parts.map((part,i)=>/^https?:\/\//i.test(part)?<a className="chat-inline-link" key={i} href={part} target="_blank" rel="noopener noreferrer">{part}</a>:part)}</p>}
+function htmlToMessageMarkup(html:string){
+ const doc=new DOMParser().parseFromString(html,'text/html');
+ const walk=(node:Node):string=>{
+  if(node.nodeType===Node.TEXT_NODE)return node.textContent||'';
+  if(node.nodeType!==Node.ELEMENT_NODE)return'';
+  const el=node as HTMLElement,tag=el.tagName.toLowerCase(),children=()=>Array.from(el.childNodes).map(walk).join('');
+  if(tag==='br')return'\n';
+  if(tag==='strong'||tag==='b')return'**'+children()+'**';
+  if(tag==='em'||tag==='i')return'*'+children()+'*';
+  if(tag==='u')return'++'+children()+'++';
+  if(tag==='a'){const label=children().trim(),href=el.getAttribute('href')||'';return href&&(label!==href)?label+' ('+href+')':label||href}
+  if(tag==='ul')return Array.from(el.children).filter(x=>x.tagName.toLowerCase()==='li').map(x=>'- '+walk(x).trim()).join('\n')+'\n';
+  if(tag==='ol')return Array.from(el.children).filter(x=>x.tagName.toLowerCase()==='li').map((x,i)=>(i+1)+'. '+walk(x).trim()).join('\n')+'\n';
+  if(tag==='li')return children();
+  if(/^h[1-6]$/.test(tag))return'**'+children().trim()+'**\n';
+  if(tag==='p'||tag==='div')return children().trimEnd()+'\n';
+  return children();
+ };
+ return walk(doc.body).replace(/\n{3,}/g,'\n\n').trim();
+}
+function renderInline(text:string,keyBase:string){
+ const tokenPattern=/(https?:\/\/[^\s<]+[^\s<.,:;!?'"\])}]|\*\*[^*\n]+\*\*|\+\+[^+\n]+\+\+|\*[^*\n]+\*)/gi;
+ return text.split(tokenPattern).filter(Boolean).map((part,i)=>{
+  const key=keyBase+'-'+i;
+  if(/^https?:\/\//i.test(part))return <a className="chat-inline-link" key={key} href={part} target="_blank" rel="noopener noreferrer">{part}</a>;
+  if(part.startsWith('**')&&part.endsWith('**'))return <strong key={key}>{part.slice(2,-2)}</strong>;
+  if(part.startsWith('++')&&part.endsWith('++'))return <u key={key}>{part.slice(2,-2)}</u>;
+  if(part.startsWith('*')&&part.endsWith('*'))return <em key={key}>{part.slice(1,-1)}</em>;
+  return part;
+ });
+}
+function renderMessageBody(body:string){
+ const lines=body.split('\n'),nodes:any[]=[];let i=0;
+ while(i<lines.length){
+  const line=lines[i];
+  if(!line.trim()){nodes.push(<div className="chat-rich-gap" key={'gap-'+i}/>);i++;continue}
+  if(/^\s*[-•]\s+/.test(line)){const items:any[]=[];while(i<lines.length&&/^\s*[-•]\s+/.test(lines[i])){items.push(<li key={'ul-'+i}>{renderInline(lines[i].replace(/^\s*[-•]\s+/,''),'ul-'+i)}</li>);i++}nodes.push(<ul key={'ulist-'+i}>{items}</ul>);continue}
+  if(/^\s*\d+[.)]\s+/.test(line)){const items:any[]=[];while(i<lines.length&&/^\s*\d+[.)]\s+/.test(lines[i])){items.push(<li key={'ol-'+i}>{renderInline(lines[i].replace(/^\s*\d+[.)]\s+/,''),'ol-'+i)}</li>);i++}nodes.push(<ol key={'olist-'+i}>{items}</ol>);continue}
+  nodes.push(<p key={'p-'+i}>{renderInline(line,'p-'+i)}</p>);i++;
+ }
+ return <div className="chat-rich-body">{nodes}</div>;
+}
 
 export default function PartnerChat({mode}:{mode:Mode}){
  const access=useWorkspaceAccess(),toast=useToast(),[params,setParams]=useSearchParams();
@@ -213,6 +254,17 @@ export default function PartnerChat({mode}:{mode:Mode}){
  function chooseFiles(list:FileList|null){if(!list)return;const accepted:File[]=[];for(const f of Array.from(list)){if(f.size>maxFile){toast(`${f.name} is larger than 10 MB.`,{tone:'error'});continue}if(!allowedTypes.has(f.type)){toast(`${f.name} is not a supported image, PDF or Office document.`,{tone:'error'});continue}accepted.push(f)}setFiles(v=>[...v,...accepted].slice(0,5))}
 
  function typeBody(v:string){setBody(v);if(editing)return;if(typingTimer.current)window.clearTimeout(typingTimer.current);void touchState(true);typingTimer.current=window.setTimeout(()=>void touchState(false),4800)}
+ function handleComposerPaste(e:any){
+  const html=e.clipboardData?.getData('text/html')||'';
+  if(!html)return;
+  const formatted=htmlToMessageMarkup(html);
+  if(!formatted)return;
+  e.preventDefault();
+  const el=e.currentTarget as HTMLTextAreaElement,start=el.selectionStart??body.length,end=el.selectionEnd??start;
+  const next=(body.slice(0,start)+formatted+body.slice(end)).slice(0,8000);
+  typeBody(next);
+  window.requestAnimationFrame(()=>{if(composerRef.current){const pos=Math.min(start+formatted.length,next.length);composerRef.current.setSelectionRange(pos,pos);composerRef.current.focus({preventScroll:true})}});
+ }
 
  async function sendMessage(){
   if(!conversationId||!me||sending)return;if(editing){const next=body.trim();if(!next)return;setSending(true);const{error:e}=await supabase.from('partner_messages').update({body:next}).eq('id',editing.id);setSending(false);if(e)return setError(e.message);setEditing(null);setBody('');toast('Message updated.');return}
@@ -270,7 +322,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
       {context&&<div className="chat-compose-context"><Link2 size={14}/><span><small>{contextType.replaceAll('_',' ')}</small><strong>{context.label}</strong></span><button onClick={()=>{setContext(null);setContextType('')}}><X size={14}/></button></div>}
       {files.length>0&&<div className="chat-file-chips">{files.map((f,i)=><span key={f.name+i}><Paperclip size={12}/>{f.name}<button onClick={()=>setFiles(v=>v.filter((_,x)=>x!==i))}><X size={12}/></button></span>)}</div>}
       {showContext&&!editing&&<div className="chat-context-picker"><select value={contextType} onChange={e=>void loadContextOptions(e.target.value)}><option value="">Choose context type…</option>{availableContextTypes.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>{contextType&&<select value={context?.id||''} onChange={e=>setContext(contextOptions.find(x=>x.id===e.target.value)||null)}><option value="">Choose item…</option>{contextOptions.map(x=><option key={x.id} value={x.id}>{x.label}</option>)}</select>}<button onClick={()=>setShowContext(false)}><X size={14}/></button></div>}
-      <div className="chat-compose"><input ref={fileRef} hidden type="file" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.pdf,.txt,.doc,.docx,.xls,.xlsx" onChange={e=>{chooseFiles(e.target.files);e.target.value=''}}/><button title="Attach file" disabled={!!editing} onClick={()=>fileRef.current?.click()}><Paperclip size={19}/></button><button title="Link Vorlen record" disabled={!!editing} onClick={()=>setShowContext(v=>!v)}><Link2 size={18}/></button><textarea ref={composerRef} rows={1} maxLength={8000} value={body} onChange={e=>typeBody(e.target.value)} onInput={e=>{const el=e.currentTarget;el.style.height='40px';el.style.height=Math.min(el.scrollHeight,96)+'px'}} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void sendMessage()}}} placeholder={editing?'Edit message…':'Type a message…'}/><button className="chat-send" disabled={sending||(!body.trim()&&!files.length)} onClick={()=>void sendMessage()}><Send size={18}/></button></div>
+      <div className="chat-compose"><input ref={fileRef} hidden type="file" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.pdf,.txt,.doc,.docx,.xls,.xlsx" onChange={e=>{chooseFiles(e.target.files);e.target.value=''}}/><button title="Attach file" disabled={!!editing} onClick={()=>fileRef.current?.click()}><Paperclip size={19}/></button><button title="Link Vorlen record" disabled={!!editing} onClick={()=>setShowContext(v=>!v)}><Link2 size={18}/></button><textarea ref={composerRef} rows={1} maxLength={8000} value={body} onChange={e=>typeBody(e.target.value)} onPaste={handleComposerPaste} onInput={e=>{const el=e.currentTarget;el.style.height='40px';el.style.height=Math.min(el.scrollHeight,96)+'px'}} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void sendMessage()}}} placeholder={editing?'Edit message…':'Type a message…'}/><button className="chat-send" disabled={sending||(!body.trim()&&!files.length)} onClick={()=>void sendMessage()}><Send size={18}/></button></div>
       <small className="chat-compose-note">Enter to send · Shift+Enter for a new line · files up to 10 MB</small>
      </div>
     </>}
