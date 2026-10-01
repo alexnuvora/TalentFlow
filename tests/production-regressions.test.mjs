@@ -243,3 +243,6 @@ test('obsolete Vorlen digital-studio URLs permanently consolidate into recruitme
 
 
 test('specialist recruitment sectors are routed and pre-rendered for search',()=>{const app=read('src/App.tsx'),page=read('src/pages/SeoLanding.tsx'),build=read('scripts/seo-build.mjs');const routes=['/sectors/technology','/sectors/sales-business-development','/sectors/finance-accounting','/sectors/engineering'];for(const route of routes){assert.ok(app.includes(route));assert.ok(page.includes(route));assert.ok(build.includes(route));}});
+
+
+test('homepage SEO is emitted directly into production HTML',()=>{const build=read('scripts/seo-build.mjs');assert.match(build,/const homePage=/);assert.match(build,/UK Permanent Recruitment Agency for Employers/);assert.match(build,/EmploymentAgency/);assert.match(build,/const homeHtml=inject/);assert.match(build,/fs\.writeFile\(path\.join\(dist,'index\.html'\),homeHtml\)/);assert.match(build,/canonical:\`\$\{base\}\/\`/);});
