@@ -777,7 +777,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
  touch-action:pan-y;
  scrollbar-gutter:stable
 }
-.chat-scroll-end{height:1px;width:1px;pointer-events:none}
+.chat-scroll-end{height:58px;width:1px;pointer-events:none}
 .chat-compose-wrap{overflow-anchor:none}
 
 /* Partner chat rich-text rendering */
