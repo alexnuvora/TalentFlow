@@ -103,7 +103,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
  const [body,setBody]=useState(''),[files,setFiles]=useState<File[]>([]),[replyTo,setReplyTo]=useState<Message|null>(null),[editing,setEditing]=useState<Message|null>(null);
  const [partnerSearch,setPartnerSearch]=useState(''),[messageSearch,setMessageSearch]=useState(''),[searchResults,setSearchResults]=useState<Message[]>([]);
  const [showContext,setShowContext]=useState(false),[contextType,setContextType]=useState(''),[contextOptions,setContextOptions]=useState<ContextOption[]>([]),[context,setContext]=useState<ContextOption|null>(null);
- const [notifySupported,setNotifySupported]=useState(false),[now,setNow]=useState(Date.now()),[mobileSearchOpen,setMobileSearchOpen]=useState(false),[reactingTo,setReactingTo]=useState<string>('');
+ const [notifySupported,setNotifySupported]=useState(false),[now,setNow]=useState(Date.now()),[mobileSearchOpen,setMobileSearchOpen]=useState(false),[reactingTo,setReactingTo]=useState<string>(''),[reactionBusy,setReactionBusy]=useState<string>('');
  const fileRef=useRef<HTMLInputElement>(null),messagesRef=useRef<HTMLDivElement>(null),composerRef=useRef<HTMLTextAreaElement>(null),typingTimer=useRef<number|null>(null),refreshTimer=useRef<number|null>(null),reactionPressTimer=useRef<number|null>(null),reactionPressStart=useRef<{x:number;y:number}|null>(null);
 
  const selected=useMemo(()=>conversations.find(c=>c.conversation_id===conversationId)||null,[conversations,conversationId]);
@@ -207,6 +207,8 @@ export default function PartnerChat({mode}:{mode:Mode}){
  },[conversationId,me,mode,selected?.partner_name,loadConversation,refreshList]);
 
  useEffect(()=>{setReactingTo('');cancelReactionPress();return()=>cancelReactionPress()},[conversationId]);
+ useEffect(()=>{if(!reactingTo)return;const close=(e:PointerEvent)=>{const target=e.target as HTMLElement;if(target.closest('.chat-reaction-picker,.chat-actions,.chat-reactions'))return;setReactingTo('')};document.addEventListener('pointerdown',close,true);return()=>document.removeEventListener('pointerdown',close,true)},[reactingTo]);
+
  useEffect(()=>{const t=window.setInterval(()=>setNow(Date.now()),2000);setNotifySupported(typeof window!=='undefined'&&'Notification'in window);return()=>window.clearInterval(t)},[]);
 
  async function searchMessages(v:string){setMessageSearch(v);if(v.trim().length<2){setSearchResults([]);return}const{data,error:e}=await supabase.from('partner_messages').select('*').eq('conversation_id',conversationId).ilike('body',`%${v.trim().replace(/[%_]/g,'')}%`).order('created_at',{ascending:false}).limit(100);if(e)setError(e.message);else setSearchResults(((data||[]) as Message[]).reverse())}
@@ -315,20 +317,22 @@ export default function PartnerChat({mode}:{mode:Mode}){
  async function enableNotifications(){if(!notifySupported)return;const p=await Notification.requestPermission();toast(p==='granted'?'Chat notifications enabled.':'Notifications were not enabled.',{tone:p==='granted'?'success':'warning'})}
 
  async function setReaction(m:Message,emoji:string){
-  if(!me||!conversationId||m.deleted_at)return;
+  if(!me||!conversationId||m.deleted_at||reactionBusy===m.id)return;
   const existing=reactions.find(r=>r.message_id===m.id&&r.user_id===me);
-  setReactingTo('');
+  setReactionBusy(m.id);setReactingTo('');
   if(existing?.emoji===emoji){
    setReactions(rows=>rows.filter(r=>r.id!==existing.id));
    const{error:e}=await supabase.from('partner_message_reactions').delete().eq('id',existing.id);
-   if(e){setError(e.message);void loadConversation(false)}
+   if(e){setError(e.message);await loadConversation(false)}
+   setReactionBusy('');
    return;
   }
   const optimistic:Reaction={id:existing?.id||'optimistic-'+m.id,company_id:m.company_id,conversation_id:m.conversation_id,message_id:m.id,user_id:me,emoji,created_at:existing?.created_at||new Date().toISOString(),updated_at:new Date().toISOString()};
   setReactions(rows=>[...rows.filter(r=>!(r.message_id===m.id&&r.user_id===me)),optimistic]);
   const payload={company_id:m.company_id,conversation_id:m.conversation_id,message_id:m.id,user_id:me,emoji};
   const{error:e}=await supabase.from('partner_message_reactions').upsert(payload,{onConflict:'message_id,user_id'});
-  if(e){setError(e.message);void loadConversation(false)}
+  if(e){setError(e.message);await loadConversation(false)}
+  setReactionBusy('');
  }
  function reactionGroups(messageId:string){
   const rows=reactions.filter(r=>r.message_id===messageId),map=new Map<string,{emoji:string;count:number;mine:boolean}>();
@@ -337,7 +341,9 @@ export default function PartnerChat({mode}:{mode:Mode}){
  }
  function cancelReactionPress(){if(reactionPressTimer.current){window.clearTimeout(reactionPressTimer.current);reactionPressTimer.current=null}reactionPressStart.current=null}
  function startReactionPress(e:any,m:Message){
-  if(m.deleted_at)return;
+  if(m.deleted_at||e.pointerType==='mouse')return;
+  const target=e.target as HTMLElement;
+  if(target.closest('a,button,input,textarea,select,[role="button"]'))return;
   cancelReactionPress();
   reactionPressStart.current={x:e.clientX,y:e.clientY};
   reactionPressTimer.current=window.setTimeout(()=>{setReactingTo(m.id);reactionPressTimer.current=null},500);
@@ -374,8 +380,8 @@ export default function PartnerChat({mode}:{mode:Mode}){
      <div ref={messagesRef} className="chat-messages">
       {hasMore&&!messageSearch&&<button className="chat-load-more" disabled={loadingMessages} onClick={()=>void loadConversation(true)}>{loadingMessages?'Loading…':'Load older messages'}</button>}
       {visibleMessages.map((m,i)=>{const previous=visibleMessages[i-1],showDay=!previous||dayKey(previous.created_at)!==dayKey(m.created_at),side=messageSide(m),reply=messages.find(x=>x.id===m.reply_to_id),atts=attachmentFor(m.id);return <div key={m.id}>{showDay&&<div className="chat-day"><span>{dayKey(m.created_at)}</span></div>}<article data-message-id={m.id} className={`chat-message ${side} ${m.pinned_at?'pinned':''} ${m.deleted_at?'deleted':''}`}>
-       <div className="chat-bubble" onPointerDown={e=>startReactionPress(e,m)} onPointerUp={cancelReactionPress} onPointerCancel={cancelReactionPress} onPointerMove={moveReactionPress} onContextMenu={e=>{if(!m.deleted_at)e.preventDefault()}}>{m.pinned_at&&<span className="chat-pin"><Pin size={11}/> Pinned</span>}{reactingTo===m.id&&!m.deleted_at&&<div className="chat-reaction-picker" role="menu" aria-label="React to message">{reactionEmojis.map(emoji=><button key={emoji} type="button" role="menuitem" aria-label={'React '+emoji} onPointerDown={e=>e.stopPropagation()} onClick={()=>void setReaction(m,emoji)}>{emoji}</button>)}<button className="chat-reaction-close" type="button" aria-label="Close reactions" onPointerDown={e=>e.stopPropagation()} onClick={()=>setReactingTo('')}><X size={14}/></button></div>}{reply&&<button className="chat-reply-preview" onClick={()=>scrollTo(reply.id)}><strong>{reply.sender_id===me?'You':mode==='partner'?'Vorlen management':selected?.partner_name||'Partner'}</strong><span>{reply.deleted_at?'Deleted message':plainMessagePreview(reply.body)||'Attachment'}</span></button>}
-        {m.deleted_at?<p className="chat-deleted">This message was deleted</p>:<>{m.body&&renderMessageBody(m.body)}{m.context_label&&m.context_path&&<Link className="chat-context" to={contextHref(m)}><Link2 size={14}/><span><small>{String(m.context_type||'context').replaceAll('_',' ')}</small><strong>{m.context_label}</strong></span></Link>}{atts.map(a=><a key={a.id} className={`chat-attachment ${a.mime_type.startsWith('image/')?'image':''}`} href={a.signed_url||'#'} target="_blank" rel="noreferrer">{a.mime_type.startsWith('image/')&&a.signed_url?<img src={a.signed_url} alt={a.filename}/>:a.mime_type.startsWith('image/')?<ImageIcon size={18}/>:<FileText size={18}/>}<span><strong>{a.filename}</strong><small>{size(a.size_bytes)}</small></span></a>)}</>}{!m.deleted_at&&reactionGroups(m.id).length>0&&<div className="chat-reactions">{reactionGroups(m.id).map(r=><button type="button" key={r.emoji} className={r.mine?'mine':''} aria-label={`${r.emoji} reaction${r.count>1?'s':''}, ${r.count}`} onPointerDown={e=>e.stopPropagation()} onClick={()=>void setReaction(m,r.emoji)}><span>{r.emoji}</span>{r.count>1&&<b>{r.count}</b>}</button>)}</div>}
+       <div className="chat-bubble" onPointerDown={e=>startReactionPress(e,m)} onPointerUp={cancelReactionPress} onPointerCancel={cancelReactionPress} onPointerMove={moveReactionPress} onContextMenu={e=>{if(!m.deleted_at)e.preventDefault()}}>{m.pinned_at&&<span className="chat-pin"><Pin size={11}/> Pinned</span>}{reactingTo===m.id&&!m.deleted_at&&<div className="chat-reaction-picker" role="menu" aria-label="React to message">{reactionEmojis.map(emoji=><button key={emoji} type="button" role="menuitem" aria-label={'React '+emoji} onPointerDown={e=>e.stopPropagation()} disabled={reactionBusy===m.id} onClick={()=>void setReaction(m,emoji)}>{emoji}</button>)}<button className="chat-reaction-close" type="button" aria-label="Close reactions" onPointerDown={e=>e.stopPropagation()} onClick={()=>setReactingTo('')}><X size={14}/></button></div>}{reply&&<button className="chat-reply-preview" onClick={()=>scrollTo(reply.id)}><strong>{reply.sender_id===me?'You':mode==='partner'?'Vorlen management':selected?.partner_name||'Partner'}</strong><span>{reply.deleted_at?'Deleted message':plainMessagePreview(reply.body)||'Attachment'}</span></button>}
+        {m.deleted_at?<p className="chat-deleted">This message was deleted</p>:<>{m.body&&renderMessageBody(m.body)}{m.context_label&&m.context_path&&<Link className="chat-context" to={contextHref(m)}><Link2 size={14}/><span><small>{String(m.context_type||'context').replaceAll('_',' ')}</small><strong>{m.context_label}</strong></span></Link>}{atts.map(a=><a key={a.id} className={`chat-attachment ${a.mime_type.startsWith('image/')?'image':''}`} href={a.signed_url||'#'} target="_blank" rel="noreferrer">{a.mime_type.startsWith('image/')&&a.signed_url?<img src={a.signed_url} alt={a.filename}/>:a.mime_type.startsWith('image/')?<ImageIcon size={18}/>:<FileText size={18}/>}<span><strong>{a.filename}</strong><small>{size(a.size_bytes)}</small></span></a>)}</>}{!m.deleted_at&&reactionGroups(m.id).length>0&&<div className="chat-reactions">{reactionGroups(m.id).map(r=><button type="button" key={r.emoji} className={r.mine?'mine':''} aria-label={`${r.emoji} reaction${r.count>1?'s':''}, ${r.count}`} onPointerDown={e=>e.stopPropagation()} disabled={reactionBusy===m.id} onClick={()=>void setReaction(m,r.emoji)}><span>{r.emoji}</span>{r.count>1&&<b>{r.count}</b>}</button>)}</div>}
         <footer><time>{clock(m.created_at)}</time>{m.edited_at&&!m.deleted_at&&<span>edited</span>}{m.sender_id===me&&<span className="chat-status">{statusFor(m)}</span>}</footer>
        </div>
        {!m.deleted_at&&<div className="chat-actions"><button title="React" aria-label="React to message" onClick={()=>setReactingTo(v=>v===m.id?'':m.id)}><SmilePlus size={13}/></button><button title="Reply" onClick={()=>startReply(m)}><Reply size={13}/></button>{canChange(m)&&<button title="Edit" onClick={()=>startEdit(m)}><Pencil size={13}/></button>}{canChange(m)&&<button title="Delete" onClick={()=>void removeMessage(m)}><Trash2 size={13}/></button>}{mode==='manager'&&<button title={m.pinned_at?'Unpin':'Pin'} onClick={()=>void togglePin(m)}><Pin size={13}/></button>}</div>}
