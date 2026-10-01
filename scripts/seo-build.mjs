@@ -4,7 +4,7 @@ import {loadEnv} from 'vite';
 
 const env={...loadEnv('production',process.cwd(),''),...process.env};
 const dist=path.resolve('dist');
-const base=String(env.VITE_APP_URL||'https://www.vorlen.co.uk').replace(/\/$/,'');
+const base='https://www.vorlen.co.uk';
 const sb=env.VITE_SUPABASE_URL;
 const key=env.VITE_SUPABASE_ANON_KEY;
 const RELEASE_LASTMOD='2026-10-01';
