@@ -240,3 +240,6 @@ test('public marketing pages expose the React-safe Google Preferred Sources cont
 
 
 test('obsolete Vorlen digital-studio URLs permanently consolidate into recruitment pages',()=>{const config=JSON.parse(read('vercel.json'));const redirects=config.redirects||[];for(const source of ['/services/ai-automation','/services/web-applications','/services/web-design-development','/work/:path*']){const redirect=redirects.find(r=>r.source===source);assert.ok(redirect,'missing redirect for '+source);assert.equal(redirect.permanent,true);assert.match(redirect.destination,/^\/(?:services\/permanent-recruitment|employers)$/);}const seo=read('scripts/seo-build.mjs');assert.doesNotMatch(seo,/Independent digital studio/i);assert.match(seo,/Permanent Recruitment Agency Manchester/);assert.match(seo,/SME Recruitment Agency UK/);});
+
+
+test('specialist recruitment sectors are routed and pre-rendered for search',()=>{const app=read('src/App.tsx'),page=read('src/pages/SeoLanding.tsx'),build=read('scripts/seo-build.mjs');const routes=['/sectors/technology','/sectors/sales-business-development','/sectors/finance-accounting','/sectors/engineering'];for(const route of routes){assert.ok(app.includes(route));assert.ok(page.includes(route));assert.ok(build.includes(route));}});
