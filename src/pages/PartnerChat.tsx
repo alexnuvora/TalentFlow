@@ -103,8 +103,8 @@ export default function PartnerChat({mode}:{mode:Mode}){
  const [body,setBody]=useState(''),[files,setFiles]=useState<File[]>([]),[replyTo,setReplyTo]=useState<Message|null>(null),[editing,setEditing]=useState<Message|null>(null);
  const [partnerSearch,setPartnerSearch]=useState(''),[messageSearch,setMessageSearch]=useState(''),[searchResults,setSearchResults]=useState<Message[]>([]);
  const [showContext,setShowContext]=useState(false),[contextType,setContextType]=useState(''),[contextOptions,setContextOptions]=useState<ContextOption[]>([]),[context,setContext]=useState<ContextOption|null>(null);
- const [notifySupported,setNotifySupported]=useState(false),[now,setNow]=useState(Date.now()),[mobileSearchOpen,setMobileSearchOpen]=useState(false),[reactingTo,setReactingTo]=useState<string>(''),[reactionBusy,setReactionBusy]=useState<string>('');
- const fileRef=useRef<HTMLInputElement>(null),messagesRef=useRef<HTMLDivElement>(null),composerRef=useRef<HTMLTextAreaElement>(null),typingTimer=useRef<number|null>(null),typingRefreshTimer=useRef<number|null>(null),refreshTimer=useRef<number|null>(null),reactionPressTimer=useRef<number|null>(null),reactionPressStart=useRef<{x:number;y:number}|null>(null);
+ const [notifySupported,setNotifySupported]=useState(false),[now,setNow]=useState(Date.now()),[typingSignalUntil,setTypingSignalUntil]=useState(0),[mobileSearchOpen,setMobileSearchOpen]=useState(false),[reactingTo,setReactingTo]=useState<string>(''),[reactionBusy,setReactionBusy]=useState<string>('');
+ const fileRef=useRef<HTMLInputElement>(null),messagesRef=useRef<HTMLDivElement>(null),composerRef=useRef<HTMLTextAreaElement>(null),chatChannelRef=useRef<any>(null),typingTimer=useRef<number|null>(null),typingRefreshTimer=useRef<number|null>(null),refreshTimer=useRef<number|null>(null),reactionPressTimer=useRef<number|null>(null),reactionPressStart=useRef<{x:number;y:number}|null>(null);
 
  const selected=useMemo(()=>conversations.find(c=>c.conversation_id===conversationId)||null,[conversations,conversationId]);
  const partnerUserId=mode==='partner'?me:(selected?.partner_id||partnerId);
@@ -118,7 +118,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
  const otherStates=states.filter(s=>s.user_id!==me);
  const relevantOtherStates=mode==='manager'&&partnerUserId?otherStates.filter(s=>s.user_id===partnerUserId):otherStates;
  const otherOnline=relevantOtherStates.some(s=>now-new Date(s.last_seen_at).getTime()<75000);
- const otherTyping=relevantOtherStates.some(s=>!!s.typing_until&&new Date(s.typing_until).getTime()>now);
+ const otherTyping=typingSignalUntil>now||relevantOtherStates.some(s=>!!s.typing_until&&new Date(s.typing_until).getTime()>now);
  const pinned=messages.filter(m=>m.pinned_at&&!m.deleted_at).slice(-3);
  const visibleMessages=messageSearch.trim()?searchResults:messages;
  const filteredConversations=conversations.filter(c=>(c.partner_name||'').toLowerCase().includes(partnerSearch.trim().toLowerCase()));
