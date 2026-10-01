@@ -220,12 +220,13 @@ export default function PartnerChat({mode}:{mode:Mode}){
   const onState=(change:any)=>{const row=(change.new||change.old) as UserState|undefined;if(!row?.user_id)return reconcile();const followTyping=row.user_id!==me&&change.eventType!=='DELETE'&&!!row.typing_until&&new Date(row.typing_until).getTime()>Date.now()&&isNearChatBottom();setStates(rows=>change.eventType==='DELETE'?rows.filter(x=>x.user_id!==row.user_id):[...rows.filter(x=>x.user_id!==row.user_id),row]);if(followTyping)window.requestAnimationFrame(()=>window.requestAnimationFrame(()=>{const el=messagesRef.current;if(el)el.scrollTop=el.scrollHeight}))};
   const onReaction=(change:any)=>{const row=(change.new||change.old) as Reaction|undefined;if(!row?.id)return reconcile();setReactions(rows=>change.eventType==='DELETE'?rows.filter(x=>x.id!==row.id):[...rows.filter(x=>x.id!==row.id&&!(x.message_id===row.message_id&&x.user_id===row.user_id)),row])};
   const ch=supabase.channel(`partner-chat-db-${conversationId}`)
+   .on('broadcast',{event:'typing'},({payload}:any)=>{if(!payload||payload.user_id===me)return;const active=payload.active===true;setTypingSignalUntil(active?Date.now()+5000:0);if(active&&isNearChatBottom())window.requestAnimationFrame(()=>window.requestAnimationFrame(()=>{const el=messagesRef.current;if(el)el.scrollTop=el.scrollHeight}))})
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_messages',filter:`conversation_id=eq.${conversationId}`},onMessage)
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_message_receipts',filter:`conversation_id=eq.${conversationId}`},onReceipt)
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_chat_user_state',filter:`conversation_id=eq.${conversationId}`},onState)
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_message_reactions',filter:`conversation_id=eq.${conversationId}`},onReaction)
-   .subscribe();
-  return()=>{if(refreshTimer.current)window.clearTimeout(refreshTimer.current);void supabase.removeChannel(ch)}
+   .subscribe(status=>{if(status==='SUBSCRIBED')chatChannelRef.current=ch});
+  return()=>{if(chatChannelRef.current===ch)chatChannelRef.current=null;setTypingSignalUntil(0);if(refreshTimer.current)window.clearTimeout(refreshTimer.current);void supabase.removeChannel(ch)}
  },[conversationId,me,mode,loadConversation,refreshList,markIncoming,isNearChatBottom]);
 
  useEffect(()=>{setReactingTo('');cancelReactionPress();return()=>cancelReactionPress()},[conversationId]);
