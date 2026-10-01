@@ -225,3 +225,6 @@ test('partner chat preserves the proven pre-typing message-side behavior',()=>{c
 
 
 test('partner chat refuses sends after auth identity crosses portal roles',()=>{const chat=read('src/pages/PartnerChat.tsx');assert.match(chat,/currentUser\.id!==me/);assert.match(chat,/mode==='partner'&&currentUser\.id!==partnerUserId/);assert.match(chat,/mode==='manager'&&currentUser\.id===partnerUserId/);assert.match(chat,/signed-in session changed/);});
+
+
+test('reaction tray flips above messages when the composer would cover it',()=>{const chat=read('src/pages/PartnerChat.tsx'),css=read('src/styles.css');assert.match(chat,/roomBelow<estimatedPickerHeight\+gap&&roomAbove>roomBelow/);assert.match(chat,/reactionPickerAbove\?'above':'below'/);assert.match(css,/\.chat-reaction-picker\.above\{top:auto;bottom:calc\(100% \+ 7px\)\}/);assert.match(css,/\.chat-reaction-picker\.below\{top:calc\(100% \+ 7px\);bottom:auto\}/);});
