@@ -2,6 +2,7 @@ import {useEffect} from 'react';
 import {Link,useLocation} from 'react-router-dom';
 import {ArrowRight,BriefcaseBusiness,CheckCircle2,MapPin,Network,Search,ShieldCheck,Users} from 'lucide-react';
 import VorlenBrand from '../components/VorlenBrand';
+import GooglePreferredSource from '../components/GooglePreferredSource';
 import {setSeo} from '../lib/seo';
 
 type PageConfig={
@@ -150,7 +151,7 @@ export default function SeoLanding(){
       <section className="seo-final-cta"><div><p className="vorlen-eyebrow light">START WITH THE BRIEF</p><h2>{page.ctaTitle}</h2><p>{page.ctaCopy}</p></div><Link className="vorlen-button light" to={page.ctaTo}>{page.ctaLabel} <ArrowRight size={16}/></Link></section>
     </main>
     <footer className="vorlen-footer">
-      <div className="vorlen-footer-brand"><VorlenBrand/><p>Permanent recruitment, properly run.</p><div className="google-preferred-source"><div google-add-preferred-source-btn data-theme="dark"></div></div></div>
+      <div className="vorlen-footer-brand"><VorlenBrand/><p>Permanent recruitment, properly run.</p><div className="google-preferred-source"><GooglePreferredSource/></div></div>
       <div><strong>Employers</strong><Link to="/employers">Employer recruitment</Link><Link to="/services/permanent-recruitment">Permanent recruitment</Link><Link to="/services/candidate-sourcing">Candidate sourcing</Link><Link to="/services/recruitment-for-smes">Recruitment for SMEs</Link></div>
       <div><strong>Candidates & partners</strong><Link to="/candidates">For candidates</Link><Link to="/careers">Open opportunities</Link><Link to="/partners">Partner network</Link></div>
       <div><strong>Locations</strong><Link to="/locations/manchester">Manchester</Link><Link to="/locations/greater-manchester">Greater Manchester</Link><Link to="/contact">Contact Vorlen</Link></div>
