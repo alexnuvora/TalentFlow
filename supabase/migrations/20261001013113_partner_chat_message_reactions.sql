@@ -31,7 +31,7 @@ with check(
  user_id=(select auth.uid())
  and company_id=public.current_company_id()
  and private.partner_chat_can_access(conversation_id,(select auth.uid()))
- and exists(select 1 from public.partner_messages m where m.id=message_id and m.conversation_id=conversation_id and m.company_id=company_id and m.deleted_at is null)
+ and exists(select 1 from public.partner_messages m where m.id=partner_message_reactions.message_id and m.conversation_id=partner_message_reactions.conversation_id and m.company_id=partner_message_reactions.company_id and m.deleted_at is null)
 );
 
 drop policy if exists "partner reactions update own" on public.partner_message_reactions;
@@ -42,7 +42,7 @@ with check(
  user_id=(select auth.uid())
  and company_id=public.current_company_id()
  and private.partner_chat_can_access(conversation_id,(select auth.uid()))
- and exists(select 1 from public.partner_messages m where m.id=message_id and m.conversation_id=conversation_id and m.company_id=company_id and m.deleted_at is null)
+ and exists(select 1 from public.partner_messages m where m.id=partner_message_reactions.message_id and m.conversation_id=partner_message_reactions.conversation_id and m.company_id=partner_message_reactions.company_id and m.deleted_at is null)
 );
 
 drop policy if exists "partner reactions delete own" on public.partner_message_reactions;
