@@ -35,6 +35,16 @@ function applyInlineMarkup(el:HTMLElement,content:string){
  if(bold&&out)out='**'+out+'**';
  return out;
 }
+function plainMessagePreview(value?:string|null){
+ return String(value||'')
+  .replace(/\*\*([^*\n]+)\*\*/g,'$1')
+  .replace(/\+\+([^+\n]+)\+\+/g,'$1')
+  .replace(/\*([^*\n]+)\*/g,'$1')
+  .replace(/^\s*[-•]\s+/gm,'')
+  .replace(/^\s*\d+[.)]\s+/gm,'')
+  .replace(/\s+/g,' ')
+  .trim();
+}
 function htmlToMessageMarkup(html:string){
  const doc=new DOMParser().parseFromString(html,'text/html');
  const walk=(node:Node):string=>{
@@ -317,17 +327,17 @@ export default function PartnerChat({mode}:{mode:Mode}){
    {mode==='manager'&&<aside className={`chat-list ${conversationId?'has-selection':''}`}>
     <div className="chat-list-head"><div className="search"><Search size={15}/><input value={partnerSearch} onChange={e=>setPartnerSearch(e.target.value)} placeholder="Search partners"/></div></div>
     <div className="chat-partners">{filteredConversations.map(c=><button key={c.conversation_id} className={c.conversation_id===conversationId?'active':''} onClick={()=>{setConversationId(c.conversation_id);setPartnerId(c.partner_id);setParams(c.partner_id?{partner:c.partner_id}:{})}}>
-      <span className="chat-avatar"><span>{c.partner_name?.split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase()||'P'}</span></span><span className="chat-partner-copy"><strong>{c.partner_name}</strong><small>{String(c.specialism||'partner').replaceAll('_',' ')}</small><em>{c.last_message||'Start a conversation'}</em></span><span className="chat-list-meta"><time>{c.last_message_at?clock(c.last_message_at):''}</time>{Number(c.unread_count||0)>0&&<b>{Number(c.unread_count)>99?'99+':c.unread_count}</b>}</span>
+      <span className="chat-avatar"><span>{c.partner_name?.split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase()||'P'}</span></span><span className="chat-partner-copy"><strong>{c.partner_name}</strong><small>{String(c.specialism||'partner').replaceAll('_',' ')}</small><em>{plainMessagePreview(c.last_message)||'Start a conversation'}</em></span><span className="chat-list-meta"><time>{c.last_message_at?clock(c.last_message_at):''}</time>{Number(c.unread_count||0)>0&&<b>{Number(c.unread_count)>99?'99+':c.unread_count}</b>}</span>
      </button>)}</div>
    </aside>}
    <section className={`chat-conversation ${!conversationId?'empty-chat':''}`}>
     {!conversationId?<div className="chat-empty"><MessageCircle size={32}/><h3>Select a partner</h3><p>Choose a conversation to start messaging.</p></div>:<>
      <><header className="chat-header">{mode==='manager'&&<button className="chat-back" aria-label="Back to partner conversations" onClick={()=>setConversationId('')}><ChevronLeft size={20}/></button>}<span className="chat-avatar"><span>{headerName.split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase()}</span></span><div className="chat-header-copy"><strong>{headerName}</strong><span className={otherOnline?'online':''}>{headerSub}</span></div><div className="chat-header-actions">{notifySupported&&Notification.permission!=='granted'&&<button className="chat-header-notification" aria-label="Enable chat notifications" onClick={enableNotifications}><Bell size={17}/></button>}<div className="search chat-message-search"><Search size={14}/><input value={messageSearch} onChange={e=>void searchMessages(e.target.value)} placeholder="Search messages"/></div><button className="chat-mobile-search-toggle" aria-label={mobileSearchOpen?'Close message search':'Search messages'} aria-expanded={mobileSearchOpen} onClick={()=>setMobileSearchOpen(v=>!v)}>{mobileSearchOpen?<X size={18}/>:<Search size={18}/>}</button></div></header>{mobileSearchOpen&&<div className="chat-mobile-search"><Search size={15}/><input autoFocus value={messageSearch} onChange={e=>void searchMessages(e.target.value)} placeholder="Search messages"/></div>}</>
-     {pinned.length>0&&<div className="chat-pinned"><Pin size={14}/><div>{pinned.map(m=><button key={m.id} onClick={()=>scrollTo(m.id)}>{m.context_label||m.body||'Pinned attachment'}</button>)}</div></div>}
+     {pinned.length>0&&<div className="chat-pinned"><Pin size={14}/><div>{pinned.map(m=><button key={m.id} onClick={()=>scrollTo(m.id)}>{m.context_label||plainMessagePreview(m.body)||'Pinned attachment'}</button>)}</div></div>}
      <div ref={messagesRef} className="chat-messages">
       {hasMore&&!messageSearch&&<button className="chat-load-more" disabled={loadingMessages} onClick={()=>void loadConversation(true)}>{loadingMessages?'Loading…':'Load older messages'}</button>}
       {visibleMessages.map((m,i)=>{const previous=visibleMessages[i-1],showDay=!previous||dayKey(previous.created_at)!==dayKey(m.created_at),side=messageSide(m),reply=messages.find(x=>x.id===m.reply_to_id),atts=attachmentFor(m.id);return <div key={m.id}>{showDay&&<div className="chat-day"><span>{dayKey(m.created_at)}</span></div>}<article data-message-id={m.id} className={`chat-message ${side} ${m.pinned_at?'pinned':''} ${m.deleted_at?'deleted':''}`}>
-       <div className="chat-bubble">{m.pinned_at&&<span className="chat-pin"><Pin size={11}/> Pinned</span>}{reply&&<button className="chat-reply-preview" onClick={()=>scrollTo(reply.id)}><strong>{reply.sender_id===me?'You':mode==='partner'?'Vorlen management':selected?.partner_name||'Partner'}</strong><span>{reply.deleted_at?'Deleted message':reply.body||'Attachment'}</span></button>}
+       <div className="chat-bubble">{m.pinned_at&&<span className="chat-pin"><Pin size={11}/> Pinned</span>}{reply&&<button className="chat-reply-preview" onClick={()=>scrollTo(reply.id)}><strong>{reply.sender_id===me?'You':mode==='partner'?'Vorlen management':selected?.partner_name||'Partner'}</strong><span>{reply.deleted_at?'Deleted message':plainMessagePreview(reply.body)||'Attachment'}</span></button>}
         {m.deleted_at?<p className="chat-deleted">This message was deleted</p>:<>{m.body&&renderMessageBody(m.body)}{m.context_label&&m.context_path&&<Link className="chat-context" to={contextHref(m)}><Link2 size={14}/><span><small>{String(m.context_type||'context').replaceAll('_',' ')}</small><strong>{m.context_label}</strong></span></Link>}{atts.map(a=><a key={a.id} className={`chat-attachment ${a.mime_type.startsWith('image/')?'image':''}`} href={a.signed_url||'#'} target="_blank" rel="noreferrer">{a.mime_type.startsWith('image/')&&a.signed_url?<img src={a.signed_url} alt={a.filename}/>:a.mime_type.startsWith('image/')?<ImageIcon size={18}/>:<FileText size={18}/>}<span><strong>{a.filename}</strong><small>{size(a.size_bytes)}</small></span></a>)}</>}
         <footer><time>{clock(m.created_at)}</time>{m.edited_at&&!m.deleted_at&&<span>edited</span>}{m.sender_id===me&&<span className="chat-status">{statusFor(m)}</span>}</footer>
        </div>
@@ -336,7 +346,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
       {!visibleMessages.length&&!loadingMessages&&<div className="chat-empty small"><MessageCircle size={24}/><h3>{messageSearch?'No matching messages':'No messages yet'}</h3><p>{messageSearch?'Try another search.':'Send the first message in this private channel.'}</p></div>}
       <div className="chat-scroll-end" aria-hidden="true"/>
      </div>
-     <div className="chat-compose-wrap">{(replyTo||editing)&&<div className="chat-compose-state"><div><strong>{editing?'Editing message':'Replying to '+(replyTo?.sender_id===me?'yourself':mode==='partner'?'Vorlen management':selected?.partner_name||'partner')}</strong><span>{editing?editing.body:replyTo?.body||'Attachment'}</span></div><button onClick={()=>{setReplyTo(null);if(editing){setEditing(null);setBody('')}}}><X size={16}/></button></div>}
+     <div className="chat-compose-wrap">{(replyTo||editing)&&<div className="chat-compose-state"><div><strong>{editing?'Editing message':'Replying to '+(replyTo?.sender_id===me?'yourself':mode==='partner'?'Vorlen management':selected?.partner_name||'partner')}</strong><span>{editing?plainMessagePreview(editing.body):plainMessagePreview(replyTo?.body)||'Attachment'}</span></div><button onClick={()=>{setReplyTo(null);if(editing){setEditing(null);setBody('')}}}><X size={16}/></button></div>}
       {context&&<div className="chat-compose-context"><Link2 size={14}/><span><small>{contextType.replaceAll('_',' ')}</small><strong>{context.label}</strong></span><button onClick={()=>{setContext(null);setContextType('')}}><X size={14}/></button></div>}
       {files.length>0&&<div className="chat-file-chips">{files.map((f,i)=><span key={f.name+i}><Paperclip size={12}/>{f.name}<button onClick={()=>setFiles(v=>v.filter((_,x)=>x!==i))}><X size={12}/></button></span>)}</div>}
       {showContext&&!editing&&<div className="chat-context-picker"><select value={contextType} onChange={e=>void loadContextOptions(e.target.value)}><option value="">Choose context type…</option>{availableContextTypes.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>{contextType&&<select value={context?.id||''} onChange={e=>setContext(contextOptions.find(x=>x.id===e.target.value)||null)}><option value="">Choose item…</option>{contextOptions.map(x=><option key={x.id} value={x.id}>{x.label}</option>)}</select>}<button onClick={()=>setShowContext(false)}><X size={14}/></button></div>}
