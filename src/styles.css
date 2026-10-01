@@ -790,19 +790,32 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 .chat-rich-gap{height:7px}
 
 /* WhatsApp-style partner chat reactions */
-.chat-reaction-picker{position:absolute;z-index:20;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);display:flex;align-items:center;gap:3px;padding:6px 7px;border:1px solid #d9e2de;border-radius:999px;background:#fff;box-shadow:0 8px 24px rgba(16,32,29,.18);white-space:nowrap}
-.chat-message.out .chat-reaction-picker{left:auto;right:0;transform:none}
-.chat-message.in .chat-reaction-picker{left:0;transform:none}
-.chat-reaction-picker button{border:0;background:transparent;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:20px;cursor:pointer;transition:background .12s,transform .12s}
-.chat-reaction-picker button:hover,.chat-reaction-picker button:focus-visible{background:#eef4f1;transform:scale(1.08);outline:none}
-.chat-reaction-picker .chat-reaction-close{width:27px;height:27px;font-size:inherit;color:#62746e}
-.chat-reactions{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
-.chat-reactions button{border:1px solid #d8e2de;background:#fff;border-radius:999px;min-height:25px;padding:2px 7px;display:inline-flex;align-items:center;gap:4px;font-size:14px;cursor:pointer;box-shadow:0 1px 2px rgba(16,32,29,.06)}
-.chat-reactions button.mine{border-color:#76b9a7;background:#e8f7f2}
-.chat-reactions b{font-size:9px;color:#536761}
-.chat-message.out .chat-reactions{justify-content:flex-end}
+.chat-message-stack{position:relative;display:flex;flex-direction:column;max-width:100%}
+.chat-message.in .chat-message-stack{align-items:flex-start}
+.chat-message.out .chat-message-stack{align-items:flex-end}
+
+.chat-reaction-picker{position:absolute;z-index:30;top:calc(100% + 7px);display:flex;align-items:center;gap:4px;padding:6px 8px;border:1px solid #30383d;border-radius:999px;background:#20272b;box-shadow:0 8px 22px rgba(0,0,0,.28);white-space:nowrap}
+.chat-message.in .chat-reaction-picker{left:0}
+.chat-message.out .chat-reaction-picker{right:0}
+.chat-reaction-picker button{border:0;background:transparent;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:22px;line-height:1;cursor:pointer;transition:transform .12s,background .12s}
+.chat-reaction-picker button:hover,.chat-reaction-picker button:focus-visible{background:#313b40;transform:scale(1.08);outline:none}
+.chat-reaction-picker button:disabled{opacity:.55;cursor:default;transform:none}
+.chat-reaction-picker .chat-reaction-close{width:28px;height:28px;color:#c9d1d5;font-size:inherit}
+
+.chat-reactions{display:flex;gap:4px;margin-top:-2px;position:relative;z-index:2}
+.chat-message.in .chat-reactions{margin-left:14px}
+.chat-message.out .chat-reactions{margin-right:14px}
+.chat-reactions button{border:1px solid #31383d;background:#242b2f;border-radius:999px;min-width:36px;height:36px;padding:0 9px;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:22px;line-height:1;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,.18)}
+.chat-reactions button.mine{border-color:#48545a;background:#2b3338}
+.chat-reactions b{font-size:10px;color:#d6dde0;font-weight:700}
+.chat-reactions button:disabled{opacity:.65;cursor:default}
+
 .chat-bubble{touch-action:pan-y}
+
 @media(max-width:520px){
- .chat-reaction-picker{position:fixed;left:50%!important;right:auto!important;bottom:72px;transform:translateX(-50%)!important;max-width:calc(100vw - 18px);padding:7px 8px;box-shadow:0 10px 30px rgba(16,32,29,.24)}
- .chat-reaction-picker button{width:38px;height:38px;font-size:22px}
+ .chat-reaction-picker{top:calc(100% + 6px);bottom:auto;max-width:calc(100vw - 24px);overflow-x:auto;overscroll-behavior:contain;padding:6px 7px}
+ .chat-message.in .chat-reaction-picker{left:0;right:auto}
+ .chat-message.out .chat-reaction-picker{right:0;left:auto}
+ .chat-reaction-picker button{width:35px;height:35px;font-size:21px;flex:0 0 auto}
+ .chat-reactions button{min-width:34px;height:34px;font-size:21px}
 }
