@@ -201,11 +201,12 @@ export default function PartnerChat({mode}:{mode:Mode}){
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_messages',filter:`conversation_id=eq.${conversationId}`},schedule)
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_message_receipts',filter:`conversation_id=eq.${conversationId}`},schedule)
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_chat_user_state',filter:`conversation_id=eq.${conversationId}`},schedule)
-   .on('postgres_changes',{event:'*',schema:'public',table:'partner_message_reactions',filter:`conversation_id=eq.${conversationId}`},schedule)
+   .on('postgres_changes',{event:'*',schema:'public',table:'partner_message_reactions'},schedule)
    .subscribe();
   return()=>{if(refreshTimer.current)window.clearTimeout(refreshTimer.current);void supabase.removeChannel(ch)}
  },[conversationId,me,mode,selected?.partner_name,loadConversation,refreshList]);
 
+ useEffect(()=>{setReactingTo('');cancelReactionPress();return()=>cancelReactionPress()},[conversationId]);
  useEffect(()=>{const t=window.setInterval(()=>setNow(Date.now()),2000);setNotifySupported(typeof window!=='undefined'&&'Notification'in window);return()=>window.clearInterval(t)},[]);
 
  async function searchMessages(v:string){setMessageSearch(v);if(v.trim().length<2){setSearchResults([]);return}const{data,error:e}=await supabase.from('partner_messages').select('*').eq('conversation_id',conversationId).ilike('body',`%${v.trim().replace(/[%_]/g,'')}%`).order('created_at',{ascending:false}).limit(100);if(e)setError(e.message);else setSearchResults(((data||[]) as Message[]).reverse())}
@@ -318,13 +319,16 @@ export default function PartnerChat({mode}:{mode:Mode}){
   const existing=reactions.find(r=>r.message_id===m.id&&r.user_id===me);
   setReactingTo('');
   if(existing?.emoji===emoji){
+   setReactions(rows=>rows.filter(r=>r.id!==existing.id));
    const{error:e}=await supabase.from('partner_message_reactions').delete().eq('id',existing.id);
-   if(e)setError(e.message);
+   if(e){setError(e.message);void loadConversation(false)}
    return;
   }
+  const optimistic:Reaction={id:existing?.id||'optimistic-'+m.id,company_id:m.company_id,conversation_id:m.conversation_id,message_id:m.id,user_id:me,emoji,created_at:existing?.created_at||new Date().toISOString(),updated_at:new Date().toISOString()};
+  setReactions(rows=>[...rows.filter(r=>!(r.message_id===m.id&&r.user_id===me)),optimistic]);
   const payload={company_id:m.company_id,conversation_id:m.conversation_id,message_id:m.id,user_id:me,emoji};
   const{error:e}=await supabase.from('partner_message_reactions').upsert(payload,{onConflict:'message_id,user_id'});
-  if(e)setError(e.message);
+  if(e){setError(e.message);void loadConversation(false)}
  }
  function reactionGroups(messageId:string){
   const rows=reactions.filter(r=>r.message_id===messageId),map=new Map<string,{emoji:string;count:number;mine:boolean}>();
