@@ -231,3 +231,6 @@ test('reaction tray flips above messages when the composer would cover it',()=>{
 
 
 test('manager client vacancies deep-link to vacancy detail',()=>{const client=read('src/pages/ClientDetail.tsx'),jobs=read('src/pages/Jobs.tsx'),css=read('src/styles.css');assert.match(client,/navigate\('\/dashboard\/jobs\?job='\+encodeURIComponent\(j\.id\)\)/);assert.match(client,/client-vacancy-link/);assert.match(client,/aria-label=\{'Open vacancy '\+j\.title\}/);assert.match(jobs,/params\.get\('job'\)/);assert.match(jobs,/if\(found\)setSelected\(found\)/);assert.match(css,/\.client-vacancy-link\{width:100%/);});
+
+
+test('Vorlen public and legal registered-office copy omits street address',()=>{for(const path of ['src/pages/Landing.tsx','src/pages/SeoLanding.tsx','src/pages/Privacy.tsx','docs/RECRUITMENT-PARTNER-AGREEMENT.md','supabase/functions/client-terms/index.ts']){const source=read(path);assert.doesNotMatch(source,/10\s+South\s+Street/i,path);assert.doesNotMatch(source,/South\s+Street/i,path);assert.match(source,/Rochdale, OL16 2EP/,path);}});
