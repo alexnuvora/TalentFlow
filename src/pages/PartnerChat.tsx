@@ -168,13 +168,14 @@ export default function PartnerChat({mode}:{mode:Mode}){
   const{data:m,error:e}=await q;if(e){setError(e.message);setLoadingMessages(false);return}
   const batch=((m||[]) as Message[]).reverse(),combined=older?[...batch,...messages]:batch,setIds=combined.map(x=>x.id);
   setMessages(combined);setHasMore((m||[]).length===80);
-  const [a,r,s]=await Promise.all([
+  const [a,r,s,rx]=await Promise.all([
     setIds.length?supabase.from('partner_message_attachments').select('*').in('message_id',setIds):Promise.resolve({data:[],error:null} as any),
     setIds.length?supabase.from('partner_message_receipts').select('*').in('message_id',setIds):Promise.resolve({data:[],error:null} as any),
-    supabase.from('partner_chat_user_state').select('*').eq('conversation_id',conversationId)
+    supabase.from('partner_chat_user_state').select('*').eq('conversation_id',conversationId),
+    setIds.length?supabase.from('partner_message_reactions').select('*').in('message_id',setIds):Promise.resolve({data:[],error:null} as any)
   ]);
-  if(a.error||r.error||s.error)setError(a.error?.message||r.error?.message||s.error?.message||'Chat data could not be loaded.');
-  const signed=await signAttachments(a.data||[]);setAttachments(signed);setReceipts((r.data||[]) as Receipt[]);setStates((s.data||[]) as UserState[]);
+  if(a.error||r.error||s.error||rx.error)setError(a.error?.message||r.error?.message||s.error?.message||rx.error?.message||'Chat data could not be loaded.');
+  const signed=await signAttachments(a.data||[]);setAttachments(signed);setReceipts((r.data||[]) as Receipt[]);setStates((s.data||[]) as UserState[]);setReactions((rx.data||[]) as Reaction[]);
   await markIncoming(combined,(r.data||[]) as Receipt[]);
   setLoadingMessages(false);
   window.requestAnimationFrame(()=>window.requestAnimationFrame(()=>{
@@ -200,6 +201,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_messages',filter:`conversation_id=eq.${conversationId}`},schedule)
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_message_receipts',filter:`conversation_id=eq.${conversationId}`},schedule)
    .on('postgres_changes',{event:'*',schema:'public',table:'partner_chat_user_state',filter:`conversation_id=eq.${conversationId}`},schedule)
+   .on('postgres_changes',{event:'*',schema:'public',table:'partner_message_reactions',filter:`conversation_id=eq.${conversationId}`},schedule)
    .subscribe();
   return()=>{if(refreshTimer.current)window.clearTimeout(refreshTimer.current);void supabase.removeChannel(ch)}
  },[conversationId,me,mode,selected?.partner_name,loadConversation,refreshList]);
