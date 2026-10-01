@@ -228,3 +228,6 @@ test('partner chat refuses sends after auth identity crosses portal roles',()=>{
 
 
 test('reaction tray flips above messages when the composer would cover it',()=>{const chat=read('src/pages/PartnerChat.tsx'),css=read('src/styles.css');assert.match(chat,/roomBelow<estimatedPickerHeight\+gap&&roomAbove>roomBelow/);assert.match(chat,/reactionPickerAbove\?'above':'below'/);assert.match(css,/\.chat-reaction-picker\.above\{top:auto;bottom:calc\(100% \+ 7px\)\}/);assert.match(css,/\.chat-reaction-picker\.below\{top:calc\(100% \+ 7px\);bottom:auto\}/);});
+
+
+test('manager client vacancies deep-link to vacancy detail',()=>{const client=read('src/pages/ClientDetail.tsx'),jobs=read('src/pages/Jobs.tsx'),css=read('src/styles.css');assert.match(client,/navigate\('\/dashboard\/jobs\?job='\+encodeURIComponent\(j\.id\)\)/);assert.match(client,/client-vacancy-link/);assert.match(client,/aria-label=\{'Open vacancy '\+j\.title\}/);assert.match(jobs,/params\.get\('job'\)/);assert.match(jobs,/if\(found\)setSelected\(found\)/);assert.match(css,/\.client-vacancy-link\{width:100%/);});
