@@ -794,7 +794,8 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 .chat-message.in .chat-message-stack{align-items:flex-start}
 .chat-message.out .chat-message-stack{align-items:flex-end}
 
-.chat-reaction-picker{position:absolute;z-index:30;top:calc(100% + 7px);display:flex;align-items:center;gap:4px;padding:6px 8px;border:1px solid #e2e5e7;border-radius:999px;background:#fff;box-shadow:0 8px 22px rgba(0,0,0,.18);white-space:nowrap}
+.chat-reaction-picker{position:absolute;z-index:30;display:flex;align-items:center;gap:4px;padding:6px 8px;border:1px solid #e2e5e7;border-radius:999px;background:#fff;box-shadow:0 8px 22px rgba(0,0,0,.18);white-space:nowrap}
+.chat-reaction-picker.below{top:calc(100% + 7px);bottom:auto}.chat-reaction-picker.above{top:auto;bottom:calc(100% + 7px)}
 .chat-message.in .chat-reaction-picker{left:0}
 .chat-message.out .chat-reaction-picker{right:0}
 .chat-reaction-picker button{border:0;background:transparent;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:22px;line-height:1;cursor:pointer;transition:transform .12s,background .12s}
@@ -813,7 +814,9 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 .chat-bubble{touch-action:pan-y}
 
 @media(max-width:520px){
- .chat-reaction-picker{top:calc(100% + 6px);bottom:auto;max-width:calc(100vw - 24px);overflow-x:auto;overscroll-behavior:contain;padding:6px 7px}
+ .chat-reaction-picker{max-width:calc(100vw - 24px);overflow-x:auto;overscroll-behavior:contain;padding:6px 7px}
+ .chat-reaction-picker.below{top:calc(100% + 6px);bottom:auto}
+ .chat-reaction-picker.above{top:auto;bottom:calc(100% + 6px)}
  .chat-message.in .chat-reaction-picker{left:0;right:auto}
  .chat-message.out .chat-reaction-picker{right:0;left:auto}
  .chat-reaction-picker button{width:35px;height:35px;font-size:21px;flex:0 0 auto}
