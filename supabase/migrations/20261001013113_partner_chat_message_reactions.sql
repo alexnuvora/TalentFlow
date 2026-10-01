@@ -14,6 +14,8 @@ create table if not exists public.partner_message_reactions(
 
 create index if not exists idx_partner_message_reactions_conversation on public.partner_message_reactions(conversation_id,message_id);
 create index if not exists idx_partner_message_reactions_message on public.partner_message_reactions(message_id);
+create index if not exists idx_partner_message_reactions_company_conversation on public.partner_message_reactions(company_id,conversation_id);
+create index if not exists idx_partner_message_reactions_user on public.partner_message_reactions(user_id);
 
 alter table public.partner_message_reactions enable row level security;
 
