@@ -37,6 +37,13 @@ export default function PartnerChat({mode}:{mode:Mode}){
 
  const selected=useMemo(()=>conversations.find(c=>c.conversation_id===conversationId)||null,[conversations,conversationId]);
  const partnerUserId=mode==='partner'?me:(selected?.partner_id||partnerId);
+ const recipientSpecialism=mode==='manager'?String(selected?.specialism||''):String(access.partnerSpecialism||'');
+ const recipientCanClient=mode==='partner'?access.partnerCanDevelopClients:['b2b_advisor','lead_closer','hybrid'].includes(recipientSpecialism);
+ const recipientCanClose=mode==='partner'?access.partnerCanCloseClients:['lead_closer','hybrid'].includes(recipientSpecialism);
+ const recipientCanSource=mode==='partner'?access.partnerCanSourceCandidates:['candidate_sourcer','hybrid'].includes(recipientSpecialism);
+ const recipientCanDelivery=recipientCanClose||recipientCanSource;
+ const availableContextTypes=contextTypes.filter(([v])=>v==='task'||v==='placement'||v==='commission'||(v==='client'&&recipientCanClient)||(v==='job'&&recipientCanDelivery)||(v==='candidate'&&recipientCanSource)||(v==='application'&&recipientCanDelivery)||(v==='submission'&&recipientCanSource)||(v==='handoff'&&recipientCanClose));
+
  const otherStates=states.filter(s=>s.user_id!==me);
  const relevantOtherStates=mode==='manager'&&partnerUserId?otherStates.filter(s=>s.user_id===partnerUserId):otherStates;
  const otherOnline=relevantOtherStates.some(s=>now-new Date(s.last_seen_at).getTime()<75000);
@@ -130,17 +137,48 @@ export default function PartnerChat({mode}:{mode:Mode}){
 
  async function searchMessages(v:string){setMessageSearch(v);if(v.trim().length<2){setSearchResults([]);return}const{data,error:e}=await supabase.from('partner_messages').select('*').eq('conversation_id',conversationId).ilike('body',`%${v.trim().replace(/[%_]/g,'')}%`).order('created_at',{ascending:false}).limit(100);if(e)setError(e.message);else setSearchResults(((data||[]) as Message[]).reverse())}
 
- async function loadContextOptions(type:string){setContextType(type);setContext(null);setContextOptions([]);if(!type)return;if(type==='task'){setContextOptions([{id:'work-queue',label:'Work queue',path:mode==='partner'?'/dashboard/partner/tasks':'/dashboard/partner-management'}]);return}
+ async function loadContextOptions(type:string){
+  setContextType(type);setContext(null);setContextOptions([]);
+  if(!type)return;
+  if(!availableContextTypes.some(([v])=>v===type)){setError('This linked record type is not available to the selected partner role.');return}
+  if(type==='task'){setContextOptions([{id:'work-queue',label:'Work queue',path:mode==='partner'?'/dashboard/partner/tasks':'/dashboard/partner-management'}]);return}
   const configs:any={
-   client:{table:'clients',select:'id,company_name',label:(x:any)=>x.company_name,path:(x:any)=>mode==='partner'?`/dashboard/partner/clients?client=${x.id}`:`/dashboard/clients/${x.id}`},
-   job:{table:'jobs',select:'id,title',label:(x:any)=>x.title,path:(x:any)=>mode==='partner'?`/dashboard/partner/vacancies?job=${x.id}`:'/dashboard/jobs'},
-   candidate:{table:'candidates',select:'id,full_name',label:(x:any)=>x.full_name,path:(x:any)=>mode==='partner'?`/dashboard/partner/candidates/${x.id}`:`/dashboard/candidates/${x.id}`},
-   application:{table:'applications',select:'id,status',label:(x:any)=>`Application · ${String(x.id).slice(0,8)} · ${x.status}`,path:()=>mode==='partner'?'/dashboard/partner/applications':'/dashboard/applications'},
-   submission:{table:'partner_submission_packs',select:'id,status',label:(x:any)=>`Submission pack · ${String(x.id).slice(0,8)} · ${x.status}`,path:()=>mode==='partner'?'/dashboard/partner/talent':'/dashboard/partner-management'},
-   handoff:{table:'partner_commercial_handoffs',select:'id,status',label:(x:any)=>`Commercial handoff · ${String(x.id).slice(0,8)} · ${x.status}`,path:()=>mode==='partner'?'/dashboard/partner/handoffs':'/dashboard/partner-management'},
-   placement:{table:'placements',select:'id,start_date',label:(x:any)=>`Placement · ${String(x.id).slice(0,8)}${x.start_date?' · '+x.start_date:''}`,path:()=>mode==='partner'?'/dashboard/partner/earnings':'/dashboard/commercial'},
-   commission:{table:'partner_commissions',select:'id,amount,status',label:(x:any)=>`Commission · £${Number(x.amount||0).toFixed(2)} · ${x.status}`,path:()=>mode==='partner'?'/dashboard/partner/earnings':'/dashboard/commercial'}
-  };const c=configs[type];if(!c)return;const{data,error:e}=await supabase.from(c.table).select(c.select).limit(100);if(e){setError('Context items could not be loaded: '+e.message);return}setContextOptions((data||[]).map((x:any)=>({id:x.id,label:c.label(x),path:c.path(x)})))}
+   client:{table:'clients',select:'id,company_name',label:(x:any)=>x.company_name,path:(x:any)=>mode==='partner'?'/dashboard/partner/clients?client='+x.id:'/dashboard/clients/'+x.id},
+   job:{table:'jobs',select:'id,title,client_id',label:(x:any)=>x.title,path:(x:any)=>mode==='partner'?'/dashboard/partner/vacancies?job='+x.id:'/dashboard/jobs?job='+x.id},
+   candidate:{table:'candidates',select:'id,full_name',label:(x:any)=>x.full_name,path:(x:any)=>mode==='partner'?'/dashboard/partner/candidates/'+x.id:'/dashboard/candidates/'+x.id},
+   application:{table:'applications',select:'id,status,job_id,candidate_id',label:(x:any)=>'Application · '+String(x.id).slice(0,8)+' · '+x.status,path:(x:any)=>mode==='partner'?'/dashboard/partner/applications?application='+x.id:'/dashboard/applications?application='+x.id},
+   submission:{table:'partner_submission_packs',select:'id,status,partner_id',label:(x:any)=>'Submission pack · '+String(x.id).slice(0,8)+' · '+x.status,path:(x:any)=>mode==='partner'?'/dashboard/partner/talent?submission='+x.id:'/dashboard/partner-management'},
+   handoff:{table:'partner_commercial_handoffs',select:'id,status,partner_id',label:(x:any)=>'Commercial handoff · '+String(x.id).slice(0,8)+' · '+x.status,path:(x:any)=>mode==='partner'?'/dashboard/partner/handoffs?handoff='+x.id:'/dashboard/partner-management'},
+   placement:{table:'placements',select:'id,start_date',label:(x:any)=>'Placement · '+String(x.id).slice(0,8)+(x.start_date?' · '+x.start_date:''),path:(x:any)=>mode==='partner'?'/dashboard/partner/earnings?placement='+x.id:'/dashboard/commercial?placement='+x.id},
+   commission:{table:'partner_commissions',select:'id,amount,status,partner_user_id',label:(x:any)=>'Commission · £'+Number(x.amount||0).toFixed(2)+' · '+x.status,path:(x:any)=>mode==='partner'?'/dashboard/partner/earnings?commission='+x.id:'/dashboard/commercial?commission='+x.id}
+  };
+  const c=configs[type];if(!c)return;
+  const{data,error:e}=await supabase.from(c.table).select(c.select).limit(150);
+  if(e){setError('Context items could not be loaded: '+e.message);return}
+  let rows=(data||[]) as any[];
+  if(mode==='manager'&&partnerUserId){
+   if(type==='submission'||type==='handoff')rows=rows.filter(x=>x.partner_id===partnerUserId);
+   else if(type==='commission')rows=rows.filter(x=>x.partner_user_id===partnerUserId);
+   else if(['client','job','candidate','application','placement'].includes(type)){
+    const[{data:assignments,error:assignmentError},{data:pipeline,error:pipelineError},{data:attrs,error:attrError}]=await Promise.all([
+     supabase.from('partner_assignments').select('client_id,job_id,candidate_id').eq('partner_id',partnerUserId).is('completed_at',null),
+     supabase.from('partner_candidate_pipeline').select('job_id,candidate_id').eq('partner_id',partnerUserId),
+     supabase.from('partner_attributions').select('placement_id').eq('partner_id',partnerUserId).eq('status','active')
+    ]);
+    if(assignmentError||pipelineError||attrError){setError('Partner-scoped context could not be verified. No record was linked.');return}
+    const clientIds=new Set((assignments||[]).map((x:any)=>x.client_id).filter(Boolean));
+    const jobIds=new Set([...(assignments||[]).map((x:any)=>x.job_id),...(pipeline||[]).map((x:any)=>x.job_id)].filter(Boolean));
+    const candidateIds=new Set([...(assignments||[]).map((x:any)=>x.candidate_id),...(pipeline||[]).map((x:any)=>x.candidate_id)].filter(Boolean));
+    const placementIds=new Set((attrs||[]).map((x:any)=>x.placement_id).filter(Boolean));
+    if(type==='client')rows=rows.filter(x=>clientIds.has(x.id));
+    if(type==='job')rows=rows.filter(x=>jobIds.has(x.id)||clientIds.has(x.client_id));
+    if(type==='candidate')rows=rows.filter(x=>candidateIds.has(x.id));
+    if(type==='application')rows=rows.filter(x=>jobIds.has(x.job_id)||candidateIds.has(x.candidate_id));
+    if(type==='placement')rows=rows.filter(x=>placementIds.has(x.id));
+   }
+  }
+  setContextOptions(rows.map((x:any)=>({id:x.id,label:c.label(x),path:c.path(x)})));
+ }
 
  function contextHref(m:Message){
   if(!m.context_type)return m.context_path||'#';
@@ -231,7 +269,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
      <div className="chat-compose-wrap">{(replyTo||editing)&&<div className="chat-compose-state"><div><strong>{editing?'Editing message':'Replying to '+(replyTo?.sender_id===me?'yourself':mode==='partner'?'Vorlen management':selected?.partner_name||'partner')}</strong><span>{editing?editing.body:replyTo?.body||'Attachment'}</span></div><button onClick={()=>{setReplyTo(null);if(editing){setEditing(null);setBody('')}}}><X size={16}/></button></div>}
       {context&&<div className="chat-compose-context"><Link2 size={14}/><span><small>{contextType.replaceAll('_',' ')}</small><strong>{context.label}</strong></span><button onClick={()=>{setContext(null);setContextType('')}}><X size={14}/></button></div>}
       {files.length>0&&<div className="chat-file-chips">{files.map((f,i)=><span key={f.name+i}><Paperclip size={12}/>{f.name}<button onClick={()=>setFiles(v=>v.filter((_,x)=>x!==i))}><X size={12}/></button></span>)}</div>}
-      {showContext&&!editing&&<div className="chat-context-picker"><select value={contextType} onChange={e=>void loadContextOptions(e.target.value)}><option value="">Choose context type…</option>{contextTypes.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>{contextType&&<select value={context?.id||''} onChange={e=>setContext(contextOptions.find(x=>x.id===e.target.value)||null)}><option value="">Choose item…</option>{contextOptions.map(x=><option key={x.id} value={x.id}>{x.label}</option>)}</select>}<button onClick={()=>setShowContext(false)}><X size={14}/></button></div>}
+      {showContext&&!editing&&<div className="chat-context-picker"><select value={contextType} onChange={e=>void loadContextOptions(e.target.value)}><option value="">Choose context type…</option>{availableContextTypes.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>{contextType&&<select value={context?.id||''} onChange={e=>setContext(contextOptions.find(x=>x.id===e.target.value)||null)}><option value="">Choose item…</option>{contextOptions.map(x=><option key={x.id} value={x.id}>{x.label}</option>)}</select>}<button onClick={()=>setShowContext(false)}><X size={14}/></button></div>}
       <div className="chat-compose"><input ref={fileRef} hidden type="file" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.pdf,.txt,.doc,.docx,.xls,.xlsx" onChange={e=>{chooseFiles(e.target.files);e.target.value=''}}/><button title="Attach file" disabled={!!editing} onClick={()=>fileRef.current?.click()}><Paperclip size={19}/></button><button title="Link Vorlen record" disabled={!!editing} onClick={()=>setShowContext(v=>!v)}><Link2 size={18}/></button><textarea ref={composerRef} rows={1} maxLength={8000} value={body} onChange={e=>typeBody(e.target.value)} onInput={e=>{const el=e.currentTarget;el.style.height='40px';el.style.height=Math.min(el.scrollHeight,96)+'px'}} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void sendMessage()}}} placeholder={editing?'Edit message…':'Type a message…'}/><button className="chat-send" disabled={sending||(!body.trim()&&!files.length)} onClick={()=>void sendMessage()}><Send size={18}/></button></div>
       <small className="chat-compose-note">Enter to send · Shift+Enter for a new line · files up to 10 MB</small>
      </div>
