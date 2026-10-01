@@ -149,9 +149,9 @@ export default function PartnerChat({mode}:{mode:Mode}){
    const paths:Record<string,string>={
     client:'/dashboard/partner/clients?client='+id,
     job:'/dashboard/partner/vacancies?job='+id,
-    candidate:'/dashboard/partner/candidates/'+id,
+    candidate:access.partnerCanSourceCandidates?'/dashboard/partner/candidates/'+id:'/dashboard/partner/applications?candidate='+id,
     application:'/dashboard/partner/applications?application='+id,
-    submission:'/dashboard/partner/talent?submission='+id,
+    submission:access.partnerCanSourceCandidates?'/dashboard/partner/talent?submission='+id:'/dashboard/partner/applications',
     handoff:'/dashboard/partner/handoffs?handoff='+id,
     placement:'/dashboard/partner/earnings?placement='+id,
     commission:'/dashboard/partner/earnings?commission='+id,
