@@ -234,3 +234,6 @@ test('manager client vacancies deep-link to vacancy detail',()=>{const client=re
 
 
 test('Vorlen public and legal registered-office copy omits street address',()=>{for(const path of ['src/pages/Landing.tsx','src/pages/SeoLanding.tsx','src/pages/Privacy.tsx','docs/RECRUITMENT-PARTNER-AGREEMENT.md','supabase/functions/client-terms/index.ts']){const source=read(path);assert.doesNotMatch(source,/10\s+South\s+Street/i,path);assert.doesNotMatch(source,/South\s+Street/i,path);assert.match(source,/Rochdale, OL16 2EP/,path);}});
+
+
+test('public marketing pages expose the official Google Preferred Sources control',()=>{const index=read('index.html'),landing=read('src/pages/Landing.tsx'),seo=read('src/pages/SeoLanding.tsx');assert.match(index,/https:\/\/news\.google\.com\/swg\/js\/v1\/publisher\.js/);for(const source of [landing,seo]){assert.match(source,/google-add-preferred-source-btn/);assert.match(source,/data-theme="dark"/);}});
