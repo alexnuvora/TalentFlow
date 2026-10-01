@@ -196,15 +196,36 @@ export default function PartnerChat({mode}:{mode:Mode}){
 
  useEffect(()=>{if(mode!=='manager'||!me)return;const ch=supabase.channel('partner-chat-manager-list-'+me).on('postgres_changes',{event:'INSERT',schema:'public',table:'partner_messages'},()=>void refreshList()).subscribe();return()=>{void supabase.removeChannel(ch)}},[mode,me,refreshList]);
 
- useEffect(()=>{if(!conversationId||!me)return;const schedule=()=>{if(refreshTimer.current)window.clearTimeout(refreshTimer.current);refreshTimer.current=window.setTimeout(()=>{void loadConversation(false);if(mode==='manager')void refreshList()},120)};
+ useEffect(()=>{if(!conversationId||!me)return;
+  const scrollIfFollowing=()=>{if(!isNearChatBottom())return;window.requestAnimationFrame(()=>window.requestAnimationFrame(()=>{const el=messagesRef.current;if(el)el.scrollTop=el.scrollHeight}))};
+  const reconcile=()=>{if(refreshTimer.current)window.clearTimeout(refreshTimer.current);refreshTimer.current=window.setTimeout(()=>void loadConversation(false),120)};
+  const onMessage=(change:any)=>{
+   const row=(change.new||change.old) as Message|undefined;
+   if(!row?.id)return reconcile();
+   if(change.eventType==='DELETE'){setMessages(rows=>rows.filter(x=>x.id!==row.id));return}
+   setMessages(rows=>{
+    const index=rows.findIndex(x=>x.id===row.id);
+    if(index>=0){const next=[...rows];next[index]={...next[index],...row};return next}
+    if(change.eventType==='INSERT')return [...rows,row].sort((a,b)=>new Date(a.created_at).getTime()-new Date(b.created_at).getTime());
+    return rows;
+   });
+   if(change.eventType==='INSERT'){
+    scrollIfFollowing();
+    if(row.sender_id!==me)void markIncoming([row],receipts);
+    if(mode==='manager')void refreshList();
+   }
+  };
+  const onReceipt=(change:any)=>{const row=(change.new||change.old) as Receipt|undefined;if(!row?.message_id)return reconcile();setReceipts(rows=>change.eventType==='DELETE'?rows.filter(x=>!(x.message_id===row.message_id&&x.user_id===row.user_id)):[...rows.filter(x=>!(x.message_id===row.message_id&&x.user_id===row.user_id)),row])};
+  const onState=(change:any)=>{const row=(change.new||change.old) as UserState|undefined;if(!row?.user_id)return reconcile();setStates(rows=>change.eventType==='DELETE'?rows.filter(x=>x.user_id!==row.user_id):[...rows.filter(x=>x.user_id!==row.user_id),row])};
+  const onReaction=(change:any)=>{const row=(change.new||change.old) as Reaction|undefined;if(!row?.id)return reconcile();setReactions(rows=>change.eventType==='DELETE'?rows.filter(x=>x.id!==row.id):[...rows.filter(x=>x.id!==row.id&&!(x.message_id===row.message_id&&x.user_id===row.user_id)),row])};
   const ch=supabase.channel(`partner-chat-db-${conversationId}-${me}`)
-   .on('postgres_changes',{event:'*',schema:'public',table:'partner_messages',filter:`conversation_id=eq.${conversationId}`},schedule)
-   .on('postgres_changes',{event:'*',schema:'public',table:'partner_message_receipts',filter:`conversation_id=eq.${conversationId}`},schedule)
-   .on('postgres_changes',{event:'*',schema:'public',table:'partner_chat_user_state',filter:`conversation_id=eq.${conversationId}`},schedule)
-   .on('postgres_changes',{event:'*',schema:'public',table:'partner_message_reactions'},schedule)
+   .on('postgres_changes',{event:'*',schema:'public',table:'partner_messages',filter:`conversation_id=eq.${conversationId}`},onMessage)
+   .on('postgres_changes',{event:'*',schema:'public',table:'partner_message_receipts',filter:`conversation_id=eq.${conversationId}`},onReceipt)
+   .on('postgres_changes',{event:'*',schema:'public',table:'partner_chat_user_state',filter:`conversation_id=eq.${conversationId}`},onState)
+   .on('postgres_changes',{event:'*',schema:'public',table:'partner_message_reactions',filter:`conversation_id=eq.${conversationId}`},onReaction)
    .subscribe();
   return()=>{if(refreshTimer.current)window.clearTimeout(refreshTimer.current);void supabase.removeChannel(ch)}
- },[conversationId,me,mode,selected?.partner_name,loadConversation,refreshList]);
+ },[conversationId,me,mode,loadConversation,refreshList,markIncoming,receipts,isNearChatBottom]);
 
  useEffect(()=>{setReactingTo('');cancelReactionPress();return()=>cancelReactionPress()},[conversationId]);
  useEffect(()=>{if(!reactingTo)return;const close=(e:PointerEvent)=>{const target=e.target as HTMLElement;if(target.closest('.chat-reaction-picker,.chat-actions,.chat-reactions'))return;setReactingTo('')};document.addEventListener('pointerdown',close,true);return()=>document.removeEventListener('pointerdown',close,true)},[reactingTo]);
@@ -307,9 +328,10 @@ export default function PartnerChat({mode}:{mode:Mode}){
   const payload:any={conversation_id:conversationId,company_id:access.companyId,sender_id:me,body:body.trim(),message_type:files.length?'attachment':'text',reply_to_id:replyTo?.id||null};
   if(context){payload.context_type=contextType;payload.context_id=contextType==='task'?null:context.id;payload.context_label=context.label;payload.context_path=context.path}
   const{data:m,error:e}=await supabase.from('partner_messages').insert(payload).select('*').single();if(e||!m){setSending(false);setError(e?.message||'Message could not be sent.');return}
+  if(!files.length){setMessages(rows=>rows.some(x=>x.id===m.id)?rows:[...rows,m as Message]);window.requestAnimationFrame(()=>window.requestAnimationFrame(()=>{const el=messagesRef.current;if(el)el.scrollTop=el.scrollHeight}))}
   const uploaded:string[]=[],attachmentRows:string[]=[];try{for(const f of files){const path=`${access.companyId}/${conversationId}/${m.id}/${crypto.randomUUID()}-${safeName(f.name)}`;const up=await supabase.storage.from('partner-chat').upload(path,f,{contentType:f.type,upsert:false});if(up.error)throw up.error;uploaded.push(path);const row=await supabase.from('partner_message_attachments').insert({company_id:access.companyId,conversation_id:conversationId,message_id:m.id,uploaded_by:me,storage_path:path,filename:f.name,mime_type:f.type,size_bytes:f.size}).select('id').single();if(row.error)throw row.error;if(row.data?.id)attachmentRows.push(row.data.id)}}
   catch(err){if(uploaded.length)await supabase.storage.from('partner-chat').remove(uploaded);if(attachmentRows.length)await supabase.from('partner_message_attachments').delete().in('id',attachmentRows);await supabase.from('partner_messages').update({deleted_at:new Date().toISOString()}).eq('id',m.id);setSending(false);setError(err instanceof Error?err.message:'Attachment upload failed.');return}
-  setBody('');setFiles([]);setReplyTo(null);setContext(null);setContextType('');setShowContext(false);await touchState(false);setSending(false);await loadConversation(false,true);if(mode==='manager')await refreshList();
+  setBody('');setFiles([]);setReplyTo(null);setContext(null);setContextType('');setShowContext(false);void touchState(false);setSending(false);if(files.length)await loadConversation(false,true);if(mode==='manager')void refreshList();
  }
 
  async function removeMessage(m:Message){if(!confirm('Delete this message? The audit record will be retained.'))return;const{error:e}=await supabase.from('partner_messages').update({deleted_at:new Date().toISOString()}).eq('id',m.id);if(e)setError(e.message);else toast('Message deleted.')}
