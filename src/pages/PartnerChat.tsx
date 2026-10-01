@@ -142,6 +142,36 @@ export default function PartnerChat({mode}:{mode:Mode}){
    commission:{table:'partner_commissions',select:'id,amount,status',label:(x:any)=>`Commission · £${Number(x.amount||0).toFixed(2)} · ${x.status}`,path:()=>mode==='partner'?'/dashboard/partner/earnings':'/dashboard/commercial'}
   };const c=configs[type];if(!c)return;const{data,error:e}=await supabase.from(c.table).select(c.select).limit(100);if(e){setError('Context items could not be loaded: '+e.message);return}setContextOptions((data||[]).map((x:any)=>({id:x.id,label:c.label(x),path:c.path(x)})))}
 
+ function contextHref(m:Message){
+  if(!m.context_type)return m.context_path||'#';
+  const id=encodeURIComponent(String(m.context_id||''));
+  if(mode==='partner'){
+   const paths:Record<string,string>={
+    client:'/dashboard/partner/clients?client='+id,
+    job:'/dashboard/partner/vacancies?job='+id,
+    candidate:'/dashboard/partner/candidates/'+id,
+    application:'/dashboard/partner/applications?application='+id,
+    submission:'/dashboard/partner/talent?submission='+id,
+    handoff:'/dashboard/partner/handoffs?handoff='+id,
+    placement:'/dashboard/partner/earnings?placement='+id,
+    commission:'/dashboard/partner/earnings?commission='+id,
+    task:'/dashboard/partner/tasks'
+   };
+   return paths[m.context_type]||m.context_path||'/dashboard/partner';
+  }
+  const paths:Record<string,string>={
+   client:'/dashboard/clients/'+id,
+   job:'/dashboard/jobs?job='+id,
+   candidate:'/dashboard/candidates/'+id,
+   application:'/dashboard/applications?application='+id,
+   submission:'/dashboard/partner-management',
+   handoff:'/dashboard/partner-management',
+   placement:'/dashboard/commercial?placement='+id,
+   commission:'/dashboard/commercial?commission='+id,
+   task:'/dashboard/partner-management'
+  };
+  return paths[m.context_type]||m.context_path||'/dashboard';
+ }
  function chooseFiles(list:FileList|null){if(!list)return;const accepted:File[]=[];for(const f of Array.from(list)){if(f.size>maxFile){toast(`${f.name} is larger than 10 MB.`,{tone:'error'});continue}if(!allowedTypes.has(f.type)){toast(`${f.name} is not a supported image, PDF or Office document.`,{tone:'error'});continue}accepted.push(f)}setFiles(v=>[...v,...accepted].slice(0,5))}
 
  function typeBody(v:string){setBody(v);if(editing)return;if(typingTimer.current)window.clearTimeout(typingTimer.current);void touchState(true);typingTimer.current=window.setTimeout(()=>void touchState(false),4800)}
@@ -190,7 +220,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
       {hasMore&&!messageSearch&&<button className="chat-load-more" disabled={loadingMessages} onClick={()=>void loadConversation(true)}>{loadingMessages?'Loading…':'Load older messages'}</button>}
       {visibleMessages.map((m,i)=>{const previous=visibleMessages[i-1],showDay=!previous||dayKey(previous.created_at)!==dayKey(m.created_at),side=messageSide(m),reply=messages.find(x=>x.id===m.reply_to_id),atts=attachmentFor(m.id);return <div key={m.id}>{showDay&&<div className="chat-day"><span>{dayKey(m.created_at)}</span></div>}<article data-message-id={m.id} className={`chat-message ${side} ${m.pinned_at?'pinned':''} ${m.deleted_at?'deleted':''}`}>
        <div className="chat-bubble">{m.pinned_at&&<span className="chat-pin"><Pin size={11}/> Pinned</span>}{reply&&<button className="chat-reply-preview" onClick={()=>scrollTo(reply.id)}><strong>{reply.sender_id===me?'You':mode==='partner'?'Vorlen management':selected?.partner_name||'Partner'}</strong><span>{reply.deleted_at?'Deleted message':reply.body||'Attachment'}</span></button>}
-        {m.deleted_at?<p className="chat-deleted">This message was deleted</p>:<>{m.body&&renderMessageBody(m.body)}{m.context_label&&m.context_path&&<Link className="chat-context" to={m.context_path}><Link2 size={14}/><span><small>{String(m.context_type||'context').replaceAll('_',' ')}</small><strong>{m.context_label}</strong></span></Link>}{atts.map(a=><a key={a.id} className={`chat-attachment ${a.mime_type.startsWith('image/')?'image':''}`} href={a.signed_url||'#'} target="_blank" rel="noreferrer">{a.mime_type.startsWith('image/')&&a.signed_url?<img src={a.signed_url} alt={a.filename}/>:a.mime_type.startsWith('image/')?<ImageIcon size={18}/>:<FileText size={18}/>}<span><strong>{a.filename}</strong><small>{size(a.size_bytes)}</small></span></a>)}</>}
+        {m.deleted_at?<p className="chat-deleted">This message was deleted</p>:<>{m.body&&renderMessageBody(m.body)}{m.context_label&&m.context_path&&<Link className="chat-context" to={contextHref(m)}><Link2 size={14}/><span><small>{String(m.context_type||'context').replaceAll('_',' ')}</small><strong>{m.context_label}</strong></span></Link>}{atts.map(a=><a key={a.id} className={`chat-attachment ${a.mime_type.startsWith('image/')?'image':''}`} href={a.signed_url||'#'} target="_blank" rel="noreferrer">{a.mime_type.startsWith('image/')&&a.signed_url?<img src={a.signed_url} alt={a.filename}/>:a.mime_type.startsWith('image/')?<ImageIcon size={18}/>:<FileText size={18}/>}<span><strong>{a.filename}</strong><small>{size(a.size_bytes)}</small></span></a>)}</>}
         <footer><time>{clock(m.created_at)}</time>{m.edited_at&&!m.deleted_at&&<span>edited</span>}{m.sender_id===me&&<span className="chat-status">{statusFor(m)}</span>}</footer>
        </div>
        {!m.deleted_at&&<div className="chat-actions"><button title="Reply" onClick={()=>startReply(m)}><Reply size={13}/></button>{canChange(m)&&<button title="Edit" onClick={()=>startEdit(m)}><Pencil size={13}/></button>}{canChange(m)&&<button title="Delete" onClick={()=>void removeMessage(m)}><Trash2 size={13}/></button>}{mode==='manager'&&<button title={m.pinned_at?'Unpin':'Pin'} onClick={()=>void togglePin(m)}><Pin size={13}/></button>}</div>}
