@@ -845,3 +845,15 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 @media(max-width:520px){
  .chat-shell{border-radius:0}
 }
+
+
+/* Realtime typing indicator */
+.chat-typing-row{display:flex;justify-content:flex-start;align-items:flex-end;padding:1px 0 3px;min-height:34px}
+.chat-typing-bubble{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:52px;height:32px;padding:0 12px;border-radius:12px;background:#fff;box-shadow:0 1px 2px rgba(16,32,29,.12)}
+.chat-typing-bubble span{width:6px;height:6px;border-radius:50%;background:currentColor;color:#87938f;opacity:.45;animation:chat-typing-dot 1.2s ease-in-out infinite}
+.chat-typing-bubble span:nth-child(2){animation-delay:.15s}
+.chat-typing-bubble span:nth-child(3){animation-delay:.3s}
+@keyframes chat-typing-dot{0%,60%,100%{transform:translateY(0);opacity:.45}30%{transform:translateY(-4px);opacity:1}}
+@media(prefers-reduced-motion:reduce){
+ .chat-typing-bubble span{animation:none;opacity:.7}
+}
