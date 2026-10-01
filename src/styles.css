@@ -819,3 +819,29 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
  .chat-reaction-picker button{width:35px;height:35px;font-size:21px;flex:0 0 auto}
  .chat-reactions button{min-width:27px;height:27px;font-size:16px}
 }
+
+
+/* Partner chat immersive mobile viewport */
+@media(max-width:850px){
+ .app-shell:has(.chat-page) .main{min-height:0;padding-bottom:0!important}
+ .chat-page{padding:0!important;min-height:0}
+ .chat-page-head{display:none!important}
+ .chat-page>.alert{margin:8px}
+ .chat-shell{
+  width:100%;
+  height:calc(100dvh - var(--mobile-chat-top-offset, 72px));
+  min-height:0;
+  border-left:0;
+  border-right:0;
+  border-radius:0;
+  box-shadow:none;
+  overflow:hidden
+ }
+ .chat-conversation{height:100%;min-height:0}
+ .chat-header{position:relative;z-index:4}
+ .chat-messages{flex:1 1 auto;min-height:0;overflow-y:auto}
+ .chat-compose-wrap{position:relative;z-index:4;background:#fff}
+}
+@media(max-width:520px){
+ .chat-shell{border-radius:0}
+}
