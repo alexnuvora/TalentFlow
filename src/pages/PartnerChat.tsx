@@ -22,6 +22,19 @@ const dayKey=(v:string)=>new Date(v).toLocaleDateString('en-GB',{day:'numeric',m
 const safeName=(v:string)=>v.replace(/[^a-zA-Z0-9._-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,120)||'file';
 const size=(n:number)=>n<1024?`${n} B`:n<1024*1024?`${(n/1024).toFixed(1)} KB`:`${(n/1024/1024).toFixed(1)} MB`;
 const urlPattern=/(https?:\/\/[^\s<]+[^\s<.,:;!?'"\])}])/gi;
+function applyInlineMarkup(el:HTMLElement,content:string){
+ const tag=el.tagName.toLowerCase(),style=el.style;
+ const weight=String(style.fontWeight||'').toLowerCase(),numericWeight=Number.parseInt(weight,10);
+ const bold=tag==='strong'||tag==='b'||weight==='bold'||weight==='bolder'||(!Number.isNaN(numericWeight)&&numericWeight>=600);
+ const italic=tag==='em'||tag==='i'||String(style.fontStyle||'').toLowerCase()==='italic';
+ const decoration=(style.textDecoration||style.textDecorationLine||'').toLowerCase();
+ const underline=tag==='u'||decoration.includes('underline');
+ let out=content;
+ if(underline&&out)out='++'+out+'++';
+ if(italic&&out)out='*'+out+'*';
+ if(bold&&out)out='**'+out+'**';
+ return out;
+}
 function htmlToMessageMarkup(html:string){
  const doc=new DOMParser().parseFromString(html,'text/html');
  const walk=(node:Node):string=>{
@@ -29,29 +42,34 @@ function htmlToMessageMarkup(html:string){
   if(node.nodeType!==Node.ELEMENT_NODE)return'';
   const el=node as HTMLElement,tag=el.tagName.toLowerCase(),children=()=>Array.from(el.childNodes).map(walk).join('');
   if(tag==='br')return'\n';
-  if(tag==='strong'||tag==='b')return'**'+children()+'**';
-  if(tag==='em'||tag==='i')return'*'+children()+'*';
-  if(tag==='u')return'++'+children()+'++';
   if(tag==='a'){const label=children().trim(),href=el.getAttribute('href')||'';return href&&(label!==href)?label+' ('+href+')':label||href}
   if(tag==='ul')return Array.from(el.children).filter(x=>x.tagName.toLowerCase()==='li').map(x=>'- '+walk(x).trim()).join('\n')+'\n';
   if(tag==='ol')return Array.from(el.children).filter(x=>x.tagName.toLowerCase()==='li').map((x,i)=>(i+1)+'. '+walk(x).trim()).join('\n')+'\n';
   if(tag==='li')return children();
   if(/^h[1-6]$/.test(tag))return'**'+children().trim()+'**\n';
-  if(tag==='p'||tag==='div')return children().trimEnd()+'\n';
-  return children();
+  if(tag==='p'||tag==='div'){
+   const content=children().trimEnd();
+   return applyInlineMarkup(el,content)+'\n';
+  }
+  return applyInlineMarkup(el,children());
  };
  return walk(doc.body).replace(/\n{3,}/g,'\n\n').trim();
 }
-function renderInline(text:string,keyBase:string){
- const tokenPattern=/(https?:\/\/[^\s<]+[^\s<.,:;!?'"\])}]|\*\*[^*\n]+\*\*|\+\+[^+\n]+\+\+|\*[^*\n]+\*)/gi;
- return text.split(tokenPattern).filter(Boolean).map((part,i)=>{
-  const key=keyBase+'-'+i;
-  if(/^https?:\/\//i.test(part))return <a className="chat-inline-link" key={key} href={part} target="_blank" rel="noopener noreferrer">{part}</a>;
-  if(part.startsWith('**')&&part.endsWith('**'))return <strong key={key}>{part.slice(2,-2)}</strong>;
-  if(part.startsWith('++')&&part.endsWith('++'))return <u key={key}>{part.slice(2,-2)}</u>;
-  if(part.startsWith('*')&&part.endsWith('*'))return <em key={key}>{part.slice(1,-1)}</em>;
-  return part;
- });
+function renderInline(text:string,keyBase:string):any[]{
+ const out:any[]=[];let pos=0,part=0;
+ const pushText=(value:string)=>{if(!value)return;const urls=value.split(urlPattern);urls.filter(Boolean).forEach(piece=>{const key=keyBase+'-'+part++;out.push(/^https?:\/\//i.test(piece)?<a className="chat-inline-link" key={key} href={piece} target="_blank" rel="noopener noreferrer">{piece}</a>:piece)})};
+ while(pos<text.length){
+  const candidates=[['**','strong'],['++','underline'],['*','em']].map(([mark,type])=>({mark,type,index:text.indexOf(mark,pos)})).filter(x=>x.index>=0).sort((a,b)=>a.index-b.index||b.mark.length-a.mark.length);
+  const next=candidates[0];
+  if(!next){pushText(text.slice(pos));break}
+  if(next.index>pos)pushText(text.slice(pos,next.index));
+  const contentStart=next.index+next.mark.length,close=text.indexOf(next.mark,contentStart);
+  if(close<0){pushText(text.slice(next.index));break}
+  const inner=renderInline(text.slice(contentStart,close),keyBase+'-nested-'+part),key=keyBase+'-'+part++;
+  out.push(next.type==='strong'?<strong key={key}>{inner}</strong>:next.type==='underline'?<u key={key}>{inner}</u>:<em key={key}>{inner}</em>);
+  pos=close+next.mark.length;
+ }
+ return out;
 }
 function renderMessageBody(body:string){
  const lines=body.split('\n'),nodes:any[]=[];let i=0;
