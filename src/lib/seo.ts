@@ -1,6 +1,6 @@
 type Seo={title:string;description:string;path?:string;robots?:string;jsonLd?:unknown;image?:string};
 const CANONICAL='https://www.vorlen.co.uk';
-const base=()=>String(import.meta.env.VITE_APP_URL||CANONICAL).replace(/\/$/,'');
+const base=()=>CANONICAL;
 function meta(name:string,content:string,property=false){if(!content)return;const attr=property?'property':'name';let el=document.head.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement|null;if(!el){el=document.createElement('meta');el.setAttribute(attr,name);document.head.appendChild(el)}el.content=content}
 function link(rel:string,href:string,hreflang?:string){let selector=`link[rel="${rel}"]`;if(hreflang)selector+=`[hreflang="${hreflang}"]`;let el=document.head.querySelector(selector) as HTMLLinkElement|null;if(!el){el=document.createElement('link');el.rel=rel;if(hreflang)el.hreflang=hreflang;document.head.appendChild(el)}el.href=href}
 export function setSeo({title,description,path=location.pathname,robots='index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1',jsonLd,image='/vorlen-logo.svg'}:Seo){
