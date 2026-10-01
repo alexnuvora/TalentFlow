@@ -60,6 +60,8 @@ const service=(name,route,description,area='United Kingdom')=>({
   areaServed:{'@type':'AdministrativeArea',name:area},url:`${base}${route}`,description
 });
 
+const homePage={title:'Vorlen | UK Permanent Recruitment Agency for Employers',description:'Vorlen is a UK permanent recruitment agency helping employers fill permanent vacancies through focused candidate sourcing, human-reviewed introductions and connected hiring support.',jsonLd:[{'@context':'https://schema.org','@type':'Organization','@id':`${base}/#organization`,name:'Vorlen',url:`${base}/`,logo:`${base}/vorlen-logo.svg`,description:'UK permanent recruitment agency helping employers fill permanent vacancies.'},{'@context':'https://schema.org','@type':'WebSite','@id':`${base}/#website`,name:'Vorlen',url:`${base}/`,publisher:{'@id':`${base}/#organization`}}]};
+
 const staticPages=[
   {route:'/careers',title:'Open recruitment opportunities | Vorlen Careers',description:'Browse current permanent recruitment opportunities and apply securely through Vorlen Careers.',lastmod:RELEASE_LASTMOD,jsonLd:{'@context':'https://schema.org','@type':'CollectionPage',name:'Vorlen Careers',url:`${base}/careers`,description:'Current permanent recruitment opportunities published through Vorlen.',isPartOf:{'@id':`${base}/#website`},mainEntity:{'@type':'ItemList',itemListElement:rows.slice(0,50).map((j,i)=>({'@type':'ListItem',position:i+1,url:`${base}/careers/${encodeURIComponent(j.slug)}`,name:j.title}))}}},
   {route:'/contact',title:'Contact Vorlen | UK Permanent Recruitment',description:'Talk to Vorlen about a permanent vacancy, candidate query or recruitment partnership.',lastmod:RELEASE_LASTMOD,jsonLd:{'@context':'https://schema.org','@type':'ContactPage',name:'Contact Vorlen',url:`${base}/contact`,about:organization}},
@@ -79,6 +81,9 @@ const staticPages=[
   {route:'/candidate-terms',title:'Work-seeker terms | Vorlen',description:'Terms on which Vorlen provides permanent recruitment work-finding services to candidates.',lastmod:''},
   {route:'/accessibility',title:'Accessibility | Vorlen',description:'Vorlen accessibility information for candidates, clients and recruitment workspace users.',lastmod:''}
 ];
+
+const homeHtml=inject(template,{title:homePage.title,description:homePage.description,canonical:`${base}/`,jsonLd:homePage.jsonLd});
+await fs.writeFile(path.join(dist,'index.html'),homeHtml);
 
 for(const page of staticPages){
   await writeRoute(page.route,inject(template,{title:page.title,description:page.description,canonical:`${base}${page.route}`,jsonLd:page.jsonLd}));
