@@ -43,9 +43,68 @@ const crawlLinks=[
   ['/locations/greater-manchester','Greater Manchester recruitment'],
   ['/employers','For employers'],['/candidates','For candidates'],['/careers','Careers'],['/contact','Contact Vorlen']
 ];
-function crawlBody(title,description){
+const crawlDetails={
+  '/services/permanent-recruitment':[
+    'Vorlen runs defined permanent searches from vacancy brief through sourcing, human-reviewed assessment, client introduction, interview coordination and placement support.',
+    'The search stays tied to the employer brief so candidate evidence, feedback and recruitment activity remain connected to the role being filled.'
+  ],
+  '/services/candidate-sourcing':[
+    'Candidate sourcing combines proactive search with relevant applications to reach people who may not already be active on public job boards.',
+    'Sourced candidates are reviewed against the vacancy before client introduction; the objective is relevance and evidence rather than maximum CV volume.'
+  ],
+  '/services/recruitment-for-smes':[
+    'Vorlen gives UK SMEs external permanent recruitment capacity without requiring a large internal talent-acquisition function or a separate applicant tracking system.',
+    'A defined vacancy, clear commercial terms and human-reviewed introductions keep the process practical for smaller employers while preserving recruitment controls.'
+  ],
+  '/sectors/technology':[
+    'Technology searches can cover software, data, cloud, infrastructure, product and technology leadership roles, shaped around stack, seniority and delivery environment.',
+    'Manchester employers can combine local market context with UK-wide sourcing where hybrid, remote or specialist requirements make a broader search appropriate.'
+  ],
+  '/sectors/sales-business-development':[
+    'Sales searches are shaped around customer type, market, deal cycle, territory and whether the vacancy focuses on new business, account growth or commercial leadership.',
+    'This helps distinguish apparently similar sales titles and keeps sourcing focused on the commercial experience the employer actually requires.'
+  ],
+  '/sectors/finance-accounting':[
+    'Finance and accounting searches can reflect qualification expectations, reporting responsibilities, systems, sector context and the commercial ownership required by the role.',
+    'Vorlen supports permanent searches from operational and qualified finance positions through to finance leadership, subject to a defined employer brief.'
+  ],
+  '/sectors/engineering':[
+    'Engineering searches start with discipline, technical environment, equipment or systems, site context, travel or shift requirements and the outcomes expected from the hire.',
+    'Greater Manchester and wider UK sourcing can be combined where specialist skills, commute requirements or relocation make a broader candidate market useful.'
+  ],
+  '/locations/manchester':[
+    'Vorlen supports Manchester employers with permanent recruitment shaped around the role, workplace location, commute expectations, working pattern and required experience.',
+    'Searches can combine Manchester candidate-market context with wider UK sourcing where the vacancy, hybrid pattern or specialist requirements justify it.'
+  ],
+  '/locations/greater-manchester':[
+    'Permanent recruitment across Greater Manchester needs to account for workplace location, travel patterns, sector context and on-site or hybrid expectations.',
+    'Vorlen can centre a search on the local market while widening candidate sourcing when specialist experience, relocation or working arrangements make that useful.'
+  ],
+  '/employers':[
+    'Employers can use Vorlen for a structured permanent search with vacancy briefing, focused sourcing, human-reviewed introductions, feedback and interview coordination.',
+    'Recruitment activity remains connected to the vacancy so the employer has a clearer route from hiring requirement to placement.'
+  ],
+  '/candidates':[
+    'Candidates can browse published permanent opportunities, review available role information and submit applications securely through Vorlen.',
+    'Technology may assist with evidence organisation, but people remain responsible for recruitment progression and client introductions.'
+  ],
+  '/careers':[
+    'Vorlen Careers publishes current permanent recruitment opportunities with role information and a secure application route.',
+    'Where an opportunity is for registering interest rather than a confirmed live client vacancy, Vorlen distinguishes that route in the recruitment process.'
+  ],
+  '/contact':[
+    'Employers can contact Vorlen about a current permanent vacancy, candidate sourcing requirement or recruitment support across the United Kingdom.',
+    'Starting with the role, location, hiring context and required experience helps define an appropriate recruitment search.'
+  ]
+};
+function crawlBody(title,description,canonical){
+  const path=new URL(canonical).pathname.replace(/\/$/,'')||'/';
+  const details=crawlDetails[path]||[
+    'Vorlen provides permanent recruitment support for UK employers through defined vacancy briefs, focused sourcing and human-reviewed candidate introductions.',
+    'Recruitment technology supports the process while people remain accountable for candidate progression, employer communication and recruitment decisions.'
+  ];
   const links=crawlLinks.map(([href,label])=>`<a href="${href}">${esc(label)}</a>`).join(' · ');
-  return `<main><h1>${esc(title.replace(/\s*\|\s*Vorlen.*$/i,''))}</h1><p>${esc(description)}</p><p>Vorlen supports UK employers with permanent recruitment, focused candidate sourcing and human-reviewed introductions. Explore our recruitment services, specialist sectors and location pages, or contact the team about a current hiring requirement.</p><nav aria-label="Recruitment services">${links}</nav></main>`;
+  return `<main><h1>${esc(title.replace(/\s*\|\s*Vorlen.*$/i,''))}</h1><p>${esc(description)}</p><h2>Permanent recruitment support</h2><p>${esc(details[0])}</p><p>${esc(details[1])}</p><h2>Explore Vorlen recruitment</h2><nav aria-label="Recruitment services">${links}</nav></main>`;
 }
 function inject(html,{title,description,canonical,jsonLd}){
   const image=`${base}/vorlen-logo.svg`;
@@ -55,7 +114,7 @@ function inject(html,{title,description,canonical,jsonLd}){
     .replace(/<meta name="description"[^>]*>/g,'')
     .replace(/<link rel="canonical"[^>]*>/g,'')
     .replace('</head>',`${tags}</head>`)
-    .replace('<div id="root"></div>',`<div id="root">${crawlBody(title,description)}</div>`);
+    .replace('<div id="root"></div>',`<div id="root">${crawlBody(title,description,canonical)}</div>`);
 }
 
 async function writeRoute(route,html){
