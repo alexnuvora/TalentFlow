@@ -1,5 +1,5 @@
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
-import {Bell,ChevronLeft,FileText,Image as ImageIcon,Link2,MessageCircle,Paperclip,Pencil,Pin,Reply,Search,Send,Trash2,X} from 'lucide-react';
+import {Bell,ChevronLeft,FileText,Image as ImageIcon,Link2,MessageCircle,Paperclip,Pencil,Pin,Reply,Search,Send,SmilePlus,Trash2,X} from 'lucide-react';
 import {Link,useSearchParams} from 'react-router-dom';
 import {Badge,Button,SkeletonCards,useToast} from '../components/Ui';
 import {supabase} from '../lib/supabase';
@@ -11,10 +11,12 @@ type Message={id:string;company_id:string;conversation_id:string;sender_id:strin
 type Attachment={id:string;message_id:string;filename:string;mime_type:string;size_bytes:number;storage_path:string;signed_url?:string};
 type Receipt={message_id:string;user_id:string;delivered_at:string;read_at?:string|null};
 type UserState={conversation_id:string;user_id:string;last_seen_at:string;typing_until?:string|null};
+type Reaction={id:string;company_id:string;conversation_id:string;message_id:string;user_id:string;emoji:string;created_at:string;updated_at:string};
 type ContextOption={id:string;label:string;path:string};
 
 const allowedTypes=new Set(['image/jpeg','image/png','image/webp','image/gif','application/pdf','text/plain','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
 const maxFile=10*1024*1024;
+const reactionEmojis=['👍','❤️','😂','😮','😢','🙏'] as const;
 const contextTypes=[['client','Client'],['job','Vacancy'],['candidate','Candidate'],['application','Application'],['submission','Submission pack'],['handoff','Commercial handoff'],['placement','Placement'],['commission','Commission'],['task','Work queue']] as const;
 const fmt=(v?:string|null)=>v?new Intl.DateTimeFormat('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(v)):'';
 const clock=(v:string)=>new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit'}).format(new Date(v));
@@ -96,13 +98,13 @@ function renderMessageBody(body:string){
 export default function PartnerChat({mode}:{mode:Mode}){
  const access=useWorkspaceAccess(),toast=useToast(),[params,setParams]=useSearchParams();
  const [me,setMe]=useState(''),[conversations,setConversations]=useState<Conversation[]>([]),[conversationId,setConversationId]=useState(''),[partnerId,setPartnerId]=useState('');
- const [messages,setMessages]=useState<Message[]>([]),[attachments,setAttachments]=useState<Attachment[]>([]),[receipts,setReceipts]=useState<Receipt[]>([]),[states,setStates]=useState<UserState[]>([]);
+ const [messages,setMessages]=useState<Message[]>([]),[attachments,setAttachments]=useState<Attachment[]>([]),[receipts,setReceipts]=useState<Receipt[]>([]),[states,setStates]=useState<UserState[]>([]),[reactions,setReactions]=useState<Reaction[]>([]);
  const [loading,setLoading]=useState(true),[loadingMessages,setLoadingMessages]=useState(false),[hasMore,setHasMore]=useState(false),[sending,setSending]=useState(false),[error,setError]=useState('');
  const [body,setBody]=useState(''),[files,setFiles]=useState<File[]>([]),[replyTo,setReplyTo]=useState<Message|null>(null),[editing,setEditing]=useState<Message|null>(null);
  const [partnerSearch,setPartnerSearch]=useState(''),[messageSearch,setMessageSearch]=useState(''),[searchResults,setSearchResults]=useState<Message[]>([]);
  const [showContext,setShowContext]=useState(false),[contextType,setContextType]=useState(''),[contextOptions,setContextOptions]=useState<ContextOption[]>([]),[context,setContext]=useState<ContextOption|null>(null);
- const [notifySupported,setNotifySupported]=useState(false),[now,setNow]=useState(Date.now()),[mobileSearchOpen,setMobileSearchOpen]=useState(false);
- const fileRef=useRef<HTMLInputElement>(null),messagesRef=useRef<HTMLDivElement>(null),composerRef=useRef<HTMLTextAreaElement>(null),typingTimer=useRef<number|null>(null),refreshTimer=useRef<number|null>(null);
+ const [notifySupported,setNotifySupported]=useState(false),[now,setNow]=useState(Date.now()),[mobileSearchOpen,setMobileSearchOpen]=useState(false),[reactingTo,setReactingTo]=useState<string>('');
+ const fileRef=useRef<HTMLInputElement>(null),messagesRef=useRef<HTMLDivElement>(null),composerRef=useRef<HTMLTextAreaElement>(null),typingTimer=useRef<number|null>(null),refreshTimer=useRef<number|null>(null),reactionPressTimer=useRef<number|null>(null),reactionPressStart=useRef<{x:number;y:number}|null>(null);
 
  const selected=useMemo(()=>conversations.find(c=>c.conversation_id===conversationId)||null,[conversations,conversationId]);
  const partnerUserId=mode==='partner'?me:(selected?.partner_id||partnerId);
