@@ -850,7 +850,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 /* Realtime typing indicator */
 .chat-typing-message{min-height:28px}
 .chat-message.in.chat-typing-message .chat-message-stack{align-items:flex-start}
-.chat-message.in .chat-bubble.chat-typing-bubble{display:inline-flex;align-items:center;justify-content:center;gap:3px;min-width:0;width:auto;height:28px;padding:0 8px;background:#fff}
+.chat-bubble.chat-typing-bubble{display:inline-flex;align-items:center;justify-content:center;gap:3px;min-width:0;width:auto;height:28px;padding:0 8px}
 .chat-typing-bubble span{width:5px;height:5px;border-radius:50%;background:currentColor;color:#87938f;opacity:.45;animation:chat-typing-dot 1.2s ease-in-out infinite}
 .chat-typing-bubble span:nth-child(2){animation-delay:.15s}
 .chat-typing-bubble span:nth-child(3){animation-delay:.3s}
