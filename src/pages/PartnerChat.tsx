@@ -313,6 +313,35 @@ export default function PartnerChat({mode}:{mode:Mode}){
  async function togglePin(m:Message){const{error:e}=await supabase.from('partner_messages').update({pinned_at:m.pinned_at?null:new Date().toISOString(),pinned_by:null}).eq('id',m.id);if(e)setError(e.message);else toast(m.pinned_at?'Message unpinned.':'Message pinned.')}
  async function enableNotifications(){if(!notifySupported)return;const p=await Notification.requestPermission();toast(p==='granted'?'Chat notifications enabled.':'Notifications were not enabled.',{tone:p==='granted'?'success':'warning'})}
 
+ async function setReaction(m:Message,emoji:string){
+  if(!me||!conversationId||m.deleted_at)return;
+  const existing=reactions.find(r=>r.message_id===m.id&&r.user_id===me);
+  setReactingTo('');
+  if(existing?.emoji===emoji){
+   const{error:e}=await supabase.from('partner_message_reactions').delete().eq('id',existing.id);
+   if(e)setError(e.message);
+   return;
+  }
+  const payload={company_id:m.company_id,conversation_id:m.conversation_id,message_id:m.id,user_id:me,emoji};
+  const{error:e}=await supabase.from('partner_message_reactions').upsert(payload,{onConflict:'message_id,user_id'});
+  if(e)setError(e.message);
+ }
+ function reactionGroups(messageId:string){
+  const rows=reactions.filter(r=>r.message_id===messageId),map=new Map<string,{emoji:string;count:number;mine:boolean}>();
+  for(const r of rows){const v=map.get(r.emoji)||{emoji:r.emoji,count:0,mine:false};v.count+=1;if(r.user_id===me)v.mine=true;map.set(r.emoji,v)}
+  return Array.from(map.values());
+ }
+ function cancelReactionPress(){if(reactionPressTimer.current){window.clearTimeout(reactionPressTimer.current);reactionPressTimer.current=null}reactionPressStart.current=null}
+ function startReactionPress(e:any,m:Message){
+  if(m.deleted_at)return;
+  cancelReactionPress();
+  reactionPressStart.current={x:e.clientX,y:e.clientY};
+  reactionPressTimer.current=window.setTimeout(()=>{setReactingTo(m.id);reactionPressTimer.current=null},500);
+ }
+ function moveReactionPress(e:any){
+  const start=reactionPressStart.current;if(!start)return;
+  if(Math.abs(e.clientX-start.x)>10||Math.abs(e.clientY-start.y)>10)cancelReactionPress();
+ }
  function startEdit(m:Message){setEditing(m);setReplyTo(null);setFiles([]);setBody(m.body);focusComposer()}
  function startReply(m:Message){setReplyTo(m);setEditing(null);focusComposer()}
  function attachmentFor(id:string){return attachments.filter(a=>a.message_id===id)}
