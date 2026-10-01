@@ -39,5 +39,27 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/services/ai-automation",
+      "destination": "/services/permanent-recruitment",
+      "permanent": true
+    },
+    {
+      "source": "/services/web-applications",
+      "destination": "/employers",
+      "permanent": true
+    },
+    {
+      "source": "/services/web-design-development",
+      "destination": "/employers",
+      "permanent": true
+    },
+    {
+      "source": "/work/:path*",
+      "destination": "/employers",
+      "permanent": true
+    }
   ]
 }
