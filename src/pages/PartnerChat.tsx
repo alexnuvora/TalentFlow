@@ -119,7 +119,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
  const relevantOtherStates=mode==='manager'&&partnerUserId?otherStates.filter(s=>s.user_id===partnerUserId):otherStates;
  const otherOnline=relevantOtherStates.some(s=>now-new Date(s.last_seen_at).getTime()<75000);
  const otherTyping=typingSignalUntil>now||relevantOtherStates.some(s=>!!s.typing_until&&new Date(s.typing_until).getTime()>now);
- const typingSide: 'in'|'out'=typingSignalUserId===me?'out':'in';
+ const typingSide: 'in'|'out'=mode==='partner'?(typingSignalUserId===partnerUserId?'out':'in'):(typingSignalUserId===partnerUserId?'in':'out');
  const pinned=messages.filter(m=>m.pinned_at&&!m.deleted_at).slice(-3);
  const visibleMessages=messageSearch.trim()?searchResults:messages;
  const filteredConversations=conversations.filter(c=>(c.partner_name||'').toLowerCase().includes(partnerSearch.trim().toLowerCase()));
@@ -385,7 +385,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
  function attachmentFor(id:string){return attachments.filter(a=>a.message_id===id)}
  function statusFor(m:Message){if(m.sender_id!==me)return'';const rs=receipts.filter(r=>r.message_id===m.id&&r.user_id!==me);return rs.some(r=>r.read_at)?'Read':rs.some(r=>r.delivered_at)?'Delivered':'Sent'}
  function canChange(m:Message){return m.sender_id===me&&!m.deleted_at&&Date.now()-new Date(m.created_at).getTime()<=15*60000}
- function messageSide(m:Message){return m.sender_id===me?'out':'in'}
+ function messageSide(m:Message){return mode==='partner'?(m.sender_id===partnerUserId?'out':'in'):(m.sender_id===partnerUserId?'in':'out')}
  function scrollTo(id:string){const container=messagesRef.current,el=document.querySelector<HTMLElement>(`[data-message-id="${id}"]`);if(container&&el){const cr=container.getBoundingClientRect(),er=el.getBoundingClientRect();container.scrollTo({top:container.scrollTop+(er.top-cr.top)-(container.clientHeight-el.clientHeight)/2,behavior:'smooth'})}setMessageSearch('');setSearchResults([])}
  const headerName=mode==='partner'?'Vorlen management':selected?.partner_name||'Partner';
  const headerSub=otherTyping?'typing…':otherOnline?'online':mode==='manager'&&selected?.partner_last_seen_at?'last active '+fmt(selected.partner_last_seen_at):'Secure partner channel';
