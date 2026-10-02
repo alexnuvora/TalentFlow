@@ -8,19 +8,34 @@ const normalise=(value:string)=>hasMarkup(value)?value:escapeHtml(value).replace
 
 export default function RichTextEditor({value,onChange,disabled=false,ariaLabel='Message'}:Props){
  const ref=useRef<HTMLDivElement>(null);
- useEffect(()=>{if(ref.current&&ref.current.innerHTML!==normalise(value))ref.current.innerHTML=normalise(value)},[value]);
- const run=(command:string,arg?:string)=>{if(disabled)return;ref.current?.focus();document.execCommand(command,false,arg);onChange(ref.current?.innerHTML||'')};
+ const editing=useRef(false);
+ const lastEmitted=useRef('');
+ const initialised=useRef(false);
+
+ useEffect(()=>{
+  const el=ref.current;if(!el)return;
+  const next=normalise(value);
+  if(editing.current&&value===lastEmitted.current)return;
+  if(!initialised.current||el.innerHTML!==next){el.innerHTML=next;initialised.current=true}
+ },[value]);
+
+ const emit=()=>{const html=ref.current?.innerHTML||'';lastEmitted.current=html;onChange(html)};
+ const run=(command:string,arg?:string)=>{if(disabled)return;ref.current?.focus();document.execCommand(command,false,arg);emit()};
  const link=()=>{const href=window.prompt('Link URL (https:// or mailto:)');if(!href)return;if(!/^(https?:\/\/|mailto:)/i.test(href)){window.alert('Use an https://, http:// or mailto: link.');return}run('createLink',href)};
+
  return <div className="rich-email-editor">
   <div className="rich-email-toolbar" role="toolbar" aria-label="Message formatting">
-   <button type="button" disabled={disabled} onClick={()=>run('bold')} aria-label="Bold"><strong>B</strong></button>
-   <button type="button" disabled={disabled} onClick={()=>run('italic')} aria-label="Italic"><em>I</em></button>
-   <button type="button" disabled={disabled} onClick={()=>run('underline')} aria-label="Underline"><u>U</u></button>
-   <button type="button" disabled={disabled} onClick={()=>run('insertUnorderedList')} aria-label="Bulleted list">• List</button>
-   <button type="button" disabled={disabled} onClick={()=>run('insertOrderedList')} aria-label="Numbered list">1. List</button>
-   <button type="button" disabled={disabled} onClick={link} aria-label="Insert link">Link</button>
-   <button type="button" disabled={disabled} onClick={()=>run('removeFormat')} aria-label="Clear formatting">Clear</button>
+   <button type="button" disabled={disabled} onMouseDown={e=>e.preventDefault()} onClick={()=>run('bold')} aria-label="Bold"><strong>B</strong></button>
+   <button type="button" disabled={disabled} onMouseDown={e=>e.preventDefault()} onClick={()=>run('italic')} aria-label="Italic"><em>I</em></button>
+   <button type="button" disabled={disabled} onMouseDown={e=>e.preventDefault()} onClick={()=>run('underline')} aria-label="Underline"><u>U</u></button>
+   <button type="button" disabled={disabled} onMouseDown={e=>e.preventDefault()} onClick={()=>run('insertUnorderedList')} aria-label="Bulleted list">• List</button>
+   <button type="button" disabled={disabled} onMouseDown={e=>e.preventDefault()} onClick={()=>run('insertOrderedList')} aria-label="Numbered list">1. List</button>
+   <button type="button" disabled={disabled} onMouseDown={e=>e.preventDefault()} onClick={link} aria-label="Insert link">Link</button>
+   <button type="button" disabled={disabled} onMouseDown={e=>e.preventDefault()} onClick={()=>run('removeFormat')} aria-label="Clear formatting">Clear</button>
   </div>
-  <div ref={ref} className="rich-email-input" contentEditable={!disabled} suppressContentEditableWarning role="textbox" aria-multiline="true" aria-label={ariaLabel} onInput={e=>onChange(e.currentTarget.innerHTML)} onBlur={e=>onChange(e.currentTarget.innerHTML)}/>
+  <div ref={ref} className="rich-email-input" contentEditable={!disabled} suppressContentEditableWarning role="textbox" aria-multiline="true" aria-label={ariaLabel}
+   onFocus={()=>{editing.current=true}}
+   onInput={()=>emit()}
+   onBlur={()=>{emit();editing.current=false}}/>
  </div>
 }
