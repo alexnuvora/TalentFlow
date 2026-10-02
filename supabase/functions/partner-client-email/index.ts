@@ -1,5 +1,6 @@
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.57.0';
 import {PDFDocument,StandardFonts,rgb} from 'npm:pdf-lib@1.17.1';
+import sanitizeHtml from 'npm:sanitize-html@2.17.0';
 import {vorlenEmailShell,vorlenEmailBody,vorlenPlainText} from '../_shared/vorlen-email.ts';
 const cors={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization, x-client-info, apikey, content-type'};const json=(x:any,s=200)=>new Response(JSON.stringify(x),{status:s,headers:{...cors,'Content-Type':'application/json'}});
 const esc=(v:string)=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
@@ -35,19 +36,24 @@ const marketingAllowed=!!c.email_marketing_assessed_at&&!!marketingEvidence&&(
 const [defaultSubject,defaultBody]=copy[status];
 const subject=String(b.subject||defaultSubject).trim().slice(0,300);
 const body=String(b.message||defaultBody).trim().slice(0,10000);
-if(!subject||!body)return json({error:'Subject and message are required'},400);
+const suppliedHtml=String(b.message_html||'').slice(0,50000);
+const richBody=suppliedHtml?sanitizeHtml(suppliedHtml,{allowedTags:['p','br','strong','b','em','i','u','ul','ol','li','a'],allowedAttributes:{a:['href','target','rel']},allowedSchemes:['http','https','mailto'],transformTags:{a:(_tag:any,attrs:any)=>({tagName:'a',attribs:{...attrs,target:'_blank',rel:'noopener noreferrer'}})}}):esc(body).replace(/\n/g,'<br>');
+const plainBody=suppliedHtml?sanitizeHtml(richBody,{allowedTags:[],allowedAttributes:{}}).replace(/\s+/g,' ').trim():body;
+if(!subject||!plainBody)return json({error:'Subject and message are required'},400);
 const callbackText=status==='call_back'&&b.callback_at?'\n\nCallback: '+new Date(b.callback_at).toLocaleString('en-GB',{timeZone:'Europe/London'}):'';
-const emailMessage=body+callbackText;
-const html=vorlenEmailShell(subject,vorlenEmailBody(c.contact_name||'there',emailMessage,'Vorlen Team'),subject);
+const callbackHtml=status==='call_back'&&b.callback_at?'<p><strong>Callback:</strong> '+esc(new Date(b.callback_at).toLocaleString('en-GB',{timeZone:'Europe/London'}))+'</p>':'';
+const emailMessage=plainBody+callbackText;
+const richEmailMessage=richBody+callbackHtml;
+const html=vorlenEmailShell(subject,'<p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#11251f">Hi '+esc(c.contact_name||'there')+',</p><div style="font-size:15px;line-height:1.75;color:#253b34">'+richEmailMessage+'</div><p style="margin:28px 0 0;font-size:15px;line-height:1.7;color:#11251f">Kind regards,<br><strong>Vorlen Team</strong><br><span style="color:#60716a">Recruitment &amp; Talent Solutions</span></p>',subject);
 const textBody=vorlenPlainText(c.contact_name||'there',emailMessage,'Vorlen Team');
-if(action==='preview')return json({ok:true,preview:true,recipient,recipient_name:c.contact_name||'',subject,message:body,html,text:textBody,has_attachment:status==='send_more_info',send_allowed:isManager&&!suppressed&&marketingAllowed,requires_manager_approval:!isManager,compliance:{pecr_subscriber_type:c.pecr_subscriber_type||'unknown',email_marketing_basis:c.email_marketing_basis||'none',email_marketing_evidence:c.email_marketing_evidence||'',email_marketing_assessed_at:c.email_marketing_assessed_at||null},compliance_message:suppressed?'This client is marked do not contact.':(!marketingAllowed?'Email marketing compliance must be verified before this email can be sent.':null)});
+if(action==='preview')return json({ok:true,preview:true,recipient,recipient_name:c.contact_name||'',subject,message:plainBody,message_html:richBody,html,text:textBody,has_attachment:status==='send_more_info',send_allowed:!suppressed&&marketingAllowed,requires_manager_approval:false,compliance:{pecr_subscriber_type:c.pecr_subscriber_type||'unknown',email_marketing_basis:c.email_marketing_basis||'none',email_marketing_evidence:c.email_marketing_evidence||'',email_marketing_assessed_at:c.email_marketing_assessed_at||null},compliance_message:suppressed?'This client is marked do not contact.':(!marketingAllowed?'Email marketing compliance must be verified before this email can be sent.':null)});
 if(action==='submit'){if(isManager)return json({error:'Managers can send after review; partner submission is not required.'},400);const{data:pending}=await db.from('partner_email_approvals').select('id,status,submitted_at').eq('company_id',p.company_id).eq('partner_id',user.id).eq('client_id',c.id).eq('email_status',status).eq('status','pending').maybeSingle();if(pending)return json({ok:true,submitted:true,deduplicated:true,approval:pending});const{data:reqRow,error:qe}=await db.from('partner_email_approvals').insert({company_id:p.company_id,partner_id:user.id,client_id:c.id,email_status:status,recipient,subject,message:body,callback_at:b.callback_at||null,status:'pending'}).select('id,status,submitted_at').single();if(qe)return json({error:'Could not submit email for approval'},500);return json({ok:true,submitted:true,approval:reqRow})}
 if(action==='reject'){if(!isManager)return json({error:'Manager access required'},403);const{data:rejected,error:re}=await db.from('partner_email_approvals').update({status:'rejected',reviewed_by:user.id,reviewed_at:new Date().toISOString(),review_note:String(b.review_note||'').slice(0,2000),updated_at:new Date().toISOString()}).eq('id',b.approval_id).eq('company_id',p.company_id).eq('status','pending').select('id').maybeSingle();if(re||!rejected)return json({error:'Pending approval request not found'},404);return json({ok:true,rejected:true})}
-if(action!=='send')return json({error:'Unsupported email action'},400);if(!isManager)return json({error:'Manager approval is required to send partner outreach. Submit this email for approval instead.'},403);
-if(b.approved!==true)return json({error:'Explicit approval is required before sending this email.'},409);if(suppressed)return json({error:'This client is marked do not contact. Email was not sent.'},409);if(!marketingAllowed)return json({error:'Email marketing compliance has not been verified for this client. Record PECR subscriber type, lawful basis and evidence before sending.'},409);
+if(action!=='send')return json({error:'Unsupported email action'},400);
+if(b.approved!==true)return json({error:'Explicit review is required before sending this email.'},409);if(suppressed)return json({error:'This client is marked do not contact. Email was not sent.'},409);if(!marketingAllowed)return json({error:'Email marketing compliance has not been verified for this client. Record PECR subscriber type, lawful basis and evidence before sending.'},409);
 const day=new Date().toISOString().slice(0,10),callbackKey=status==='call_back'?String(b.callback_at||'').slice(0,16):'';
 const idempotencyKey=b.approval_id?['partner-client-email','approval',String(b.approval_id)].join(':'):['partner-client-email',user.id,c.id,status,callbackKey||day].join(':');
-const deliveryPayload={partner_id:user.id,client_id:c.id,status,subject};
+const deliveryPayload={sender_id:user.id,sender_name:p.full_name||'',sender_role:p.role,client_id:c.id,status,subject,recipient,message_text:plainBody,message_html:richBody};
 let deliveryId:string;
 const{data:existing}=await db.from('outbound_deliveries').select('id,status,provider_message_id,created_at').eq('company_id',p.company_id).eq('idempotency_key',idempotencyKey).maybeSingle();
 if(existing?.status==='sent')return json({ok:true,id:existing.provider_message_id,recipient,subject,deduplicated:true});
