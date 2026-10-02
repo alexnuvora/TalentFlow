@@ -5,6 +5,7 @@ type Props={value:string;onChange:(html:string)=>void;disabled?:boolean;ariaLabe
 const hasMarkup=(value:string)=>/<[a-z][\s\S]*>/i.test(value);
 const escapeHtml=(value:string)=>value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const normalise=(value:string)=>hasMarkup(value)?value:escapeHtml(value).replace(/\n/g,'<br>');
+export const richTextHasContent=(value:string)=>String(value||'').replace(/<br\s*\/?>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;|&#160;/gi,' ').replace(/&[a-z0-9#]+;/gi,'x').trim().length>0;
 
 export default function RichTextEditor({value,onChange,disabled=false,ariaLabel='Message'}:Props){
  const ref=useRef<HTMLDivElement>(null);
@@ -36,6 +37,7 @@ export default function RichTextEditor({value,onChange,disabled=false,ariaLabel=
   <div ref={ref} className="rich-email-input" contentEditable={!disabled} suppressContentEditableWarning role="textbox" aria-multiline="true" aria-label={ariaLabel}
    onFocus={()=>{editing.current=true}}
    onInput={()=>emit()}
+   onPaste={e=>{e.preventDefault();const text=e.clipboardData.getData('text/plain');document.execCommand('insertText',false,text);emit()}}
    onBlur={()=>{emit();editing.current=false}}/>
  </div>
 }
