@@ -193,28 +193,61 @@ drop trigger if exists trg_partner_chat_queue_push_from_message on public.partne
 create trigger trg_partner_chat_queue_push_from_message after insert on public.partner_messages
  for each row execute function private.queue_partner_chat_push_from_message();
 
-create or replace function private.queue_partner_chat_push_from_attachment()
-returns trigger language plpgsql security definer set search_path=''
-as $$
-declare v_event uuid;v_message public.partner_messages%rowtype;
-begin
- select * into v_message from public.partner_messages m where m.id=new.message_id;
- if v_message.id is null or v_message.deleted_at is not null then return new; end if;
- insert into public.partner_chat_push_events(company_id,message_id,conversation_id)
- values(v_message.company_id,v_message.id,v_message.conversation_id) on conflict(message_id) do nothing returning id into v_event;
- if v_event is not null then perform private.dispatch_partner_chat_push(v_event); end if;
- return new;
-end$$;
-revoke all on function private.queue_partner_chat_push_from_attachment() from public,anon,authenticated;
 drop trigger if exists trg_partner_chat_queue_push_from_attachment on public.partner_message_attachments;
-create trigger trg_partner_chat_queue_push_from_attachment after insert on public.partner_message_attachments
- for each row execute function private.queue_partner_chat_push_from_attachment();
+drop function if exists private.queue_partner_chat_push_from_attachment();
+
+create or replace function public.finalize_partner_chat_attachment_push(p_message_id uuid)
+returns uuid
+language plpgsql security definer set search_path=''
+as $$
+declare v_uid uuid:=(select auth.uid());v_message public.partner_messages%rowtype;v_event uuid;
+begin
+ if v_uid is null then raise exception 'Authentication required'; end if;
+ select * into v_message from public.partner_messages m where m.id=p_message_id;
+ if v_message.id is null then raise exception 'Message not found'; end if;
+ if v_message.sender_id<>v_uid then raise exception 'Only the sender may finalize this message'; end if;
+ if v_message.deleted_at is not null then raise exception 'Deleted messages cannot be finalized'; end if;
+ if v_message.message_type<>'attachment' then raise exception 'Message is not an attachment message'; end if;
+ if not private.partner_chat_can_access(v_message.conversation_id,v_uid) then raise exception 'Conversation access required'; end if;
+ if not exists(select 1 from public.partner_message_attachments a where a.message_id=v_message.id) then
+  raise exception 'Attachment upload is not complete';
+ end if;
+ insert into public.partner_chat_push_events(company_id,message_id,conversation_id)
+ values(v_message.company_id,v_message.id,v_message.conversation_id)
+ on conflict(message_id) do update set updated_at=now()
+ returning id into v_event;
+ perform private.dispatch_partner_chat_push(v_event);
+ return v_event;
+end$$;
+revoke all on function public.finalize_partner_chat_attachment_push(uuid) from public,anon;
+grant execute on function public.finalize_partner_chat_attachment_push(uuid) to authenticated;
+
+create or replace function private.recover_unqueued_partner_chat_attachment_pushes()
+returns integer
+language plpgsql security definer set search_path=''
+as $$
+declare v_count integer;
+begin
+ insert into public.partner_chat_push_events(company_id,message_id,conversation_id,next_attempt_at)
+ select m.company_id,m.id,m.conversation_id,now()
+ from public.partner_messages m
+ where m.message_type='attachment'
+   and m.deleted_at is null
+   and m.created_at<=now()-interval '2 minutes'
+   and exists(select 1 from public.partner_message_attachments a where a.message_id=m.id)
+   and not exists(select 1 from public.partner_chat_push_events e where e.message_id=m.id)
+ on conflict(message_id) do nothing;
+ get diagnostics v_count=row_count;
+ return v_count;
+end$$;
+revoke all on function private.recover_unqueued_partner_chat_attachment_pushes() from public,anon,authenticated;
 
 do $$
 declare v_job bigint;
 begin
  for v_job in select jobid from cron.job where jobname='vorlen-partner-chat-push-retry' loop perform cron.unschedule(v_job); end loop;
  perform cron.schedule('vorlen-partner-chat-push-retry','* * * * *',$cron$
+  select private.recover_unqueued_partner_chat_attachment_pushes();
   select net.http_post(
    url:='https://mzkaodoruhklzluikagy.supabase.co/functions/v1/partner-chat-push',
    headers:=jsonb_build_object('Content-Type','application/json','x-chat-push-secret',
