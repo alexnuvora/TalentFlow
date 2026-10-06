@@ -15,9 +15,9 @@ Deno.serve(async(req)=>{
   await db.from('call_gateway_devices').update({last_seen_at:new Date().toISOString()}).eq('id',device.id);
   if(req.method==='GET'){
    const now=new Date().toISOString();
-   const {data:control,error:ce}=await db.from('call_gateway_commands').select('id,request_id,action,status,expires_at,created_at').eq('device_id',device.id).eq('company_id',device.company_id).eq('status','pending').gt('expires_at',now).order('created_at',{ascending:true}).limit(1).maybeSingle();
+   const {data:control,error:ce}=await db.from('call_gateway_commands').select('id,request_id,action,status,expires_at,created_at,payload').eq('device_id',device.id).eq('company_id',device.company_id).eq('status','pending').gt('expires_at',now).order('created_at',{ascending:true}).limit(1).maybeSingle();
    if(ce)throw ce;
-   if(control)return json({command:{id:control.id,request_id:control.request_id,action:control.action}});
+   if(control)return json({command:{id:control.id,request_id:control.request_id,action:control.action,payload:control.payload||{}}});
    const claim=()=>db.rpc('claim_gateway_call',{p_company:device.company_id,p_device:device.id});
    const {data:pending,error:pe}=await claim();if(pe)throw pe;
    if(pending)return json({command:pending});
@@ -38,6 +38,7 @@ Deno.serve(async(req)=>{
    if(!status)return json({error:'invalid status'},400);
    const table=b.kind==='command'?'call_gateway_commands':'call_gateway_requests';
    const patch:any={status,error:typeof b.error==='string'?b.error.slice(0,500):null};
+   if(b.kind==='command'&&(status==='completed'||status==='failed'))patch.payload={};
    if(status==='claimed')patch.claimed_at=new Date().toISOString();
    if(status==='completed'||status==='failed')patch.completed_at=new Date().toISOString();
    const {data,error}=await db.from(table).update(patch).eq('id',b.id).eq('device_id',device.id).eq('company_id',device.company_id).in('status',status==='claimed'?['approved','pending','claimed']:['approved','pending','claimed',status]).select('id,status').maybeSingle();
