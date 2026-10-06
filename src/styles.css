@@ -1000,3 +1000,12 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
  .job-application-form .form-step{padding-left:17px;padding-right:17px}
  .job-form-actions{padding-left:17px;padding-right:17px}
 }
+
+/* Modal layout hardening */
+.modal-card{padding:0!important;background:#fff!important;overflow:hidden!important;display:flex;flex-direction:column}
+.modal-card>.card-head{flex:0 0 auto;margin:0!important;padding:20px 24px 16px;border-bottom:1px solid var(--border,#dce6e1);background:#fff;position:sticky;top:0;z-index:2}
+.modal-card>.card-head h3{margin:0}
+.modal-card>.form-grid,.modal-card>form{overflow-y:auto;padding:22px 24px 24px;margin:0;min-height:0}
+.modal-card>.form-grid{flex:1 1 auto}
+.modal-card>.form-grid .form-actions{padding-top:4px}
+@media(max-width:700px){.modal-card>.card-head{padding:16px 16px 13px}.modal-card>.form-grid,.modal-card>form{padding:16px}.modal-card .form-grid{grid-template-columns:1fr}.modal-card .form-grid .full{grid-column:1}}
