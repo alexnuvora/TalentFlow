@@ -342,6 +342,10 @@ export default function PartnerChat({mode}:{mode:Mode}){
   if(!files.length){setMessages(rows=>rows.some(x=>x.id===m.id)?rows:[...rows,m as Message]);window.requestAnimationFrame(()=>window.requestAnimationFrame(()=>{const el=messagesRef.current;if(el)el.scrollTop=el.scrollHeight}))}
   const uploaded:string[]=[],attachmentRows:string[]=[];try{for(const f of files){const path=`${access.companyId}/${conversationId}/${m.id}/${crypto.randomUUID()}-${safeName(f.name)}`;const up=await supabase.storage.from('partner-chat').upload(path,f,{contentType:f.type,upsert:false});if(up.error)throw up.error;uploaded.push(path);const row=await supabase.from('partner_message_attachments').insert({company_id:access.companyId,conversation_id:conversationId,message_id:m.id,uploaded_by:me,storage_path:path,filename:f.name,mime_type:f.type,size_bytes:f.size}).select('id').single();if(row.error)throw row.error;if(row.data?.id)attachmentRows.push(row.data.id)}}
   catch(err){if(uploaded.length)await supabase.storage.from('partner-chat').remove(uploaded);if(attachmentRows.length)await supabase.from('partner_message_attachments').delete().in('id',attachmentRows);await supabase.from('partner_messages').update({deleted_at:new Date().toISOString()}).eq('id',m.id);setSending(false);setError(err instanceof Error?err.message:'Attachment upload failed.');return}
+  if(files.length){
+   const{error:pushFinalizeError}=await supabase.rpc('finalize_partner_chat_attachment_push',{p_message_id:m.id});
+   if(pushFinalizeError)console.warn('Attachment push finalisation deferred to recovery worker',pushFinalizeError);
+  }
   setBody('');setFiles([]);setReplyTo(null);setContext(null);setContextType('');setShowContext(false);void touchState(false);setSending(false);if(files.length)await loadConversation(false,true);if(mode==='manager')void refreshList();
  }
 
