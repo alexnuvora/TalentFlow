@@ -1,6 +1,6 @@
 import {useEffect} from 'react';
 import {Link} from 'react-router-dom';
-import {ArrowRight,CheckCircle2,ChevronDown,ShieldCheck,Users,BriefcaseBusiness,Search,Handshake} from 'lucide-react';
+import {ArrowRight,CheckCircle2,ChevronDown,ShieldCheck,Users,BriefcaseBusiness,Search,Handshake,Facebook,Linkedin} from 'lucide-react';
 import VorlenBrand from '../components/VorlenBrand';
 import GooglePreferredSource from '../components/GooglePreferredSource';
 import {orgSchema,setSeo} from '../lib/seo';
@@ -183,7 +183,7 @@ export default function Landing(){
     </main>
 
     <footer className="vp-footer">
-      <div className="vp-footer-brand"><VorlenBrand/><p>Permanent recruitment, properly run.</p><div className="google-preferred-source"><GooglePreferredSource/></div></div>
+      <div className="vp-footer-brand"><VorlenBrand/><p>Permanent recruitment, properly run.</p><div className="vp-footer-socials" aria-label="Vorlen social media"><a href="https://www.facebook.com/share/19pqmJPH3v/" target="_blank" rel="noopener noreferrer" aria-label="Vorlen on Facebook"><Facebook size={18}/></a><a href="https://www.linkedin.com/company/vorlen/" target="_blank" rel="noopener noreferrer" aria-label="Vorlen on LinkedIn"><Linkedin size={18}/></a></div><div className="google-preferred-source"><GooglePreferredSource/></div></div>
       <div><strong>Employers</strong><Link to="/employers">For employers</Link><Link to="/services/permanent-recruitment">Permanent recruitment</Link><Link to="/services/candidate-sourcing">Candidate sourcing</Link><Link to="/services/recruitment-for-smes">Recruitment for SMEs</Link></div>
       <div><strong>Candidates</strong><Link to="/candidates">For candidates</Link><Link to="/careers">Open opportunities</Link><Link to="/candidate-terms">Candidate terms</Link></div>
       <div><strong>Vorlen</strong><Link to="/partners">Partner network</Link><Link to="/locations/manchester">Manchester</Link><Link to="/locations/greater-manchester">Greater Manchester</Link><Link to="/contact">Contact</Link></div>
