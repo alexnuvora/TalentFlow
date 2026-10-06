@@ -49,6 +49,7 @@ const tools=[
  {name:'get_dialer_state',description:'Get campaign progress and queued/current/completed dialer items.',inputSchema:{type:'object',properties:{campaign_id:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
  {name:'request_call',description:'Create an approved outbound call request for the paired Vorlen phone gateway. Requires owner or manager role and an active user-approved calling session. Prospect numbers are blocked unless current TPS/CTPS screening evidence or specific marketing-call consent is recorded.',inputSchema:{type:'object',required:['phone_number'],properties:{phone_number:{type:'string'},device_code:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
  {name:'hangup_call',description:'End the active Vorlen handset call. When voicemail is audibly recognized, FIRST call finalize_live_call with call_status=voicemail, THEN call hangup_call immediately. When a human says goodbye, reply naturally, finalize_live_call with the real outcome, then hang up. If the prospect already disconnected, check get_call_state first to avoid a duplicate hangup.',inputSchema:{type:'object',properties:{request_id:{type:'string'},device_code:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
+ {name:'send_dtmf',description:'Send DTMF keypad tones through the currently active Vorlen cellular call, for IVR menus such as “press 1 for recruitment”. Supports digits 0-9, * and #; comma inserts a short pause. Requires owner/manager and an active claimed call on the selected handset. DTMF digits are treated as ephemeral command data and are cleared after handset acknowledgement.',inputSchema:{type:'object',required:['tones'],properties:{tones:{type:'string',description:'DTMF sequence using 0-9, *, # and optional commas for pauses.'},request_id:{type:'string'},device_code:{type:'string'},tone_duration_ms:{type:'integer',minimum:70,maximum:1000},gap_ms:{type:'integer',minimum:50,maximum:2000}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
  {name:'get_call_state',description:'Get recent Vorlen phone gateway requests, commands and call-state events. Telephony state can tell you dialing/active/idle but CANNOT reliably distinguish human answer from voicemail. Use what you hear in Voice for voicemail/human classification. If voicemail is heard, finalize_live_call immediately as voicemail. If the request is completed/idle after a human disconnect, finalize the real outcome without duplicate hangup.',inputSchema:{type:'object',properties:{request_id:{type:'string'},device_code:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
  {name:'start_call_transcript',description:'Start or resume the transcript for a real Vorlen call. Link it to the active call request so every spoken turn can be persisted.',inputSchema:{type:'object',required:['call_request_id'],properties:{call_request_id:{type:'string'},client_id:{type:'string'},campaign_id:{type:'string'},dialer_item_id:{type:'string'},source:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
  {name:'append_call_transcript_turn',description:'Append one exact spoken turn to an in-progress Vorlen call transcript. Save Alex and prospect turns in chronological order during the call.',inputSchema:{type:'object',required:['transcript_id','speaker','text'],properties:{transcript_id:{type:'string'},speaker:{type:'string',enum:['alex','prospect','unknown']},text:{type:'string'},spoken_at:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
@@ -357,6 +358,28 @@ Deno.serve(async(req)=>{
    else {const {data:r}=await db.from('call_gateway_requests').select('id').eq('company_id',company_id).eq('device_id',device.id).in('status',['claimed','approved']).order('created_at',{ascending:false}).limit(1).maybeSingle();requestId=r?.id||null;}
    const {data,error}=await db.from('call_gateway_commands').insert({company_id,device_id:device.id,request_id:requestId,action:'hangup'}).select('id,request_id,action,status,created_at,expires_at').single();
    if(error)throw error;await audit(`hangup_call:${data.id}:${deviceCode}`);return done(data);
+  }
+  if(name==='send_dtmf'){
+   if(!['owner','manager'].includes(profile.role))return err(id,-32003,'Manager access required',403);
+   const tones=clean(a.tones,64).replace(/\s+/g,'');
+   if(!/^[0-9*#,]{1,64}$/.test(tones))return err(id,-32602,'tones must contain only 0-9, *, # and commas for pauses');
+   const toneDuration=Math.max(70,Math.min(1000,Number.isInteger(a.tone_duration_ms)?a.tone_duration_ms:180));
+   const gapMs=Math.max(50,Math.min(2000,Number.isInteger(a.gap_ms)?a.gap_ms:120));
+   const deviceCode=clean(a.device_code,80)||'s24fe-primary';
+   const {data:device,error:de}=await db.from('call_gateway_devices').select('id,device_code,enabled').eq('company_id',company_id).eq('device_code',deviceCode).maybeSingle();
+   if(de)throw de;if(!device?.enabled)return err(id,-32602,'Call gateway device not available');
+   let requestId:string|null=null;
+   if(uuid(a.request_id)){
+    const {data:r,error:vre}=await db.from('call_gateway_requests').select('id').eq('id',a.request_id).eq('company_id',company_id).eq('device_id',device.id).eq('status','claimed').maybeSingle();
+    if(vre)throw vre;if(!r)return err(id,-32602,'Active claimed call request not found for this device');requestId=r.id;
+   }else{
+    const {data:r,error:vre}=await db.from('call_gateway_requests').select('id').eq('company_id',company_id).eq('device_id',device.id).eq('status','claimed').order('created_at',{ascending:false}).limit(1).maybeSingle();
+    if(vre)throw vre;if(!r)return err(id,-32602,'No active claimed call on this device');requestId=r.id;
+   }
+   const {data,error}=await db.from('call_gateway_commands').insert({company_id,device_id:device.id,request_id:requestId,action:'dtmf',payload:{tones,tone_duration_ms:toneDuration,gap_ms:gapMs}}).select('id,request_id,action,status,created_at,expires_at').single();
+   if(error)throw error;
+   await audit(`send_dtmf:${data.id}:${deviceCode}:symbols=${tones.replace(/,/g,'').length}`);
+   return done({...data,tone_count:tones.replace(/,/g,'').length});
   }
   if(name==='get_call_state'){
    const deviceCode=clean(a.device_code,80)||'s24fe-primary';
