@@ -107,7 +107,7 @@ export default function PartnerProfile(){
 
   <div className="grid three">
    <Card><span className="muted">Partner agreement</span><h3>{accepted?'Accepted':'Pending'}</h3><p>{agreement?.version||'No agreement version'}{agreement?.accepted_at?' · '+new Date(agreement.accepted_at).toLocaleDateString('en-GB'):''}</p></Card>
-   <Card><span className="muted">Commission share</span><h2>{agreement?.commission_model==='split_15_15'?'15% + 15%':Number(agreement?.commission_percent||0).toFixed(0)+'%'}</h2><p>{agreement?.commission_model==='split_15_15'?'15% Client Development + 15% Candidate Delivery; up to 30% when you own both sides':'Legacy agreement terms; accept the latest split-commission agreement before new split commission can accrue'}</p></Card>
+   <Card><span className="muted">Commission model</span><h2>{pendingAgreement?'15% + 15%':agreement?.commission_model==='split_15_15'?'15% + 15%':Number(agreement?.commission_percent||0).toFixed(0)+'%'}</h2><p>{pendingAgreement?'Updated terms awaiting your acceptance: 15% Client Development + 15% Candidate Delivery. Your previous agreement remains on record until acceptance.':agreement?.commission_model==='split_15_15'?'15% Client Development + 15% Candidate Delivery; up to 30% when you own both sides':'Current accepted legacy agreement. Updated split terms will appear here when issued.'}</p></Card>
    <Card><span className="muted">Commercial authority</span><h3>Vorlen management only</h3><p>You may develop employer relationships and gather requirements, but you cannot bind Vorlen to client terms.</p></Card>
   </div>
 

@@ -45,9 +45,15 @@ verify_jwt = true
 
 # Authenticated partner-only candidate delivery workspace.
 [functions.partner-candidate-workspace]
-verify_jwt = true
+# Handler validates the bearer token with auth.getUser(); gateway verification is disabled so browser CORS/errors reach the handler consistently.
+verify_jwt = false
 
 
 # Authenticated partner-only self-directing recruitment work queue.
 [functions.partner-work-queue]
 verify_jwt = true
+
+
+# Handler validates partner identity and assignment scope with auth.getUser() and service-side checks.
+[functions.partner-applications-list]
+verify_jwt = false
