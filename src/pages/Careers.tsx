@@ -50,15 +50,15 @@ return <div className="customer-public job-page-v2">
           </div>
           <div className="job-detail-grid">
             <div className="job-detail-card"><CalendarDays size={18}/><small>Start</small><strong>{startLabel}</strong></div>
-            <div className="job-detail-card"><Clock3 size={18}/><small>Duration</small><strong>{job.duration_text||'To be confirmed'}</strong></div>
-            <div className="job-detail-card wide"><Clock3 size={18}/><small>Working pattern</small><strong>{job.work_days_hours||'To be confirmed'}</strong></div>
-            <div className="job-detail-card wide"><FileText size={18}/><small>Duties</small><strong>{job.duties||'To be confirmed'}</strong></div>
-            <div className="job-detail-card wide"><ShieldCheck size={18}/><small>Health & safety</small><strong>{job.health_safety_risks||'To be confirmed'}</strong>{job.health_safety_measures&&<p>Controls: {job.health_safety_measures}</p>}</div>
-            <div className="job-detail-card wide"><CheckCircle2 size={18}/><small>Qualifications & authorisations</small><strong>{job.required_qualifications||'To be confirmed'}</strong></div>
-            <div className="job-detail-card"><Banknote size={18}/><small>Expenses</small><strong>{job.expenses_text||'To be confirmed'}</strong></div>
-            <div className="job-detail-card"><Banknote size={18}/><small>Pay interval</small><strong>{job.pay_interval||'To be confirmed'}</strong></div>
+            <div className="job-detail-card"><Clock3 size={18}/><small>Duration</small><strong>{job.duration_text||'Not specified'}</strong></div>
+            <div className="job-detail-card wide"><Clock3 size={18}/><small>Working pattern</small><strong>{job.work_days_hours||'Not specified'}</strong></div>
+            <div className="job-detail-card wide"><FileText size={18}/><small>Duties</small><strong>{job.duties||'Not specified'}</strong></div>
+            <div className="job-detail-card wide"><ShieldCheck size={18}/><small>Health & safety</small><strong>{job.health_safety_risks||'Not specified'}</strong>{job.health_safety_measures&&<p>Controls: {job.health_safety_measures}</p>}</div>
+            <div className="job-detail-card wide"><CheckCircle2 size={18}/><small>Qualifications & authorisations</small><strong>{job.required_qualifications||'Not specified'}</strong></div>
+            <div className="job-detail-card"><Banknote size={18}/><small>Expenses</small><strong>{job.expenses_text||'Not specified'}</strong></div>
+            <div className="job-detail-card"><Banknote size={18}/><small>Pay interval</small><strong>{job.pay_interval||'Not specified'}</strong></div>
             <div className="job-detail-card wide highlight"><Banknote size={18}/><small>Minimum remuneration & benefits</small><strong>{payLabel}</strong></div>
-            <div className="job-detail-card"><FileText size={18}/><small>Notice</small><strong>{job.notice_period||'To be confirmed'}</strong></div>
+            <div className="job-detail-card"><FileText size={18}/><small>Notice</small><strong>{job.notice_period||'Not specified'}</strong></div>
           </div>
         </section>}
 
