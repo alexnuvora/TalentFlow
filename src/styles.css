@@ -1012,3 +1012,6 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 
 /* Client researched vacancy visibility */
 .client-vacancy-group{display:grid;gap:0;margin-top:14px}.client-vacancy-group>.eyebrow{margin:4px 0 6px;color:#70837d}.external-vacancy-link{text-decoration:none}.external-vacancy-link>div{min-width:0}.external-vacancy-link small{display:block;margin-top:5px;color:#87958f;font-size:11px;line-height:1.45;max-width:62ch}.external-vacancy-meta{display:flex!important;align-items:center;gap:8px!important;flex:0 0 auto}.external-vacancy-meta svg{color:#0a8063}@media(max-width:640px){.external-vacancy-link{align-items:flex-start}.external-vacancy-meta{margin-top:2px}.external-vacancy-link small{display:none}}
+
+/* Shared partner call state on management client cards */
+.client-call-summary{display:grid;gap:5px;margin:10px 0 4px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-subtle,#f8faf9)}.client-call-summary span{display:block;font-size:12px;line-height:1.45;color:var(--muted)}.client-call-summary b{color:var(--text);margin-right:6px}.client-call-note{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
