@@ -28,7 +28,7 @@ Deno.serve(async req=>{
    db.from('partner_tasks').select('id,title,description,task_type,client_id,candidate_id,job_id,due_at,priority,status,outreach_channel,outreach_enrollment_id').eq('company_id',company).eq('partner_id',user.id).not('status','in','("done","cancelled")'),
    db.from('clients').select('id,company_name,terms_accepted_at').eq('company_id',company),
    db.from('partner_client_activity').select('client_id,status,callback_at,last_contacted_at,updated_at').eq('company_id',company).eq('partner_id',user.id),
-   db.from('jobs').select('id,client_id,title,status,location,description,requirements,required_qualifications').eq('company_id',company),
+   db.from('jobs').select('id,client_id,title,status,partner_sourcing_state,location,description,requirements,required_qualifications').eq('company_id',company),
    db.from('partner_candidate_pipeline').select('id,candidate_id,job_id,stage,next_action,next_action_at,manager_status,updated_at').eq('company_id',company).eq('partner_id',user.id),
    db.from('candidates').select('id,full_name,resume_path,work_seeker_terms_agreed_at,stage').eq('company_id',company).is('erased_at',null),
    db.from('candidate_submissions').select('id,client_id,job_id,candidate_id,status,client_feedback,client_feedback_at,submitted_at,updated_at').eq('company_id',company),
@@ -77,9 +77,9 @@ Deno.serve(async req=>{
    if(a.objective)add({...base,key:'objective:job:'+a.id,kind:'job',source:'assignment',title:a.objective,detail:'Manager-assigned objective for '+j.title,route:route('job'),action_label:'Open vacancy'});
    const rows=(pipeline||[]).filter((x:any)=>x.job_id===j.id);
    const activeRows=rows.filter((x:any)=>!['rejected','paused'].includes(x.stage));
-   if(canSource===true&&candidatePhase!==true&&['draft','published'].includes(String(j.status)))add({...base,key:'job:phase:'+j.id,kind:'pipeline',source:'derived',title:'Candidate processing not yet active · '+j.title,detail:'Vorlen compliance has not activated candidate processing for this workspace, so sourcing actions are intentionally blocked.',priority:'normal',route:route('job'),action_label:'View vacancy'},true);
-   if(canSourceNow&&['draft','published'].includes(String(j.status))&&activeRows.length===0){
-     add({...base,key:'job:source:'+j.id,kind:'pipeline',source:'derived',title:'Start sourcing · '+j.title,detail:(j.status==='draft'?'Approved for internal delivery. ':'Published vacancy. ')+'Search Vorlen candidates first, then source externally as needed.',priority:'high',route:route('pipeline',j.id),action_label:'Start sourcing'});
+   if(canSource===true&&candidatePhase!==true&&((j.partner_sourcing_state==='internal_sourcing_approved'&&j.status==='draft')||(j.partner_sourcing_state==='published'&&j.status==='published')))add({...base,key:'job:phase:'+j.id,kind:'pipeline',source:'derived',title:'Candidate processing not yet active · '+j.title,detail:'Vorlen compliance has not activated candidate processing for this workspace, so sourcing actions are intentionally blocked.',priority:'normal',route:route('job'),action_label:'View vacancy'},true);
+   if(canSourceNow&&((j.partner_sourcing_state==='internal_sourcing_approved'&&j.status==='draft')||(j.partner_sourcing_state==='published'&&j.status==='published'))&&activeRows.length===0){
+     add({...base,key:'job:source:'+j.id,kind:'pipeline',source:'derived',title:'Start sourcing · '+j.title,detail:(j.partner_sourcing_state==='internal_sourcing_approved'?'Internal Sourcing Approved. ':'Published Vacancy. ')+'Search Vorlen candidates first, then source externally as needed.',priority:'high',route:route('pipeline',j.id),action_label:'Start sourcing'});
    }
    if(canSourceNow){
     for(const row of activeRows){
