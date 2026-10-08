@@ -43,6 +43,7 @@ export default function Clients(){
    <div className="cards-list client-list-grid">{rows.map(c=><Link to={'/dashboard/clients/'+c.id} className="client-card-link" key={c.id}><Card className="client-list-card">
     <div className="card-head"><div><h3>{c.company_name}</h3><p>{c.contact_name}{c.email?' · '+c.email:''}</p></div><Badge tone={c.terms_accepted_at?'green':'amber'}>{c.terms_accepted_at?'terms agreed':'terms required'}</Badge></div>
     <p>{c.business_nature||'Nature of business not recorded'}</p>
+    <div className="client-call-summary"><span><b>Call status</b> {String(c.call_status||'not_contacted').replaceAll('_',' ')}</span><span><b>Last outcome</b> {String(c.last_call_outcome||'None recorded').replaceAll('_',' ')}</span>{c.last_call_note&&<span className="client-call-note"><b>Call note</b> {c.last_call_note}</span>}</div>
     <div className="client-card-footer"><span>{String(c.status||'prospect').replaceAll('_',' ')}</span><span>Open client <ChevronRight size={15}/></span></div>
    </Card></Link>)}</div>}
  </div>
