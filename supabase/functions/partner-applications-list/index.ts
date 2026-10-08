@@ -63,7 +63,7 @@ Deno.serve(async(req)=>{
     const appJobIds=[...new Set(apps.map(a=>a.job_id).filter(Boolean))] as string[];
     const[{data:candidates,error:candidateError},{data:jobs,error:jobError}]=await Promise.all([
       service.from('candidates').select('id,full_name,email').eq('company_id',profile.company_id).in('id',appCandidateIds),
-      service.from('jobs').select('id,client_id,title,status').eq('company_id',profile.company_id).in('id',appJobIds)
+      service.from('jobs').select('id,client_id,title,status,partner_sourcing_state').eq('company_id',profile.company_id).in('id',appJobIds)
     ]);
     if(candidateError)throw candidateError;if(jobError)throw jobError;
 
@@ -88,7 +88,7 @@ Deno.serve(async(req)=>{
         submitted_at:app.submitted_at,
         scope:candidateAssigned&&vacancyAssigned?'candidate_and_vacancy':candidateAssigned?'candidate':candidateCapable?'vacancy':'client_submission',
         candidate:(()=>{const c=candidateMap.get(app.candidate_id)||null;if(!c)return null;return candidateAssigned||candidateCapable?c:{id:c.id,full_name:c.full_name}})(),
-        job:job?{id:job.id,title:job.title,status:job.status,client:clientMap.get(job.client_id)||null}:null
+        job:job?{id:job.id,title:job.title,status:job.status,partner_sourcing_state:job.partner_sourcing_state,client:clientMap.get(job.client_id)||null}:null
       };
     });
     return json(req,{applications});
