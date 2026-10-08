@@ -1015,3 +1015,5 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 
 /* Shared partner call state on management client cards */
 .client-call-summary{display:grid;gap:5px;margin:10px 0 4px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-subtle,#f8faf9)}.client-call-summary span{display:block;font-size:12px;line-height:1.45;color:var(--muted)}.client-call-summary b{color:var(--text);margin-right:6px}.client-call-note{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.pipeline-owner{display:block;margin-top:4px;font-size:12px;color:var(--muted)}.pipeline-owner strong{color:var(--text);font-weight:650}
