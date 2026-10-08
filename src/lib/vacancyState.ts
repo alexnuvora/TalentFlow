@@ -1,9 +1,12 @@
 export type PartnerSourcingState='research_opportunity'|'internal_sourcing_approved'|'published';
 
 export const partnerSourcingState=(job:any):PartnerSourcingState=>{
+ const status=String(job?.status||'');
+ if(status==='paused'||status==='closed')return 'research_opportunity';
+ if(status==='published')return 'published';
  const explicit=String(job?.partner_sourcing_state||'');
- if(explicit==='research_opportunity'||explicit==='internal_sourcing_approved'||explicit==='published')return explicit;
- return String(job?.status||'')==='published'?'published':'research_opportunity';
+ if(explicit==='internal_sourcing_approved')return 'internal_sourcing_approved';
+ return 'research_opportunity';
 };
 
 export const partnerSourcingMeta=(job:any)=>{
