@@ -5,7 +5,7 @@ import {supabase} from '../lib/supabase';
 
 type Latest={id:string;sender_id:string;body:string;created_at:string};
 export function PartnerChatQuickReply({unreadCount}:{unreadCount:number}){
- const[open,setOpen]=useState(false),[conversation,setConversation]=useState(''),[latest,setLatest]=useState<Latest|null>(null),[me,setMe]=useState(''),[reply,setReply]=useState(''),[sending,setSending]=useState(false),[error,setError]=useState('');
+ const[open,setOpen]=useState(false),[companyId,setCompanyId]=useState(''),[conversation,setConversation]=useState(''),[latest,setLatest]=useState<Latest|null>(null),[me,setMe]=useState(''),[reply,setReply]=useState(''),[sending,setSending]=useState(false),[error,setError]=useState('');
  const refresh=useCallback(async()=>{
   const{data:{user}}=await supabase.auth.getUser();if(!user)return;
   setMe(user.id);
