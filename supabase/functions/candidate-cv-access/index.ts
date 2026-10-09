@@ -19,6 +19,7 @@ Deno.serve(async(req)=>{
  const{data:a,error:ae}=await db.from('partner_assignments').select('id').eq('company_id',p.company_id).eq('candidate_id',id).eq('partner_id',user.id).is('completed_at',null).limit(1).maybeSingle();
  if(ae)return reply(req,{error:'Access could not be verified'},403);
  permitted=!!a;
+ if(!permitted){const{data:source,error:sourceError}=await db.from('candidate_source_records').select('id').eq('company_id',p.company_id).eq('candidate_id',id).eq('imported_by',user.id).limit(1).maybeSingle();if(sourceError)return reply(req,{error:'Access could not be verified'},403);permitted=!!source}
  if(p.role==='partner'){
  const[{data:pp},{data:o}]=await Promise.all([
  db.from('partner_profiles').select('active,specialism').eq('company_id',p.company_id).eq('user_id',user.id).maybeSingle(),
