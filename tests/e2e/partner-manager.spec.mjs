@@ -85,7 +85,7 @@ test.describe.serial('Vorlen partner and manager production E2E',()=>{
     expect(errors).toEqual([]);
   });
 
-  test('talent workflow: match, AI rerank, CV parse/enrichment and submission pack',async({page},testInfo)=>{
+  test('talent workflow: CV, vacancy linking, recommendation, manager approval and submission pack',async({page,browser},testInfo)=>{
     requireFull(); const errors=diagnostics(page);
     await login(page,PARTNER_EMAIL,PARTNER_PASSWORD);
     await page.goto(BASE+'/dashboard/partner/talent');
@@ -126,6 +126,37 @@ test.describe.serial('Vorlen partner and manager production E2E',()=>{
     await expect(page.getByText('Review proposed enrichment')).toBeVisible();
     await page.getByRole('button',{name:'Apply reviewed enrichment'}).click();
 
+    // Exercise the actual recruiter -> manager handoff. Submission packs must not bypass this stage.
+    await page.goto(BASE+'/dashboard/partner/pipeline?job='+encodeURIComponent(fx.jobId));
+    await expect(page.getByText('Candidate × vacancy pipeline')).toBeVisible();
+    const addForm=page.locator('form').filter({has:page.getByRole('button',{name:'Add to pipeline'})});
+    await addForm.getByLabel('Candidate').selectOption(fx.candidateId);
+    await addForm.getByLabel('Vacancy').selectOption(fx.jobId);
+    await addForm.getByRole('button',{name:'Add to pipeline'}).click();
+    await expect(page.getByText('Screen candidate and confirm work-seeker terms')).toBeVisible();
+    const candidateCard=page.locator('.candidate-card').filter({hasText:'[E2E] '+RUN+' Candidate'}).filter({hasText:'[E2E] '+RUN+' Vacancy'});
+    await candidateCard.getByLabel('Pipeline stage').selectOption('recommended');
+    await expect(candidateCard.getByText('pending')).toBeVisible();
+
+    const managerContext=await browser.newContext();
+    try {
+      const managerPage=await managerContext.newPage();
+      await login(managerPage,fx.manager.email,fx.manager.password);
+      await managerPage.goto(BASE+'/dashboard/partner-management');
+      await expect(managerPage.getByText('Partner candidate recommendations')).toBeVisible();
+      await managerPage.getByLabel('Team member').selectOption(fx.partnerId);
+      const recommendation=managerPage.locator('.list-row').filter({hasText:'[E2E] '+RUN+' Candidate'}).filter({hasText:'recommended for human review'});
+      await expect(recommendation).toBeVisible();
+      managerPage.once('dialog',dialog=>dialog.accept('Approved by recruiter handoff E2E'));
+      await recommendation.getByRole('button',{name:'Approve recommendation'}).click();
+      await expect(recommendation).toHaveCount(0);
+    } finally {
+      await managerContext.close();
+    }
+
+    await page.goto(BASE+'/dashboard/partner/talent?job='+encodeURIComponent(fx.jobId)+'&candidate='+encodeURIComponent(fx.candidateId));
+    await expect(page.getByText('TALENT TOOLS')).toBeVisible();
+    await expect(page.getByRole('button',{name:'Send for Vorlen review'})).toBeEnabled();
     await page.getByLabel('Headline').fill('[E2E] '+RUN+' Candidate');
     await page.getByLabel('Recruiter summary').fill('Production E2E candidate summary with enough detail for manager review and controlled submission.');
     await page.getByLabel('Strengths (one per line)').fill('Relevant experience\nManchester location');
