@@ -37,7 +37,7 @@ export default function PartnerClients({defaultView='overview'}:{defaultView?:Pa
    supabase.from('clients').select('id,company_id,company_name,contact_name,email,phone,website,status,call_status,last_contacted_at,next_call_at,call_attempts,last_call_outcome,last_call_note,created_at').order('company_name'),
    supabase.from('partner_client_activity').select('*'),
    supabase.from('candidates').select('id,full_name,email,phone,location,linkedin_url,stage,next_action,next_action_at,work_seeker_terms_agreed_at,work_seeker_terms_evidence,resume_path,created_at').is('erased_at',null).order('created_at',{ascending:false}),
-   supabase.from('jobs').select('id,title,client_id,status,location').order('created_at',{ascending:false}),
+   supabase.from('jobs').select('id,title,client_id,status,partner_sourcing_state,sourcing_approved_at,location').order('created_at',{ascending:false}),
    supabase.from('partner_tasks').select('*').order('due_at',{ascending:true,nullsFirst:false}),
    supabase.from('partner_commercial_handoffs').select('id,status,client_id,prospect_id').order('updated_at',{ascending:false}),
    supabase.from('partner_prospects').select('*').order('updated_at',{ascending:false}),
