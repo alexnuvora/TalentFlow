@@ -9,6 +9,7 @@ export function PartnerChatQuickReply({unreadCount}:{unreadCount:number}){
  const refresh=useCallback(async()=>{
   const{data:{user}}=await supabase.auth.getUser();if(!user)return;
   setMe(user.id);
+  const{data:profile}=await supabase.from('profiles').select('company_id').eq('id',user.id).maybeSingle();if(profile?.company_id)setCompanyId(profile.company_id);
   const{data:c,error:ce}=await supabase.from('partner_conversations').select('id').eq('partner_id',user.id).limit(1).maybeSingle();
   if(ce){setError('Unable to load partner chat.');return}
   if(!c){setConversation('');setLatest(null);return}
@@ -18,8 +19,8 @@ export function PartnerChatQuickReply({unreadCount}:{unreadCount:number}){
   setLatest(m as Latest|null);setError('');
  },[]);
  useEffect(()=>{if(!open)return;void refresh();const timer=window.setInterval(()=>void refresh(),15000);const channel=supabase.channel('partner-chat-quick-reply').on('postgres_changes',{event:'INSERT',schema:'public',table:'partner_messages'},()=>void refresh()).subscribe();return()=>{window.clearInterval(timer);void supabase.removeChannel(channel)}},[open,refresh]);
- const send=async(e:React.FormEvent)=>{e.preventDefault();if(sending||!reply.trim()||!conversation||!me)return;setSending(true);setError('');
-  const{error:e2}=await supabase.from('partner_messages').insert({conversation_id:conversation,sender_id:me,body:reply.trim(),message_type:'text',reply_to_id:latest?.id||null});
+ const send=async(e:React.FormEvent)=>{e.preventDefault();if(sending||!reply.trim()||!conversation||!me||!companyId)return;setSending(true);setError('');
+  const{error:e2}=await supabase.from('partner_messages').insert({company_id:companyId,conversation_id:conversation,sender_id:me,body:reply.trim(),message_type:'text',reply_to_id:latest?.id||null});
   if(e2){setError('Reply could not be sent. Please try again or open chat.')}else{setReply('');await refresh()}setSending(false);
  };
  return <div className="partner-chat-quick-shell">
