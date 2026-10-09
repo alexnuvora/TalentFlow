@@ -87,9 +87,11 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
   const job=jobsById.get(newPipeline.job_id);if(!job||!canSourceForJob(job))return setError('Only Internal Sourcing Approved or Published Vacancy records can receive candidates.');
   setBusy(true);setError('');
   const{data:{user}}=await supabase.auth.getUser();
-  const{error:e2}=await supabase.from('partner_candidate_pipeline').insert({company_id:access.companyId,partner_id:user!.id,candidate_id:newPipeline.candidate_id,job_id:newPipeline.job_id,stage:'sourced'});
-  setBusy(false);if(e2)return setError(e2.message);
-  setNewPipeline({candidate_id:'',job_id:''});toast('Candidate added to the vacancy pipeline.');await load();
+  if(!user){setBusy(false);return setError('Your session has expired. Sign in again to assign a candidate.');}
+  if(pipeline.some(p=>p.candidate_id===newPipeline.candidate_id&&p.job_id===newPipeline.job_id)){setBusy(false);return setError('This candidate is already linked to that vacancy. Update the existing pipeline record.');}
+  const{data:created,error:e2}=await supabase.from('partner_candidate_pipeline').insert({company_id:access.companyId,partner_id:user.id,candidate_id:newPipeline.candidate_id,job_id:newPipeline.job_id,stage:'sourced',next_action:'Screen candidate and confirm work-seeker terms'}).select('id,candidate_id,job_id,stage').single();
+  if(e2||!created||created.job_id!==newPipeline.job_id||created.candidate_id!==newPipeline.candidate_id){setBusy(false);return setError(e2?.message||'The assignment could not be verified. Please retry.');}
+  setNewPipeline({candidate_id:'',job_id:''});await load();setBusy(false);toast('Candidate added to vacancy. Next: screen and qualify before recommending to Vorlen.');
  }
  async function movePipeline(row:any,stage:string){
   const cand=candidateById.get(row.candidate_id);
