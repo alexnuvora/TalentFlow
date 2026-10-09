@@ -5,8 +5,9 @@ export function CandidateCvActions({candidateId,compact=false}:{candidateId:stri
  async function access(action:'view'|'download'){
   if(busy)return;setBusy(true);setError('');
   // Reserve the tab synchronously to avoid popup blocking after the authenticated request.
-  const tab=action==='view'?window.open('about:blank','_blank','noopener'):null;
+  const tab=action==='view'?window.open('about:blank','_blank'):null;
   try{
+   if(tab)tab.opener=null;
    const{data,error:e}=await supabase.functions.invoke('candidate-cv-access',{body:{candidate_id:candidateId,action}});
    if(e||!data?.url)throw new Error(String(data?.error||e?.message||'CV unavailable'));
    if(tab)tab.location.href=data.url;else if(action==='view')window.location.assign(data.url);else{
