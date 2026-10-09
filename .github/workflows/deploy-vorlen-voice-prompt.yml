@@ -1,0 +1,32 @@
+name: Deploy Vorlen Voice Prompt
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: vorlen-mcp-voice-prompt
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      PROJECT_REF: mzkaodoruhklzluikagy
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Validate token exists
+        run: |
+          test -n "$SUPABASE_ACCESS_TOKEN" || { echo "Missing SUPABASE_ACCESS_TOKEN repo secret"; exit 1; }
+      - name: Download currently deployed MCP (not stale repository source)
+        run: |
+          rm -rf supabase/functions/talentflow-mcp
+          supabase functions download talentflow-mcp --project-ref "$PROJECT_REF" --use-api
+          test -s supabase/functions/talentflow-mcp/index.ts
+      - name: Replace only the voice system prompt
+        run: python3 ops/update_vorlen_voice_prompt.py
+      - name: Deploy patched live MCP, preserving all other tools
+        run: supabase functions deploy talentflow-mcp --project-ref "$PROJECT_REF" --no-verify-jwt --use-api
