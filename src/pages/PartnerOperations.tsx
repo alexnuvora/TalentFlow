@@ -31,7 +31,7 @@ export default function PartnerOperations({section}:{section:PartnerOpsSection})
    supabase.from('clients').select('id,company_name,contact_name,email,phone,status').order('company_name'),
    supabase.from('partner_prospects').select('*').order('updated_at',{ascending:false}),
    supabase.from('jobs').select('id,client_id,title,slug,status,partner_sourcing_state,sourcing_approved_at,sourcing_approved_by,location,salary_min,salary_max,employment_type,application_mode,description,requirements,duties,required_qualifications,work_days_hours,start_date,duration_text,minimum_remuneration_text,notice_period,created_at').order('created_at',{ascending:false}),
-   supabase.from('candidates').select('id,full_name,email,phone,location,stage,next_action,next_action_at,work_seeker_terms_agreed_at,resume_path,created_at').order('created_at',{ascending:false}),
+   supabase.from('candidates').select('id,full_name,email,phone,location,stage,next_action,next_action_at,work_seeker_terms_agreed_at,resume_path,created_at').is('erased_at',null).order('created_at',{ascending:false}),
    supabase.from('partner_candidate_pipeline').select('*').order('updated_at',{ascending:false}),
    supabase.from('partner_commercial_handoffs').select('*').order('updated_at',{ascending:false}),
    supabase.from('placements').select('id,client_id,job_id,candidate_id,fee_amount,currency,invoice_status,start_date,paid_at,created_at').order('created_at',{ascending:false}),
