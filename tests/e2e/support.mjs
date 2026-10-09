@@ -61,7 +61,7 @@ export async function setupFixture(){
   const {data:job,error:je}=await admin.from('jobs').insert({
     company_id:companyId,client_id:client.id,title:'[E2E] '+RUN+' Vacancy',
     slug:'e2e-'+RUN.toLowerCase(),description:'Production E2E fixture vacancy.',
-    employment_type:'Permanent',location:'Manchester',status:'draft',requirements:['E2E'],
+    employment_type:'Permanent',location:'Manchester',status:'draft',partner_sourcing_state:'internal_sourcing_approved',sourcing_approved_at:new Date().toISOString(),requirements:['E2E'],
     genuine_vacancy_confirmed_at:new Date().toISOString(),client_instruction_reference:'e2e:'+RUN
   }).select('id').single(); if(je)throw je;
 
