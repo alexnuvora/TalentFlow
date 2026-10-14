@@ -7,6 +7,8 @@ type Latest={id:string;sender_id:string;body:string;created_at:string};
 export function PartnerChatQuickReply({unreadCount}:{unreadCount:number}){
  const lastUnread=useRef<number|null>(null);
  const suppressedUntilNewMessage=useRef(false);
+ const messageScroll=useRef<HTMLDivElement|null>(null);
+ const[history,setHistory]=useState<Latest[]>([]);
  const[open,setOpen]=useState(false),[companyId,setCompanyId]=useState(''),[conversation,setConversation]=useState(''),[latest,setLatest]=useState<Latest|null>(null),[me,setMe]=useState(''),[reply,setReply]=useState(''),[sending,setSending]=useState(false),[error,setError]=useState('');
  const refresh=useCallback(async()=>{
   const{data:{user}}=await supabase.auth.getUser();if(!user)return;
@@ -14,13 +16,15 @@ export function PartnerChatQuickReply({unreadCount}:{unreadCount:number}){
   const{data:profile}=await supabase.from('profiles').select('company_id').eq('id',user.id).maybeSingle();if(profile?.company_id)setCompanyId(profile.company_id);
   const{data:c,error:ce}=await supabase.from('partner_conversations').select('id').eq('partner_id',user.id).limit(1).maybeSingle();
   if(ce){setError('Unable to load partner chat.');return}
-  if(!c){setConversation('');setLatest(null);return}
+  if(!c){setConversation('');setLatest(null);setHistory([]);return}
   setConversation(c.id);
-  const{data:m,error:e}=await supabase.from('partner_messages').select('id,sender_id,body,created_at').eq('conversation_id',c.id).neq('sender_id',user.id).is('deleted_at',null).order('created_at',{ascending:false}).limit(1).maybeSingle();
-  if(e){setError('Unable to load latest message.');return}
-  setLatest(m as Latest|null);setError('');
+  const{data:m,error:e}=await supabase.from('partner_messages').select('id,sender_id,body,created_at').eq('conversation_id',c.id).is('deleted_at',null).order('created_at',{ascending:false}).limit(200);
+  if(e){setError('Unable to load conversation.');return}
+  const ordered=[...(m||[])].reverse() as Latest[];
+  setHistory(ordered);setLatest(ordered.filter(item=>item.sender_id!==user.id).at(-1)||null);setError('');
  },[]);
  useEffect(()=>{if(!open)return;void refresh();const timer=window.setInterval(()=>void refresh(),15000);const channel=supabase.channel('partner-chat-quick-reply').on('postgres_changes',{event:'INSERT',schema:'public',table:'partner_messages'},()=>void refresh()).subscribe();return()=>{window.clearInterval(timer);void supabase.removeChannel(channel)}},[open,refresh]);
+ useEffect(()=>{if(open&&messageScroll.current)messageScroll.current.scrollTop=messageScroll.current.scrollHeight},[open,history]);
  useEffect(()=>{
   const previous=lastUnread.current;
   lastUnread.current=unreadCount;
@@ -45,7 +49,7 @@ export function PartnerChatQuickReply({unreadCount}:{unreadCount:number}){
   }setSending(false);
  };
  return <div className={`partner-chat-quick-shell${open?' is-visible':''}`}>
- {<section className={`partner-chat-quick-panel${open?' is-open':''}`} aria-hidden={!open} role="dialog" aria-label="Quick reply to Vorlen" aria-modal="false" inert={!open}><header><strong>Chat with Vorlen</strong><button type="button" aria-label="Close quick reply" onClick={()=>setOpen(false)}><X size={18}/></button></header><div className="partner-chat-quick-body"><span className="partner-chat-quick-kicker">Latest message received</span>{latest?<p>{latest.body||'Attachment received — open chat to view.'}</p>:<p>{conversation?'No messages received yet.':'Open the full chat to start your conversation.'}</p>}{error&&<p className="partner-chat-quick-error" role="alert">{error}</p>}</div><form onSubmit={send}><label htmlFor="partner-chat-quick-input">Your reply</label><div className="partner-chat-quick-compose"><input id="partner-chat-quick-input" value={reply} onChange={e=>setReply(e.target.value)} placeholder="Write a quick reply…" disabled={!conversation||sending} maxLength={5000}/><button aria-label="Send quick reply" type="submit" disabled={!reply.trim()||!conversation||sending}><ArrowUp size={18}/></button></div></form><Link className="partner-chat-quick-full" to="/dashboard/partner/chat" onClick={()=>setOpen(false)}>Open full partner chat →</Link></section>}
+ {<section className={`partner-chat-quick-panel${open?' is-open':''}`} aria-hidden={!open} role="dialog" aria-label="Quick reply to Vorlen" aria-modal="false" inert={!open}><header><strong>Chat with Vorlen</strong><button type="button" aria-label="Close quick reply" onClick={()=>setOpen(false)}><X size={18}/></button></header><div className="partner-chat-quick-body" ref={messageScroll} role="log" aria-label="Partner chat conversation" aria-live="off">{history.length?<div className="partner-chat-quick-history">{history.map(item=><div key={item.id} className={`partner-chat-quick-message${item.sender_id===me?' is-mine':''}`}><span>{item.sender_id===me?'You':'Vorlen'} · {new Date(item.created_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</span><p>{item.body||'Attachment — open full chat to view'}</p></div>)}</div>:<p>{conversation?'No messages yet.':'Open the full chat to start your conversation.'}</p>}{error&&<p className="partner-chat-quick-error" role="alert">{error}</p>}</div><form onSubmit={send}><label htmlFor="partner-chat-quick-input">Your reply</label><div className="partner-chat-quick-compose"><input id="partner-chat-quick-input" value={reply} onChange={e=>setReply(e.target.value)} placeholder="Write a quick reply…" disabled={!conversation||sending} maxLength={5000}/><button aria-label="Send quick reply" type="submit" disabled={!reply.trim()||!conversation||sending}><ArrowUp size={18}/></button></div></form><Link className="partner-chat-quick-full" to="/dashboard/partner/chat" onClick={()=>setOpen(false)}>Open full partner chat →</Link></section>}
 
  </div>
 }
