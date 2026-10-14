@@ -35,7 +35,16 @@ export function PartnerChatQuickReply({unreadCount}:{unreadCount:number}){
   setReactionBusy(message.id);
   const request=existing?.emoji===emoji?supabase.from('partner_message_reactions').delete().eq('id',existing.id):supabase.from('partner_message_reactions').upsert({company_id:companyId,conversation_id:conversation,message_id:message.id,user_id:me,emoji},{onConflict:'message_id,user_id'});
   const{error:reactionError}=await request;
-  if(reactionError)setError('Could not update reaction. Please try again.');else await refresh();
+  if(reactionError){setError('Could not update reaction. Please try again.')}else{
+   await refresh();
+   if(existing?.emoji!==emoji&&message.sender_id!==me){
+    const now=new Date().toISOString();
+    const{error:receiptError}=await supabase.from('partner_message_receipts').upsert({message_id:message.id,conversation_id:conversation,user_id:me,delivered_at:now,read_at:now},{onConflict:'message_id,user_id'});
+    if(receiptError)console.error('Partner reaction read receipt failed',receiptError.message);
+    else window.dispatchEvent(new Event('partner-chat-read'));
+    suppressedUntilNewMessage.current=true;setOpen(false);
+   }
+  }
   setReactingTo('');setReactionBusy('');
  };
  useEffect(()=>{if(!open)return;void refresh();const timer=window.setInterval(()=>void refresh(),15000);const channel=supabase.channel('partner-chat-quick-reply').on('postgres_changes',{event:'INSERT',schema:'public',table:'partner_messages'},()=>void refresh()).subscribe();return()=>{window.clearInterval(timer);void supabase.removeChannel(channel)}},[open,refresh]);
