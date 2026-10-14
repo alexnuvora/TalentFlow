@@ -1,0 +1,6 @@
+import {Card,Badge} from './Ui';
+type JourneyProps={linked:boolean;screened:boolean;reviewed:boolean;introduced:boolean;placed:boolean;label?:string};
+export default function CandidateJourney({linked,screened,reviewed,introduced,placed,label}:JourneyProps){
+ const steps=[{name:'Candidate & vacancy',done:linked},{name:'Screened',done:screened},{name:'Vorlen review',done:reviewed},{name:'Employer introduction',done:introduced},{name:'Interview, offer & placement',done:placed}];
+ return <Card><div className="card-head"><div><h3>Recruitment journey</h3><p>{label||'One candidate, one vacancy and one set of recruitment records. Only the actions available to your role are shown below.'}</p></div></div><div className="button-row" aria-label="Recruitment progress">{steps.map((step,i)=><span key={step.name} className="badge" aria-label={step.name+(step.done?', complete':', outstanding')} style={{display:'inline-flex',gap:6,alignItems:'center'}}><span aria-hidden="true">{step.done?'✓':i+1}</span>{step.name}</span>)}</div><p className="muted">Completed stages are based on recorded activity; this progress display does not waive candidate permissions, suitability checks or approval requirements.</p></Card>
+}
