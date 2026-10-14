@@ -51,7 +51,7 @@ if(b.action==='readiness'||b.action==='send_approved'){
 }
 if(!appId||!recipient||summary.length<10||authorisation.length<10||b.review_confirmed!==true)return json({error:'Application, recipient, reviewed summary, candidate authorisation and human review confirmation are required'},400);if(b.action==='send_approved'){
  // The reservation helper checks applicant, approved pack, role and prior delivery state again.
- const{data:pending}=await db.from('candidate_submissions').select('id,status,delivery_id,submitted_at').eq('company_id',profile.company_id).eq('application_id',appId).eq('status','approved_to_send').is('delivery_id',null).limit(1).maybeSingle();
+ const{data:targetApp}=await db.from('applications').select('candidate_id,job_id').eq('company_id',profile.company_id).eq('id',appId).maybeSingle();const{data:pending}=targetApp?await db.from('candidate_submissions').select('id,status,delivery_id,submitted_at').eq('company_id',profile.company_id).eq('candidate_id',targetApp.candidate_id).eq('job_id',targetApp.job_id).eq('status','approved_to_send').is('delivery_id',null).limit(1).maybeSingle():{data:null};
  if(pending){
  const{error:repairError}=await db.rpc('repair_unsent_approved_candidate_delivery',{p_actor:user.id,p_application:appId,p_summary:summary,p_authorisation:authorisation,p_recipient:recipient});
  if(repairError)return json({error:repairError.message},409);
