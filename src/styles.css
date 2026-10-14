@@ -1057,3 +1057,32 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 .candidate-progress-outcome{font-size:12px;margin:12px 0 0;color:#8c473b}
 @media(max-width:960px){.candidate-surface .candidate-grid{grid-template-columns:minmax(0,1fr)!important}.client-surface>.client-header,.candidate-surface>header{min-height:70px}}
 @media(max-width:600px){.client-surface>main,.candidate-surface>main{padding:14px!important}.client-surface .client-intro,.candidate-surface .candidate-welcome{padding:24px 20px!important;min-height:0}.client-surface>.client-header,.candidate-surface>header{padding:14px 16px!important}.client-surface>.client-header small,.candidate-surface>header>span{font-size:10px}.candidate-progress-steps{grid-template-columns:repeat(7,minmax(84px,1fr));gap:4px}.candidate-progress{overflow-x:auto;padding-bottom:10px;scrollbar-width:thin}.candidate-progress-label{font-size:11px}.candidate-surface .candidate-list article{padding:18px}}
+
+/* Portal spacing polish: shared, scoped and responsive */
+.client-surface>main,.candidate-surface>main{padding:24px clamp(20px,3vw,42px) 60px!important}
+.client-surface .client-intro,.candidate-surface .candidate-welcome{margin-bottom:34px!important}
+.client-surface .client-list,.candidate-surface .candidate-grid{margin-top:0}
+.client-surface .client-list>article,.client-surface .client-submission{padding:24px!important}
+.client-surface .client-list .page-actions{padding:0 0 18px;margin-bottom:18px}
+.client-surface .client-submission-head{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+.client-surface .client-submission-head>div{min-width:0}
+.client-surface .client-submission h2,.client-surface .client-submission h3,.client-surface .client-submission p{overflow-wrap:anywhere}
+.client-surface .client-summary,.client-surface .client-feedback{padding:18px!important}
+.candidate-surface .candidate-grid>div>h2,.candidate-surface .candidate-grid>aside>h2{margin:0 0 14px!important;padding:0 0 10px!important}
+.candidate-surface .candidate-list article{padding:26px!important;border:1px solid #dfe7e1}
+.candidate-surface .candidate-list article>div:first-child{padding:0!important}
+.candidate-surface .candidate-list article h3{margin:8px 0!important;line-height:1.2}
+.candidate-surface .candidate-privacy{padding:26px!important;display:block;min-width:0}
+.candidate-surface .candidate-privacy>h2,.candidate-surface .candidate-privacy>h3{margin:0 0 14px!important}
+.candidate-surface .candidate-privacy>p{margin:0 0 18px!important;line-height:1.6}
+.candidate-surface .candidate-profile-form{display:grid;gap:14px;margin:16px 0 22px}
+.candidate-surface .candidate-profile-form label{display:grid;gap:7px;min-width:0;margin:0!important}
+.candidate-surface .candidate-profile-form input,.candidate-surface .candidate-profile-form textarea{width:100%;padding:12px 13px!important;min-height:44px}
+.candidate-surface .candidate-profile-form textarea{min-height:86px}
+.candidate-surface .candidate-privacy button{display:inline-flex;align-items:center;min-height:38px;padding:9px 11px!important;margin:3px 0!important;max-width:100%;text-align:left}
+.candidate-surface .candidate-marketing-pref{padding:20px!important;margin:22px 0!important;border:1px solid #dfe9e2;border-radius:14px}
+.candidate-surface .candidate-marketing-pref p{margin:10px 0!important;line-height:1.5}
+.candidate-surface .candidate-privacy>button{display:flex;width:100%;border-bottom:1px solid #e1e7e3}
+.candidate-surface .candidate-status{padding:9px 12px;white-space:normal;overflow-wrap:anywhere}
+.candidate-surface .candidate-grid>aside>.candidate-muted{margin:0 0 20px}
+@media(max-width:720px){.client-surface>main,.candidate-surface>main{padding:18px 16px 48px!important}.candidate-surface .candidate-privacy{padding:20px!important}.candidate-surface .candidate-list article{padding:20px!important}.client-surface .client-list>article,.client-surface .client-submission{padding:18px!important}.client-surface .client-intro,.candidate-surface .candidate-welcome{margin-bottom:24px!important}}
