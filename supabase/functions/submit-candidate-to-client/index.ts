@@ -7,7 +7,48 @@ if(req.method!=='POST')return json({error:'Method not allowed'},405);
 const auth=req.headers.get('Authorization')||'',url=Deno.env.get('SUPABASE_URL')!,anon=Deno.env.get('SUPABASE_ANON_KEY')!,service=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const uc=createClient(url,anon,{global:{headers:{Authorization:auth}}}),db=createClient(url,service);
 const{data:{user}}=await uc.auth.getUser();if(!user)return json({error:'Authentication required'},401);
-const{data:profile}=await db.from('profiles').select('company_id').eq('id',user.id).single();if(!profile)return json({error:'Workspace not found'},403);const{data:candidateAllowed}=await db.rpc('candidate_processing_allowed',{p_company_id:profile.company_id});if(candidateAllowed!==true)return json({error:'Candidate processing is disabled until Vorlen completes the candidate compliance activation process.'},409);const b=await req.json(),appId=String(b.application_id||''),summary=String(b.recruiter_summary||'').trim(),recipient=String(b.recipient_email||'').trim(),authorisation=String(b.candidate_authorisation||'').trim();
+const{data:profile}=await db.from('profiles').select('company_id').eq('id',user.id).single();if(!profile)return json({error:'Workspace not found'},403);const{data:candidateAllowed}=await db.rpc('candidate_processing_allowed',{p_company_id:profile.company_id});if(candidateAllowed!==true)return json({error:'Candidate processing is disabled until Vorlen completes the candidate compliance activation process.'},409);const b=await req.json();let appId=String(b.application_id||''),summary=String(b.recruiter_summary||'').trim(),recipient=String(b.recipient_email||'').trim(),authorisation=String(b.candidate_authorisation||'').trim();
+if(b.action==='readiness'||b.action==='send_approved'){
+ const{data:staff}=await db.from('profiles').select('role').eq('id',user.id).eq('company_id',profile.company_id).maybeSingle();
+ if(!staff||!['owner','manager','recruiter'].includes(staff.role))return json({error:'Recruitment staff access required'},403);
+ if(staff.role==='recruiter'){
+ const{data:approved}=await db.from('recruiter_data_access_approvals').select('approved_at,revoked_at,expires_at').eq('user_id',user.id).eq('company_id',profile.company_id).not('approved_at','is',null).is('revoked_at',null).limit(1).maybeSingle();
+ if(!approved||(approved.expires_at&&new Date(approved.expires_at)<=new Date()))return json({error:'Candidate access approval required'},403);
+ }
+ const{data:a,error:ae}=await db.from('applications').select('*').eq('id',appId).eq('company_id',profile.company_id).maybeSingle();
+ if(ae||!a)return json({error:'Application not found'},404);
+ const[{data:job},{data:client},{data:packs},{data:submissions},{data:reports},{data:candidate}]=await Promise.all([
+ db.from('jobs').select('id,title,client_id,status,application_mode,agency_service_type,qualification_verification_required,works_with_vulnerable_people').eq('id',a.job_id).eq('company_id',profile.company_id).maybeSingle(),
+ db.from('clients').select('id,email,status,terms_accepted_at,terms_version,terms_accepted_by,terms_evidence,recruitment_fee_percent,payment_terms_days').eq('id', (await db.from('jobs').select('client_id').eq('id',a.job_id).single()).data?.client_id||'00000000-0000-0000-0000-000000000000').eq('company_id',profile.company_id).maybeSingle(),
+ db.from('partner_submission_packs').select('id,summary,headline,status').eq('candidate_id',a.candidate_id).eq('job_id',a.job_id).eq('company_id',profile.company_id).eq('status','approved').order('reviewed_at',{ascending:false}).limit(1),
+ db.from('candidate_submissions').select('status,candidate_authorisation,recipient_email,delivery_id,submitted_at').eq('candidate_id',a.candidate_id).eq('job_id',a.job_id).eq('company_id',profile.company_id).limit(1),
+ db.from('screening_reports').select('id,reviewed_at').eq('application_id',a.id).eq('company_id',profile.company_id),
+ db.from('candidates').select('resume_path,postal_address,under_22,date_of_birth,experience_summary,training_qualifications,authorisations,work_seeker_terms_agreed_at').eq('id',a.candidate_id).eq('company_id',profile.company_id).maybeSingle()
+ ]);
+ const pack=packs?.[0],existing=submissions?.[0];const blockers:string[]=[];
+ if(!job||!client||!candidate)blockers.push('Candidate, vacancy or client information is unavailable.');
+ if(!pack?.summary||pack.summary.trim().length<10)blockers.push('An approved recruiter submission pack with a useful summary is required.');
+ if(a.status!=='qualified'&&a.status!=='submitted')blockers.push('The application needs a verified human qualification decision.');
+ if((reports||[]).some((r:any)=>!r.reviewed_at))blockers.push('An AI screening report still needs human review.');
+ if(!a.vacancy_particulars_provided_at||!a.willingness_confirmed_at||!String(a.willingness_evidence||'').trim())blockers.push('Candidate willingness for this vacancy and the vacancy particulars are not yet evidenced.');
+ if(!a.suitability_checked_at||!String(a.suitability_evidence||'').trim())blockers.push('The role-specific suitability check has not been recorded.');
+ if(job?.qualification_verification_required&&(!a.qualification_verified_at||!String(a.qualification_verification_evidence||'').trim()))blockers.push('Required qualifications or authorisations still need verification.');
+ if(job?.works_with_vulnerable_people&&(!a.reference_1_verified_at||!a.reference_2_verified_at||!a.vulnerable_checks_evidence))blockers.push('Required references and vulnerable-person checks are incomplete.');
+ const savedAuthority=String(existing?.candidate_authorisation||a.source_details?.candidate_sharing_authorisation||'').trim();
+ if(savedAuthority.length<10)blockers.push('Candidate permission to share their details with this client has not been evidenced.');
+ if(!candidate?.resume_path)blockers.push('Candidate CV is missing.');
+ if(!candidate?.work_seeker_terms_agreed_at)blockers.push('Work-seeker terms have not been acknowledged.');
+ if(!candidate?.postal_address||candidate?.under_22===null||(candidate?.under_22&&!candidate?.date_of_birth)||!candidate?.experience_summary||!candidate?.training_qualifications||!candidate?.authorisations)blockers.push('Mandatory candidate record details need completion.');
+ if(!client||client.status!=='active'||!client.email)blockers.push('An active verified employer contact is required.');
+ if(!client?.terms_accepted_at||client.terms_version!=='client-tob-2026-09-21'||!client.terms_accepted_by||!client.terms_evidence||client.recruitment_fee_percent==null||client.payment_terms_days==null)blockers.push('Current signed client Terms of Business and commercial terms are required.');
+ if(!job||job.status!=='published'||job.application_mode==='register_interest'||job.agency_service_type!=='permanent_employment')blockers.push('The vacancy is not published for authorised permanent introductions.');
+ if(existing?.status==='submitted')blockers.push('This candidate has already been introduced to this employer.');
+ if(existing?.status==='approved_to_send'&&!existing?.delivery_id)blockers.push('Existing approved submission has no delivery reservation; it needs reconciliation.');
+ if(b.action==='readiness')return json({ready:blockers.length===0,blockers,recipient_email:client?.email||null,summary:pack?.summary||null,application_id:appId,existing_status:existing?.status||null});
+ if(blockers.length)return json({error:'Introduction cannot proceed until outstanding checks are completed.',blockers},409);
+ summary=pack.summary.trim();recipient=client.email;authorisation=savedAuthority;
+ b.review_confirmed=true;b.force_resend=false;
+}
 if(!appId||!recipient||summary.length<10||authorisation.length<10||b.review_confirmed!==true)return json({error:'Application, recipient, reviewed summary, candidate authorisation and human review confirmation are required'},400);
 const{data:res,error:re}=await db.rpc('reserve_client_submission_service',{p_actor:user.id,p_application:appId,p_summary:summary,p_authorisation:authorisation,p_recipient:recipient});
 if(re)return json({error:re.message},400);
