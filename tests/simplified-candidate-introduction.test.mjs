@@ -24,9 +24,9 @@ test('server verifies approved pack, genuine authority, consent evidence and rem
  assert.match(server,/if\(blockers\.length\)return json/);
  assert.match(server,/repair_unsent_approved_candidate_delivery/);
 });
-test('missing evidence is handled separately and never automatically submitted',()=>{
- assert.match(workspace,/Resolve missing candidate evidence/);
- assert.match(evidence,/record_candidate_sharing_authority/);
- assert.match(evidence,/record_introduction_compliance/);
- assert.doesNotMatch(evidence,/submit-candidate-to-client/);
+test('CEO does not display a separate evidence questionnaire',()=>{
+ const app=readFileSync(new URL('../src/App.tsx',import.meta.url),'utf8');
+ assert.doesNotMatch(workspace,/Resolve missing candidate evidence/);
+ assert.doesNotMatch(app,/CandidateIntroductionEvidence/);
+ assert.match(workspace,/recruiter’s existing screening follow-up/);
 });
