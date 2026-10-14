@@ -6,7 +6,7 @@ import VorlenBrand from '../components/VorlenBrand';
 export default function Privacy(){
  useEffect(()=>setSeo({
   title:'Privacy notice | Vorlen',
-  description:'How Ivy and Pearls Ltd trading as Vorlen handles personal information for recruitment, client development, partner operations and website enquiries.',
+  description:'How Vorlen Ltd handles personal information for recruitment, client development, partner operations and website enquiries.',
   path:'/privacy'
  }),[]);
  return <div className="legal-public">
@@ -14,10 +14,10 @@ export default function Privacy(){
   <main>
    <div className="legal-kicker">PRIVACY NOTICE · VERSION 25 SEPTEMBER 2026</div>
    <h1>Privacy notice</h1>
-   <p className="legal-lead">This notice explains how Ivy and Pearls Ltd, trading as Vorlen, uses personal information when providing permanent recruitment services, operating its partner and client workspaces, developing business relationships and responding to enquiries.</p>
+   <p className="legal-lead">This notice explains how Vorlen Ltd, uses personal information when providing permanent recruitment services, operating its partner and client workspaces, developing business relationships and responding to enquiries.</p>
 
    <section><h2>Who is responsible for your information</h2>
-    <p><strong>Ivy and Pearls Ltd</strong>, company number <strong>17387520</strong>, registered in England and Wales with registered office at <strong>Rochdale, OL16 2EP</strong>, trading as <strong>Vorlen</strong>, is the controller for the personal information described in this notice unless another organisation is clearly identified as the controller for a particular activity.</p>
+    <p><strong>Vorlen Ltd</strong>, company number <strong>17387520</strong>, registered in England and Wales with registered office at <strong>Rochdale, OL16 2EP</strong>, trading as <strong>Vorlen</strong>, is the controller for the personal information described in this notice unless another organisation is clearly identified as the controller for a particular activity.</p>
     <p>Privacy enquiries can be sent to <a href="mailto:privacy@vorlen.co.uk">privacy@vorlen.co.uk</a>.</p>
    </section>
 
