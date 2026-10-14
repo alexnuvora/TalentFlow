@@ -27,8 +27,11 @@ export default function Pipeline(){
   }
   const result=await Promise.all(requests);
   const candidateResult=result[0];
+  const lifecycleResult=await supabase.rpc('candidate_lifecycle_stages');
+  if(lifecycleResult.error)setError(lifecycleResult.error.message);
+  const derivedStages=new Map((lifecycleResult.data||[]).map((item:any)=>[item.candidate_id,item.effective_stage]));
   if(candidateResult.error)setError(candidateResult.error.message);
-  setRows(candidateResult.data||[]);
+  setRows((candidateResult.data||[]).map((candidate:any)=>({...candidate,stage:derivedStages.get(candidate.id)||candidate.stage})));
   if(canManageShared){
    const [pipe,jobRows,clientRows,partnerProfiles]=result.slice(1);
    if(pipe.error||jobRows.error||clientRows.error||partnerProfiles.error)setError(pipe.error?.message||jobRows.error?.message||clientRows.error?.message||partnerProfiles.error?.message||'Unable to load shared vacancy pipeline');
@@ -39,14 +42,6 @@ export default function Pipeline(){
   setLoading(false);
  }
  useEffect(()=>{if(!access.loading)void load()},[access.loading,access.role]);
-
- async function move(id:string,stage:string){
-  const previous=rows.find(r=>r.id===id)?.stage;
-  setBusy(id);setRows(x=>x.map(r=>r.id===id?{...r,stage}:r));
-  const{error}=await supabase.from('candidates').update({stage}).eq('id',id);
-  setBusy('');
-  if(error){setRows(x=>x.map(r=>r.id===id?{...r,stage:previous}:r));setError(`Could not move candidate: ${error.message}`)}
- }
 
  async function movePartner(row:any,stage:string){
   if(!canManageShared)return;
@@ -78,8 +73,8 @@ export default function Pipeline(){
   </section>}
 
   <section className="pipeline-section">
-   <div className="card-head"><div><h2>Candidate lifecycle</h2><p>The candidate's overall Vorlen lifecycle. This remains separate from job-specific partner pipeline stages so one candidate can be worked against more than one vacancy safely.</p></div></div>
-   <div className="kanban">{stages.map(s=>{const lane=rows.filter(r=>r.stage===s);return <div className="lane" key={s}><div className="lane-head"><strong>{s}</strong><span>{lane.length}</span></div>{lane.length===0&&<div className="empty small">No candidates</div>}{lane.map(c=><Card className="candidate-card" key={c.id}><Link className="candidate-name" to={`/dashboard/candidates/${c.id}`}><strong>{c.full_name||'Unnamed candidate'}</strong></Link><span>{c.email||'No email'}</span>{managersByCandidate.get(c.id)?.length?<span className="pipeline-owner"><strong>Managed by:</strong> {managersByCandidate.get(c.id)!.join(', ')}</span>:null}{c.score!=null&&<Badge tone="blue">AI evidence score {c.score}</Badge>}<select className="stage-select" aria-label={`Candidate stage for ${c.full_name||'candidate'}`} disabled={busy===c.id} value={c.stage||'new'} onChange={e=>void move(c.id,e.target.value)}>{[...stages,'rejected','withdrawn'].map(x=><option key={x} value={x}>{x.replaceAll('_',' ')}</option>)}</select></Card>)}</div>})}</div>
+   <div className="card-head"><div><h2>Candidate lifecycle</h2><p>This lifecycle advances automatically from application qualification, client submission, interview, offer and placement records. It remains separate from each partner's job-specific sourcing pipeline.</p></div></div>
+   <div className="kanban">{stages.map(s=>{const lane=rows.filter(r=>r.stage===s);return <div className="lane" key={s}><div className="lane-head"><strong>{s}</strong><span>{lane.length}</span></div>{lane.length===0&&<div className="empty small">No candidates</div>}{lane.map(c=><Card className="candidate-card" key={c.id}><Link className="candidate-name" to={`/dashboard/candidates/${c.id}`}><strong>{c.full_name||'Unnamed candidate'}</strong></Link><span>{c.email||'No email'}</span>{managersByCandidate.get(c.id)?.length?<span className="pipeline-owner"><strong>Managed by:</strong> {managersByCandidate.get(c.id)!.join(', ')}</span>:null}{c.score!=null&&<Badge tone="blue">AI evidence score {c.score}</Badge>}<Badge tone="green">{(c.stage||'new').replaceAll('_',' ')} · Automatic</Badge></Card>)}</div>})}</div>
   </section>
  </div>
 }
