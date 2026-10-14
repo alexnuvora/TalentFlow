@@ -27,5 +27,7 @@ test('manager review and necessary candidate evidence precede recommendation',()
 test('unlinked candidates receive actionable navigation rather than false success',()=>{
   assert.match(workspace,/No vacancy linked yet/);
   assert.match(workspace,/Link to an assigned vacancy/);
-  assert.match(workspace,/What happens next\?/);
+  assert.match(workspace,/Your next step/);
+  assert.match(workspace,/Recommend to Vorlen/);
+  assert.match(workspace,/Send for Vorlen review/);
 });
