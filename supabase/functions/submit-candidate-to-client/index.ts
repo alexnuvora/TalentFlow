@@ -43,13 +43,21 @@ if(b.action==='readiness'||b.action==='send_approved'){
  if(!client?.terms_accepted_at||client.terms_version!=='client-tob-2026-09-21'||!client.terms_accepted_by||!client.terms_evidence||client.recruitment_fee_percent==null||client.payment_terms_days==null)blockers.push('Current signed client Terms of Business and commercial terms are required.');
  if(!job||job.status!=='published'||job.application_mode==='register_interest'||job.agency_service_type!=='permanent_employment')blockers.push('The vacancy is not published for authorised permanent introductions.');
  if(existing?.status==='submitted')blockers.push('This candidate has already been introduced to this employer.');
- if(existing?.status==='approved_to_send'&&!existing?.delivery_id)blockers.push('Existing approved submission has no delivery reservation; it needs reconciliation.');
+ // Previously approved but unsent submissions are reserved atomically before delivery.
  if(b.action==='readiness')return json({ready:blockers.length===0,blockers,recipient_email:client?.email||null,summary:pack?.summary||null,application_id:appId,existing_status:existing?.status||null});
  if(blockers.length)return json({error:'Introduction cannot proceed until outstanding checks are completed.',blockers},409);
  summary=pack.summary.trim();recipient=client.email;authorisation=savedAuthority;
  b.review_confirmed=true;b.force_resend=false;
 }
-if(!appId||!recipient||summary.length<10||authorisation.length<10||b.review_confirmed!==true)return json({error:'Application, recipient, reviewed summary, candidate authorisation and human review confirmation are required'},400);
+if(!appId||!recipient||summary.length<10||authorisation.length<10||b.review_confirmed!==true)return json({error:'Application, recipient, reviewed summary, candidate authorisation and human review confirmation are required'},400);if(b.action==='send_approved'){
+ // The reservation helper checks applicant, approved pack, role and prior delivery state again.
+ const{data:pending}=await db.from('candidate_submissions').select('id,status,delivery_id,submitted_at').eq('company_id',profile.company_id).eq('application_id',appId).eq('status','approved_to_send').is('delivery_id',null).limit(1).maybeSingle();
+ if(pending){
+ const{error:repairError}=await db.rpc('repair_unsent_approved_candidate_delivery',{p_actor:user.id,p_application:appId,p_summary:summary,p_authorisation:authorisation,p_recipient:recipient});
+ if(repairError)return json({error:repairError.message},409);
+ }
+}
+
 const{data:res,error:re}=await db.rpc('reserve_client_submission_service',{p_actor:user.id,p_application:appId,p_summary:summary,p_authorisation:authorisation,p_recipient:recipient});
 if(re)return json({error:re.message},400);
 const submissionId=res?.submission_id;if(!submissionId)return json({error:'Submission reservation failed'},500);
