@@ -1,4 +1,4 @@
-import {Card,Badge} from './Ui';
+import {Card} from './Ui';
 type JourneyProps={linked:boolean;screened:boolean;reviewed:boolean;introduced:boolean;placed:boolean;label?:string};
 export default function CandidateJourney({linked,screened,reviewed,introduced,placed,label}:JourneyProps){
  const steps=[{name:'Candidate & vacancy',done:linked},{name:'Screened',done:screened},{name:'Vorlen review',done:reviewed},{name:'Employer introduction',done:introduced},{name:'Interview, offer & placement',done:placed}];
