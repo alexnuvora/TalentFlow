@@ -5,7 +5,64 @@ const enc=new TextEncoder();const hex=(b:ArrayBuffer)=>[...new Uint8Array(b)].ma
 const sha=async(s:string)=>hex(await crypto.subtle.digest('SHA-256',enc.encode(s)));
 const esc=(s:string)=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 const emailShell=(title:string,body:string)=>`<!doctype html><html><body style="margin:0;background:#f2f5f3;font-family:Arial,Helvetica,sans-serif;color:#10201d"><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td style="padding:34px 16px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;margin:0 auto;background:#fff;border:1px solid #d9e2de"><tr><td style="padding:28px 34px;background:#10201d"><div style="font-size:19px;font-weight:800;letter-spacing:4px;color:#fff">VORLEN</div><div style="margin-top:5px;font-size:10px;letter-spacing:1.7px;color:#8fe3c2">CLIENT TERMS</div></td></tr><tr><td style="padding:36px 34px"><h1 style="margin:0 0 22px;font-size:27px;line-height:1.15;color:#10201d">${title}</h1>${body}</td></tr><tr><td style="padding:22px 34px;border-top:1px solid #e4ebe8;color:#6a7b75;font-size:11px;line-height:1.6">Vorlen Ltd · Company No. 17387520 · Registered in England and Wales<br><a href="https://www.vorlen.co.uk" style="color:#0b6b55">www.vorlen.co.uk</a> · billing@vorlen.co.uk</td></tr></table></td></tr></table></body></html>`;
-const terms=(c:any,company:any,v:string)=>`VORLEN TERMS OF BUSINESS — ${v}\n\nSupplier: ${company.name}\nLegal entity: ${company.legal_name}\nCompany number: ${company.company_registration_number}\nRegistered office: ${company.legal_address||'Rochdale, OL16 2EP'}\nRegistered in: England and Wales\nClient: ${c.company_name}\nNature of business: ${c.business_nature||'Not recorded'}\n\n1. Engagement. The Client instructs Vorlen to introduce candidates for permanent recruitment assignments agreed between the parties.\n2. Introduction fee. The recruitment fee is ${c.recruitment_fee_percent}% of the candidate's agreed first-year gross remuneration unless a separately signed schedule states otherwise.\n3. Payment. Invoices are due within ${c.payment_terms_days} days of invoice date.\n4. Rebate / replacement. ${c.rebate_terms||'No rebate or replacement terms have been agreed.'}\n5. Candidate information. Candidate information supplied by Vorlen is confidential and must be used only for the relevant recruitment purpose and handled in accordance with applicable data-protection law.\n6. Hiring following introduction. If the Client or an associated organisation engages a candidate introduced by Vorlen, the agreed introduction fee is payable, subject to any separately agreed written variation.\n7. Client responsibilities. The Client is responsible for the accuracy of vacancy information, the recruitment decision, right-to-work and other role-specific checks that are legally its responsibility, and for promptly informing Vorlen of an engagement.\n8. Entire commercial agreement. These Terms together with the recorded fee, payment and rebate/replacement terms form the commercial basis for the assignment. Any variation must be agreed in writing.\n9. Acceptance. By selecting “Accept Terms of Business”, the authorised client representative confirms authority to accept these terms for the Client and agrees to this exact version.\n\nPrivacy: ${company.privacy_email||'privacy@vorlen.co.uk'}\nBilling: ${company.billing_email||'billing@vorlen.co.uk'}`;
+const terms=(c:any,company:any,v:string)=>`VORLEN TERMS OF BUSINESS — ${v}
+DRAFT COMMERCIAL TERMS FOR CLIENT ACCEPTANCE
+
+Agency: ${company.legal_name||company.name} (trading as Vorlen)
+Company number: ${company.company_registration_number}
+Registered office: ${company.legal_address||'Confirm registered office address before issue'}
+Registered in: England and Wales
+Client: ${c.company_name}
+Nature of business: ${c.business_nature||'Not recorded'}
+
+1. DEFINITIONS AND SCOPE
+1.1 "Agency" means the supplier named above; "Client" means the hirer named above; "Candidate" means a person whose identifying information or candidacy the Agency introduces; "Introduction" means provision of candidate identifying details, CV or interview arrangement by the Agency; "Engagement" includes direct or indirect employment or engagement by the Client or an associated company.
+1.2 These terms govern permanent recruitment introductions only. Temporary-worker supply, contractor engagement and other services require separate written terms.
+
+2. APPOINTMENT AND CLIENT RESPONSIBILITIES
+2.1 The Agency will use reasonable care to identify and introduce potentially suitable candidates but does not warrant a successful appointment or continued service.
+2.2 The Client controls recruitment decisions, must provide accurate vacancy, remuneration and working-condition information and must undertake checks required of an employer, including right to work, references and safeguarding/DBS checks where applicable.
+2.3 The Client must notify the Agency in writing promptly of an offer, acceptance, start date, remuneration and any subsequent Engagement of an introduced Candidate.
+
+3. INTRODUCTION FEE AND REMUNERATION
+3.1 The introduction fee is ${c.recruitment_fee_percent}% of the Candidate's gross annual BASIC salary at the start of employment (excluding discretionary bonuses, commission, overtime, allowances, sleep-in payments, benefits in kind and employer pension contributions), unless otherwise expressly agreed in a signed client-specific fee schedule.
+3.2 VAT is payable in addition at the rate required by law. If salary is not stated annually, the parties will agree a documented annualised basic-salary equivalent before an Engagement.
+3.3 The fee becomes earned when the Candidate starts an Engagement following an Introduction. An Engagement by an associated business or through an intermediary is covered where legally enforceable, subject to any signed variation.
+3.4 Where a fee is disputed, the Client shall promptly identify the disputed amount and reasons in writing; undisputed amounts remain due.
+
+4. INVOICING AND PAYMENT
+4.1 The Agency will issue its invoice on or shortly after the Candidate's first day of employment. Payment is due within ${c.payment_terms_days} CALENDAR DAYS of the invoice date.
+4.2 Payments shall be made in pounds sterling by bank transfer to the details on a valid Agency invoice. Statutory late-payment interest and recovery costs may apply where permitted by law.
+4.3 Neither a rebate request nor a recruitment complaint suspends the obligation to pay an undisputed invoice when due.
+
+5. REBATE GUARANTEE
+5.1 Subject to this clause and any signed variation, the agreed rebate schedule is: ${c.rebate_terms||'No rebate schedule agreed.'}
+5.2 The relevant day count starts on the Candidate's first calendar day of employment. Day 1 is that date. A departure on days 1–28 qualifies for 100%, days 29–42 for 50%, days 43–84 for 25%; on or after day 85, no rebate is available, unless a different schedule is expressly agreed in writing.
+5.3 Rebate applies to the Agency introduction fee actually paid, excluding VAT, and is not a refund of employment salary, costs or third-party expenses. Where applicable the Agency will issue a credit note and adjust VAT.
+5.4 To claim, the Client must notify the Agency in writing within SEVEN CALENDAR DAYS after the Candidate's final day of employment, stating the departure date and reason, and provide reasonably requested corroboration.
+5.5 The rebate is conditional on payment of the Agency's undisputed invoice within the agreed due period. A material payment dispute raised in good faith must be considered fairly rather than automatically forfeiting the guarantee.
+5.6 No rebate is payable where departure is materially caused by redundancy, restructuring, a material change to role, location, remuneration or working conditions, unlawful treatment, or a material breach by the Client. Rebate otherwise applies to an early resignation or termination for genuine performance, conduct or suitability reasons.
+5.7 The Client shall not unreasonably withhold information needed to assess eligibility. No duplicate rebate and replacement remedy applies to the same placement unless separately agreed in writing.
+
+6. CONFIDENTIALITY, DATA PROTECTION AND CANDIDATE OWNERSHIP
+6.1 CVs, interview information and candidate details are confidential, to be used only for lawful recruitment purposes, and may not be shared outside the Client's legitimate hiring team except as necessary and permitted by law.
+6.2 Both parties must comply with applicable UK data-protection law and take appropriate security and retention measures. Each party's responsibilities and lawful basis shall be assessed according to its actual processing role.
+6.3 The Client shall disclose if it already has an active, evidenced recruitment relationship with an introduced Candidate. The parties will resolve any fee dispute using dated documentary evidence.
+
+7. LIABILITY AND LEGAL COMPLIANCE
+7.1 Each party is responsible for its own legal obligations. Nothing excludes liability for fraud, fraudulent misrepresentation, death or personal injury caused by negligence, or any liability that cannot lawfully be excluded.
+7.2 Subject to clause 7.1, any cap on liability, exclusion of consequential loss, indemnity or particular remedy must be agreed separately in clear written terms; no additional exclusion is implied by this document.
+
+8. VARIATIONS, ENTIRE AGREEMENT AND GOVERNING LAW
+8.1 These terms together with any signed client-specific commercial schedule comprise the agreement for permanent recruitment introductions. A variation must be agreed in writing by authorised representatives.
+8.2 Existing accepted terms and historical placement obligations are not retrospectively amended by a newer standard template.
+8.3 This agreement is governed by the law of England and Wales and courts of England and Wales have jurisdiction, subject to mandatory law.
+
+9. ACCEPTANCE
+By selecting "Accept Terms of Business", an authorised representative confirms authority to bind the Client and accepts the exact dated version and commercial values presented, which are retained in an immutable acceptance snapshot.
+
+Privacy: ${company.privacy_email||'privacy@vorlen.co.uk'}
+Billing: ${company.billing_email||'billing@vorlen.co.uk'}`;
 Deno.serve(async(req)=>{
  if(req.method==='OPTIONS')return new Response('ok',{headers:cors});
  const url=Deno.env.get('SUPABASE_URL')!,service=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,db=createClient(url,service);
@@ -33,7 +90,7 @@ Deno.serve(async(req)=>{
   const{data:reserved,error:reserveError}=await db.rpc('service_reserve_client_terms_send',{p_client:c.id,p_seconds:120});if(reserveError)return json({error:'Could not reserve the Terms of Business send.',detail:reserveError.message},500);if(reserved!==true)return json({error:'A Terms of Business send is already in progress for this client. Please wait a moment before retrying.'},409);
   const releaseReservation=async()=>{await db.rpc('service_release_client_terms_send',{p_client:c.id})};
   const{data:company,error:companyError}=await db.from('companies').select('name,legal_name,company_registration_number,legal_address,privacy_email,billing_email,trading_name').eq('id',p.company_id).single();if(companyError||!company){await releaseReservation();return json({error:'Company configuration could not be loaded.',detail:companyError?.message||'Company not found'},500)}
-  const version='client-tob-2026-09-21';const text=terms(c,company,version);const hash=await sha(text);const raw=crypto.randomUUID()+crypto.randomUUID().replaceAll('-','');const th=await sha(raw),expires=new Date(Date.now()+7*864e5).toISOString();
+  const version='client-tob-2026-10-15';const text=terms(c,company,version);const hash=await sha(text);const raw=crypto.randomUUID()+crypto.randomUUID().replaceAll('-','');const th=await sha(raw),expires=new Date(Date.now()+7*864e5).toISOString();
   const{data:d,error}=await db.from('client_terms_documents').insert({company_id:p.company_id,client_id:c.id,version,status:'draft',terms_snapshot:{company_name:c.company_name,business_nature:c.business_nature,recruitment_fee_percent:c.recruitment_fee_percent,payment_terms_days:c.payment_terms_days,rebate_terms:c.rebate_terms},terms_text:text,content_hash:hash,recipient_name:c.contact_name,recipient_email:c.email,public_token_hash:th,token_expires_at:expires,created_by:user.id}).select().single();if(error){await releaseReservation();return json({error:error.message},500)}
   const app='https://www.vorlen.co.uk';const link=`${app}/terms/accept?token=${encodeURIComponent(raw)}`;const key=Deno.env.get('RESEND_API_KEY');if(!key){await releaseReservation();return json({error:'Transactional email is not configured.'},503)}
   let er:Response;try{er=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify({from:'Vorlen <contact@vorlen.co.uk>',to:[c.email],reply_to:company.billing_email||'billing@vorlen.co.uk',subject:`Vorlen Terms of Business — ${c.company_name}`,html:emailShell('Terms of Business for '+esc(c.company_name),`<p style="margin:0 0 18px;font-size:15px;line-height:1.7">Dear ${esc(c.contact_name)},</p><p style="margin:0 0 24px;font-size:15px;line-height:1.7">Please review the Vorlen Terms of Business and the commercial terms recorded for ${esc(c.company_name)}.</p><p style="margin:26px 0"><a href="${link}" style="display:inline-block;padding:13px 20px;background:#0b6b55;color:#fff;text-decoration:none;font-weight:700;border-radius:999px">Review and accept terms</a></p><p style="margin:0;color:#667972;font-size:13px;line-height:1.6">This secure link expires in 7 days. If anything needs changing, reply before accepting the terms.</p>`)})})}catch(e){await releaseReservation();return json({error:'Unable to reach the transactional email provider.',detail:e instanceof Error?e.message:'Network error'},502)}
