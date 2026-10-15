@@ -11,3 +11,5 @@ import './dashboard-fixes.css';
 import './vorlen-brand.css';
 
 createRoot(document.getElementById('root')!).render(<React.StrictMode><ErrorBoundary><ToastProvider><App/></ToastProvider></ErrorBoundary></React.StrictMode>);
+
+import './partner-notifications.css';
