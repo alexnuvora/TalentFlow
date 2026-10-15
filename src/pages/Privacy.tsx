@@ -90,8 +90,8 @@ export default function Privacy(){
     <p>You may make a privacy request through the secure candidate portal where available or email <a href="mailto:privacy@vorlen.co.uk">privacy@vorlen.co.uk</a>. You can also complain to the Information Commissioner's Office if you are unhappy with how your information has been handled.</p>
    </section>
 
-   <section><h2>ICO data-protection fee position</h2>
-    <p>Vorlen's current company record reflects a pre-trading ICO data-protection-fee assessment. That position is not treated as permanent: the assessment is configured to be revisited when trading commences and whenever the organisation's processing circumstances change.</p>
+   <section><h2>ICO registration</h2>
+    <p>Vorlen Ltd has received confirmation of its Information Commissioner's Office (ICO) data protection fee payment. Its ICO registration reference is <strong>ZC275029</strong>. You can search the <a href="https://ico.org.uk/register" target="_blank" rel="noopener noreferrer">ICO public register</a> using this reference once the register entry has been published.</p>
    </section>
 
    <section><h2>Changes to this notice</h2>
