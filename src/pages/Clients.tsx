@@ -5,7 +5,7 @@ import {Card,Button,Badge,Empty,useToast} from '../components/Ui';
 import {supabase} from '../lib/supabase';
 
 const TERMS_VERSION='client-tob-2026-09-21';
-const blank={company_name:'',contact_name:'',email:'',phone:'',website:'',status:'prospect',business_nature:'',recruitment_fee_percent:'',payment_terms_days:'30',rebate_terms:'',terms_accepted:false,terms_accepted_by:'',terms_acceptance_method:'email',terms_evidence:'',pecr_subscriber_type:'unknown',email_marketing_basis:'none',email_marketing_evidence:'',tps_ctps_screened_at:'',tps_ctps_clear:false,tps_ctps_evidence:'',marketing_call_consent_at:''};
+const blank={company_name:'',contact_name:'',email:'',phone:'',website:'',status:'prospect',business_nature:'',recruitment_fee_percent:'15',payment_terms_days:'14',rebate_terms:'Days 1-28 inclusive: 100%; days 29-42: 50%; days 43-84: 25%; from day 85: 0%. Subject to client acceptance and written terms.',terms_accepted:false,terms_accepted_by:'',terms_acceptance_method:'email',terms_evidence:'',pecr_subscriber_type:'unknown',email_marketing_basis:'none',email_marketing_evidence:'',tps_ctps_screened_at:'',tps_ctps_clear:false,tps_ctps_evidence:'',marketing_call_consent_at:''};
 
 export default function Clients(){
  const toast=useToast();
