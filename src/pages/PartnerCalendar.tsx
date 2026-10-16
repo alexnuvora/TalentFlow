@@ -7,7 +7,7 @@ import {supabase} from '../lib/supabase';
 const fmt=(d:string)=>new Date(d).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'});
 export default function PartnerCalendar(){
  const [entries,setEntries]=useState<any[]>([]),[busy,setBusy]=useState(true),[error,setError]=useState(''),[filter,setFilter]=useState<'upcoming'|'all'|'interview'|'task'>('upcoming');
- const refresh=async()=>{setBusy(true);setError('');const{data,error:e}=await supabase.functions.invoke('partner-candidate-workspace',{body:{action:'calendar'}});if(e||data?.error){setError(data?.error||e?.message||'Could not load calendar');setEntries([])}else{
+ const refresh=async()=>{setBusy(true);setError('');const{data,error:e}=await supabase.functions.invoke('partner-candidate-workspace',{body:{action:'calendar'}});if(e||data?.error){const fallback=await supabase.from('partner_tasks').select('id,title,description,due_at,status,candidate_id,job_id').not('due_at','is',null).order('due_at',{ascending:true}).limit(200);setError((data?.error||e?.message||'Interview calendar unavailable')+(fallback.error?' · Tasks also unavailable.':' · Showing your recorded tasks only.'));setEntries(fallback.error?[]:(fallback.data||[]).map((x:any)=>({...x,type:'task',when:x.due_at})));}else{
  const meetings=(data.interviews||[]).map((x:any)=>({...x,type:'interview',when:x.scheduled_at,title:'Candidate interview'}));
  const tasks=(data.tasks||[]).filter((x:any)=>x.due_at).map((x:any)=>({...x,type:'task',when:x.due_at}));
  setEntries([...meetings,...tasks].sort((a:any,b:any)=>new Date(a.when).getTime()-new Date(b.when).getTime()));
