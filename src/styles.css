@@ -1108,3 +1108,21 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 }
 @media(min-width:851px) and (max-width:1050px){.mail-shell.mail-list-collapsed{grid-template-columns:155px minmax(0,1fr)}}
 @media(max-width:850px){.mail-desktop-back{display:none}}
+
+/* Inbox streamlined controls */
+.staff-mail-page .mail-shell{height:calc(100dvh - 98px)}
+.mail-folders{display:flex;flex-direction:column;min-height:0}
+.mail-folders .mail-compose-side{margin-top:auto;display:flex;align-items:center;gap:9px;background:#0e785f;color:#fff;font-weight:750;justify-content:center}
+.mail-folders .mail-compose-side:hover{background:#09684f;color:#fff}
+.mail-search{gap:8px}
+.mail-search input{flex:1;min-width:0}
+.mail-sync-icon{flex:0 0 36px;width:36px;height:36px;display:grid;place-items:center;border:1px solid #dbe3e0;border-radius:9px;background:#fff;color:#236352;cursor:pointer}
+.mail-sync-icon:hover{background:#eaf3ef}
+.mail-sync-icon:disabled{opacity:.6;cursor:wait}
+.mail-thread-head .mail-thread-actions{margin-left:auto;justify-content:flex-end}
+.mail-desktop-back{flex:0 0 auto}
+@media(max-width:850px){
+ .staff-mail-page .mail-shell{height:calc(100dvh - 75px);min-height:0}
+ .mail-folders{flex-direction:row;align-items:center;min-height:auto}
+ .mail-folders .mail-compose-side{margin:0 0 0 auto;flex:0 0 auto}
+}
