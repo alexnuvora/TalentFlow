@@ -26,8 +26,8 @@ export default function PartnerCandidateQualification(){
  }
  useEffect(()=>{void load()},[id]);
  async function saveDetails(){if(!id||!details.full_name.trim())return setError('A candidate name is required.');setBusy('details');setError('');
-  const {error:e}=await supabase.from('candidates').update({full_name:details.full_name.trim(),email:details.email.trim()||null,phone:details.phone.trim()||null,location:details.location.trim()||null,linkedin_url:details.linkedin_url.trim()||null}).eq('id',id);
-  if(e)setError('Candidate editing is not yet authorised for this recruiter: '+e.message);else{toast('Candidate details updated.');await load()}setBusy('');
+  const {data,error:e}=await supabase.functions.invoke('partner-candidate-workspace',{body:{action:'qualification_update_details',candidate_id:id,details}});
+  if(e||data?.error)setError(data?.error||e?.message||'Candidate update failed');else{toast('Candidate details updated.');await load()}setBusy('');
  }
  async function uploadCv(){if(!id||!file)return;const ext=file.name.toLowerCase();if(!ext.endsWith('.pdf')&&!ext.endsWith('.docx')||file.size>5*1024*1024||file.size===0)return setError('Choose a PDF or DOCX CV under 5 MB.');if(cvSource.trim().length<10)return setError('Record how the candidate supplied or authorised the CV.');setBusy('cv');setError('');
   const fd=new FormData();fd.append('candidate_id',id);fd.append('file',file);fd.append('source_evidence',cvSource.trim());
@@ -43,8 +43,7 @@ export default function PartnerCandidateQualification(){
    if(x.authority.trim().length<20)throw new Error('Record at least 20 characters describing when and how the candidate authorised sharing.');
    if(!x.willingness.trim()||!x.suitability.trim())throw new Error('Record vacancy particulars/willingness and role-specific suitability.');
    if(a.jobs?.qualification_verification_required&&!x.qualification.trim())throw new Error('Qualification verification evidence is required for this vacancy.');
-   const first=await supabase.rpc('record_candidate_sharing_authority',{p_application:a.id,p_evidence:x.authority.trim()});if(first.error)throw first.error;
-   const second=await supabase.rpc('record_introduction_compliance',{p_application:a.id,p_willingness_evidence:x.willingness.trim(),p_suitability_evidence:x.suitability.trim(),p_qualification_evidence:x.qualification.trim()||null});if(second.error)throw second.error;
+   const {data,error:e}=await supabase.functions.invoke('partner-candidate-workspace',{body:{action:'qualification_save_evidence',candidate_id:id,application_id:a.id,authority:x.authority.trim(),willingness:x.willingness.trim(),suitability:x.suitability.trim(),qualification:x.qualification.trim()}});if(e||data?.error)throw new Error(data?.error||e?.message||'Could not save screening evidence');
    toast('Verified introduction evidence saved.');await load();
   }catch(e){setError('Evidence could not be recorded: '+(e instanceof Error?e.message:String(e)))}finally{setBusy('')}
  }
