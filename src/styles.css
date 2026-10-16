@@ -1197,3 +1197,5 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 .partner-nav-children{padding:3px 0 5px 16px;display:flex;flex-direction:column}
 .partner-nav-children>a{font-size:.83rem;min-height:35px}
 .partner-nav-divider{height:1px;margin:15px 10px;background:currentColor;opacity:.15}
+
+.recruiter-journey-row{border:1px solid var(--border,#dde7e3);border-radius:12px;padding:17px;margin:12px 0}.recruiter-journey-row .card-head{margin-bottom:12px}.recruiter-journey-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px}.recruiter-journey-facts>div{display:flex;flex-direction:column;gap:5px;padding:10px;background:var(--muted-bg,#f3f7f5);border-radius:8px}.recruiter-journey-facts small{color:var(--muted,#667);font-size:.73rem}.recruiter-journey-facts strong{font-size:.84rem}@media(max-width:600px){.recruiter-journey-facts{grid-template-columns:1fr}}
