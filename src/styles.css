@@ -1135,3 +1135,24 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 .recruiter-nav-heading{padding:16px 14px 5px;font-size:10px;letter-spacing:.12em;font-weight:800;opacity:.62;line-height:1.3}
 .sidebar nav>div:first-child .recruiter-nav-heading{padding-top:8px}
 .mobile-nav-drawer .recruiter-nav-heading{padding-left:18px}
+
+
+/* Partner recruiter screen redesign */
+.partner-page .recruiter-hero{display:flex;justify-content:space-between;align-items:center;gap:28px;padding:30px 34px;margin:18px 0 20px;border:1px solid rgba(93,126,122,.32);border-radius:20px;background:linear-gradient(120deg,#0a2625 0%,#123d3a 65%,#1b5148 100%);color:#fff;box-shadow:0 14px 38px rgba(0,23,20,.13)}
+.partner-page .recruiter-hero h2{font-size:clamp(1.45rem,2.2vw,2.2rem);line-height:1.18;letter-spacing:-.04em;margin:9px 0 12px;color:#fff}
+.partner-page .recruiter-hero p{max-width:720px;margin:0;color:#d1e4df;line-height:1.58}
+.partner-page .recruiter-eyebrow{font-size:.7rem;font-weight:800;letter-spacing:.17em;color:#a8e9ce}
+.partner-page .recruiter-quicklinks{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.partner-page .recruiter-quicklinks a{font-size:.8rem;font-weight:700;padding:9px 12px;border:1px solid #5b847d;border-radius:8px;color:#f1fff8;text-decoration:none}
+.partner-page .recruiter-quicklinks a:hover{background:#f3fff422}
+.partner-page .recruiter-hero-actions{display:flex;flex-direction:column;gap:5px;align-items:center;text-align:center;min-width:142px;color:#d1e4df;font-size:.76rem}
+.partner-page .recruiter-count{font-weight:800;font-size:3.3rem;line-height:1;color:#fff;letter-spacing:-.05em}
+.partner-page .recruiter-metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:0 0 20px}
+.partner-page .recruiter-metric-grid>div{display:flex;flex-direction:column;gap:8px;padding:19px 20px;background:var(--surface,#fff);border:1px solid var(--border,#dde7e3);border-radius:14px;min-width:0}
+.partner-page .recruiter-metric-grid strong{font-size:1.65rem;font-weight:800;letter-spacing:-.04em;line-height:1.1}
+.partner-page .recruiter-metric-grid span{font-size:.78rem;color:var(--muted,#64766e)}
+.partner-page .partner-pipeline{align-items:stretch}
+.partner-page .partner-lane{min-width:238px;border-radius:14px}
+.partner-page .candidate-card{border-radius:13px}
+@media(max-width:900px){.partner-page .recruiter-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.partner-page .recruiter-hero{padding:22px;align-items:flex-start;flex-direction:column}.partner-page .recruiter-hero-actions{align-items:flex-start;text-align:left}.partner-page .recruiter-count{font-size:2.4rem}.partner-page .recruiter-metric-grid{gap:9px}.partner-page .recruiter-metric-grid>div{padding:14px}}
