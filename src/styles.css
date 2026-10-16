@@ -1130,3 +1130,8 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 /* Explain why a reviewed partner prospect cannot be promoted. */
 .prospect-promotion-action{display:flex;flex-direction:column;align-items:flex-start;gap:5px;max-width:260px}
 .prospect-promotion-reason{font-size:12px;line-height:1.4;color:#9d433c;overflow-wrap:anywhere}
+
+/* Recruiter workspace section labels */
+.recruiter-nav-heading{padding:16px 14px 5px;font-size:10px;letter-spacing:.12em;font-weight:800;opacity:.62;line-height:1.3}
+.sidebar nav>div:first-child .recruiter-nav-heading{padding-top:8px}
+.mobile-nav-drawer .recruiter-nav-heading{padding-left:18px}
