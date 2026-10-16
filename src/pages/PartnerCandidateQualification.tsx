@@ -1,0 +1,63 @@
+import {useEffect,useState} from 'react';
+import {Link,useParams} from 'react-router-dom';
+import {Badge,Button,Card,useToast} from '../components/Ui';
+import {supabase} from '../lib/supabase';
+
+const checked=(v:any)=>Boolean(v&&String(v).trim());
+const date=(v:any)=>v?new Date(v).toLocaleString('en-GB'):'—';
+export default function PartnerCandidateQualification(){
+ const {id}=useParams(),toast=useToast();
+ const [candidate,setCandidate]=useState<any>(null),[applications,setApplications]=useState<any[]>([]),[packs,setPacks]=useState<any[]>([]);
+ const [loading,setLoading]=useState(true),[busy,setBusy]=useState(''),[error,setError]=useState('');
+ const [file,setFile]=useState<File|null>(null),[cvSource,setCvSource]=useState(''),[termsEvidence,setTermsEvidence]=useState('');
+ const [details,setDetails]=useState({full_name:'',email:'',phone:'',location:'',linkedin_url:''});
+ const [evidence,setEvidence]=useState<Record<string,{authority:string,willingness:string,suitability:string,qualification:string}>>({});
+ async function load(){if(!id)return;setLoading(true);setError('');
+  const [c,a,p]=await Promise.all([
+   supabase.from('candidates').select('id,full_name,email,phone,location,linkedin_url,resume_path,work_seeker_terms_agreed_at,work_seeker_terms_evidence,erased_at').eq('id',id).is('erased_at',null).maybeSingle(),
+   supabase.from('applications').select('id,job_id,willingness_evidence,suitability_evidence,qualification_verification_evidence,source_details,jobs!tenant_applications_job_id_fkey(title,qualification_verification_required,works_with_vulnerable_people)').eq('candidate_id',id),
+   supabase.from('partner_submission_packs').select('id,job_id,status,manager_notes').eq('candidate_id',id).order('created_at',{ascending:false})
+  ]);
+  if(c.error||a.error||p.error)setError(c.error?.message||a.error?.message||p.error?.message||'Unable to load candidate qualification');
+  setCandidate(c.data);setApplications(a.data||[]);setPacks(p.data||[]);
+  if(c.data)setDetails({full_name:c.data.full_name||'',email:c.data.email||'',phone:c.data.phone||'',location:c.data.location||'',linkedin_url:c.data.linkedin_url||''});
+  setEvidence(Object.fromEntries((a.data||[]).map((x:any)=>[x.id,{authority:x.source_details?.candidate_sharing_authorisation||'',willingness:x.willingness_evidence||'',suitability:x.suitability_evidence||'',qualification:x.qualification_verification_evidence||''}])));
+  setLoading(false);
+ }
+ useEffect(()=>{void load()},[id]);
+ async function saveDetails(){if(!id||!details.full_name.trim())return setError('A candidate name is required.');setBusy('details');setError('');
+  const {data,error:e}=await supabase.functions.invoke('partner-candidate-workspace',{body:{action:'qualification_update_details',candidate_id:id,details}});
+  if(e||data?.error)setError(data?.error||e?.message||'Candidate update failed');else{toast('Candidate details updated.');await load()}setBusy('');
+ }
+ async function uploadCv(){if(!id||!file)return;const ext=file.name.toLowerCase();if(!ext.endsWith('.pdf')&&!ext.endsWith('.docx')||file.size>5*1024*1024||file.size===0)return setError('Choose a PDF or DOCX CV under 5 MB.');if(cvSource.trim().length<10)return setError('Record how the candidate supplied or authorised the CV.');setBusy('cv');setError('');
+  const fd=new FormData();fd.append('candidate_id',id);fd.append('file',file);fd.append('source_evidence',cvSource.trim());
+  const{data,error:e}=await supabase.functions.invoke('partner-candidate-cv',{body:fd});
+  if(e||data?.error)setError(data?.error||e?.message||'CV upload failed');else{toast('Candidate CV securely attached.');setFile(null);setCvSource('');await load()}setBusy('');
+ }
+ async function recordTerms(){if(!id||termsEvidence.trim().length<10)return setError('Enter specific, genuine evidence of the candidate agreeing to the terms.');setBusy('terms');setError('');
+  const{error:e}=await supabase.rpc('record_partner_candidate_terms',{p_candidate:id,p_terms_version:'agency-work-seeker-2026-09-20',p_evidence:termsEvidence.trim()});
+  if(e)setError(e.message);else{toast('Work-seeker terms evidence recorded.');setTermsEvidence('');await load()}setBusy('');
+ }
+ async function recordEvidence(a:any){const x=evidence[a.id];if(!x)return;setBusy(a.id);setError('');
+  try{
+   if(x.authority.trim().length<20)throw new Error('Record at least 20 characters describing when and how the candidate authorised sharing.');
+   if(!x.willingness.trim()||!x.suitability.trim())throw new Error('Record vacancy particulars/willingness and role-specific suitability.');
+   if(a.jobs?.qualification_verification_required&&!x.qualification.trim())throw new Error('Qualification verification evidence is required for this vacancy.');
+   const {data,error:e}=await supabase.functions.invoke('partner-candidate-workspace',{body:{action:'qualification_save_evidence',candidate_id:id,application_id:a.id,authority:x.authority.trim(),willingness:x.willingness.trim(),suitability:x.suitability.trim(),qualification:x.qualification.trim()}});if(e||data?.error)throw new Error(data?.error||e?.message||'Could not save screening evidence');
+   toast('Verified introduction evidence saved.');await load();
+  }catch(e){setError('Evidence could not be recorded: '+(e instanceof Error?e.message:String(e)))}finally{setBusy('')}
+ }
+ if(loading)return <div className="page partner-page"><Card>Loading candidate qualification…</Card></div>;
+ if(!candidate)return <div className="page partner-page"><Card><p>{error||'Candidate not available to this recruiter.'}</p><Link to="/dashboard/partner/candidates">Return to My Candidates</Link></Card></div>;
+ return <div className="page partner-page">
+  <div className="page-actions"><div><div className="eyebrow">RECRUITER QUALIFICATION</div><h2>{candidate.full_name}</h2><p>Complete genuine screening evidence in one place. Nothing here introduces the candidate to an employer.</p></div><Link className="btn ghost" to={'/dashboard/partner/candidates/'+id}>Back to workspace</Link></div>
+  {error&&<div className="notice error" role="alert">{error}</div>}
+  <Card><h3>1. Candidate details</h3><div className="form-grid"><label>Full name<input value={details.full_name} onChange={e=>setDetails(v=>({...v,full_name:e.target.value}))}/></label><label>Email<input type="email" value={details.email} onChange={e=>setDetails(v=>({...v,email:e.target.value}))}/></label><label>Phone<input value={details.phone} onChange={e=>setDetails(v=>({...v,phone:e.target.value}))}/></label><label>Location<input value={details.location} onChange={e=>setDetails(v=>({...v,location:e.target.value}))}/></label><label className="full">LinkedIn profile<input value={details.linkedin_url} onChange={e=>setDetails(v=>({...v,linkedin_url:e.target.value}))}/></label></div><Button disabled={!!busy} onClick={()=>void saveDetails()}>Save candidate details</Button><p className="muted">Only correct details using information the candidate actually supplied. Recruiter editing must pass database permissions.</p></Card>
+  <Card><h3>2. Candidate CV</h3><Badge tone={candidate.resume_path?'green':'amber'}>{candidate.resume_path?'CV securely attached':'CV missing'}</Badge><p>Upload the actual candidate-provided PDF or DOCX; a filename or CV notes do not count as an uploaded CV.</p><div className="form-grid"><label>Candidate CV<input type="file" accept=".pdf,.docx" onChange={e=>setFile(e.target.files?.[0]||null)}/></label><label className="full">Source and permission evidence<input value={cvSource} onChange={e=>setCvSource(e.target.value)} placeholder="How and when did the candidate supply or authorise this document?"/></label></div><Button disabled={!!busy||!file||cvSource.trim().length<10} onClick={()=>void uploadCv()}>{candidate.resume_path?'Replace CV':'Upload CV securely'}</Button></Card>
+  <Card><h3>3. Work-seeker terms</h3><Badge tone={candidate.work_seeker_terms_agreed_at?'green':'amber'}>{candidate.work_seeker_terms_agreed_at?'Acknowledged':'Evidence required'}</Badge>{candidate.work_seeker_terms_agreed_at?<p>Recorded: {date(candidate.work_seeker_terms_agreed_at)}</p>:<><p>Record an actual, dated acknowledgement. Do not tick agreement without confirmation.</p><label>Evidence of acknowledgement<textarea rows={3} value={termsEvidence} onChange={e=>setTermsEvidence(e.target.value)} placeholder="Email, call or written acknowledgement and date"/></label><Button disabled={!!busy||termsEvidence.trim().length<10} onClick={()=>void recordTerms()}>Record terms acknowledgement</Button></>}</Card>
+  <Card><h3>4. Vacancy-specific screening and sharing consent</h3><p>These checks must be completed separately for each vacancy; recorded notes are not a substitute for candidate confirmation.</p>
+  {applications.map(a=>{const x=evidence[a.id]||{authority:'',willingness:'',suitability:'',qualification:''};const pack=packs.find(p=>p.job_id===a.job_id);const ok=checked(a.source_details?.candidate_sharing_authorisation)&&checked(a.willingness_evidence)&&checked(a.suitability_evidence)&&(!a.jobs?.qualification_verification_required||checked(a.qualification_verification_evidence));return <div className="review-box" key={a.id}><div className="card-head"><h4>{a.jobs?.title||'Vacancy'}</h4><Badge tone={ok?'green':'amber'}>{ok?'Evidence recorded':'Action required'}</Badge></div><div className="form-grid"><label className="full">Permission to share with this employer<textarea rows={2} value={x.authority} onChange={e=>setEvidence(v=>({...v,[a.id]:{...x,authority:e.target.value}}))} placeholder="Candidate authorisation, date and source"/></label><label className="full">Vacancy particulars explained and candidate willingness<textarea rows={2} value={x.willingness} onChange={e=>setEvidence(v=>({...v,[a.id]:{...x,willingness:e.target.value}}))} placeholder="Details provided and the candidate's response"/></label><label className="full">Suitability and human screening findings<textarea rows={2} value={x.suitability} onChange={e=>setEvidence(v=>({...v,[a.id]:{...x,suitability:e.target.value}}))} placeholder="Experience verified, role fit and gaps"/></label>{a.jobs?.qualification_verification_required&&<label className="full">Qualification verification<textarea rows={2} value={x.qualification} onChange={e=>setEvidence(v=>({...v,[a.id]:{...x,qualification:e.target.value}}))}/></label>}</div><Button disabled={!!busy||!x.authority.trim()||!x.willingness.trim()||!x.suitability.trim()} onClick={()=>void recordEvidence(a)}>Save verified screening evidence</Button><p>Recruiter submission pack: <strong>{pack?.status||'Not submitted'}</strong></p><Link className="btn ghost" to={'/dashboard/partner/candidates/'+id}>Continue recommendation and pack review</Link></div>})}
+  {!applications.length&&<p>No linked applications. Ask Vorlen management to confirm the authorised vacancy assignment before screening for introduction.</p>}</Card>
+  <Card><h3>5. Final management review</h3><p>When the genuine CV, terms, vacancy screening and an approved recruiter submission pack are in place, management can review and authorise the introduction. Nothing is automatically sent to the client.</p><Link className="btn" to={'/dashboard/partner/candidates/'+id}>Return to candidate submission workflow</Link></Card>
+ </div>;
+}
