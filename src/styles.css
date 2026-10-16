@@ -1098,3 +1098,13 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 .staff-mail-page .mail-top{justify-content:flex-end;margin-bottom:8px;min-height:0}
 .staff-mail-page .mail-shell{height:calc(100dvh - 145px);min-height:420px}
 @media(max-width:850px){.staff-mail-page .mail-shell{height:calc(100dvh - 112px);min-height:0}}
+
+/* Desktop mail focus mode: reading a thread hides the list and frees its width. */
+@media(min-width:851px){
+ .mail-shell.mail-list-collapsed{grid-template-columns:190px minmax(0,1fr)}
+ .mail-shell.mail-list-collapsed .mail-list{display:none}
+ .mail-desktop-back{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;color:#146653;font:inherit;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer;padding:7px 9px;border-radius:8px}
+ .mail-desktop-back:hover{background:#eef3f1}
+}
+@media(min-width:851px) and (max-width:1050px){.mail-shell.mail-list-collapsed{grid-template-columns:155px minmax(0,1fr)}}
+@media(max-width:850px){.mail-desktop-back{display:none}}
