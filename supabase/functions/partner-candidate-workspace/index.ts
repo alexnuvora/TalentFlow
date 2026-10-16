@@ -147,7 +147,7 @@ Deno.serve(async(req)=>{
     if(ir.error)throw ir.error;const i=ir.data;if(!i)return json(req,{error:'Interview not found'},404);
     const ar=await service.from('partner_assignments').select('id').eq('company_id',profile.company_id).eq('partner_id',user.id).eq('job_id',i.job_id).is('completed_at',null).limit(1);
     if(ar.error)throw ar.error;if(!ar.data?.length)return json(req,{error:'Assigned vacancy required'},403);
-    if(['completed','complete','cancelled','no_show'].includes(i.status)&&!['reschedule','feedback'].includes(operation)return json(req,{error:'This interview is already closed'},409);
+    if(['completed','complete','cancelled','no_show'].includes(i.status)&&!['reschedule','feedback'].includes(operation))return json(req,{error:'This interview is already closed'},409);
     const patch:any={updated_at:new Date().toISOString()};let summary='';
     if(operation==='feedback'){
       if(!['completed','complete'].includes(i.status))return json(req,{error:'Complete the interview before recording follow-up feedback'},409);
