@@ -19,7 +19,7 @@ Vorlen will use reasonable care to source, screen and introduce suitable candida
 The Client agrees to pay Vorlen £500 (FIVE HUNDRED POUNDS) per successfully placed candidate, plus VAT where applicable. A placement occurs when an introduced candidate actually starts employment or another agreed engagement with Azimis. No fee is payable merely for an introduction if the candidate does not start. The initial scope covers up to four placements (total £2,000 if all four commence), with further placements at £500 each unless otherwise agreed in writing.
 
 3. PAYMENT TRIGGER AND TIMING
-Each £500 recruitment fee becomes earned and payable IMMEDIATELY on the placed candidate's first working day. Vorlen will issue a corresponding invoice. Payment is not conditional on the candidate making a sale, meeting targets, earning commission or receiving commission from Azimis. Recruitment may commence before any recruitment fee is due; this is NOT a prepaid sourcing fee.
+Each £500 recruitment fee becomes earned and payable IMMEDIATELY on the placed candidate's first working day. Vorlen will issue a corresponding invoice. Payment is not conditional on the candidate making a sale, meeting targets, earning commission or receiving commission from Azimis. No recruitment fee is payable before the candidate's first working day.
 
 4. NO REBATE OR REPLACEMENT
 Once the candidate commences work, the recruitment fee is non-refundable. No rebate, refund, free replacement or retention guarantee is offered if the candidate resigns, is dismissed, fails sales targets or stops working. This provision does not exclude mandatory legal rights or remedies for Vorlen's material breach, fraud or other liabilities that cannot lawfully be excluded.
@@ -30,8 +30,8 @@ Azimis is responsible for providing accurate vacancy particulars, conducting fin
 6. CONFIDENTIALITY AND CANDIDATE DATA
 Candidate details and CVs are confidential and may be used solely for recruitment for the relevant position. Neither party will disclose unnecessary personal data to unauthorised third parties.
 
-7. VARIATIONS AND STANDARD TERMS
-For the roles covered by this agreement, this approved client-specific £500 fixed-fee arrangement replaces Vorlen's standard 15%-of-basic-salary fee, 14-day payment terms and sliding-scale rebate provisions. No standard rebate schedule applies. Variations require written agreement by authorised representatives. Existing unrelated agreements are not retrospectively changed.
+7. AGREED FEES AND CHANGES
+The £500 fee per successful placement and the payment and refund conditions stated in this agreement apply to the telesales roles covered by it. Any change to these terms must be agreed in writing by authorised representatives of both parties.
 
 8. GOVERNING LAW
 Law of England and Wales. Nothing excludes liability that cannot lawfully be excluded.
