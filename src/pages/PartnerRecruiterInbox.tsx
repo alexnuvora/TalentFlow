@@ -1,6 +1,6 @@
 import {useEffect,useMemo,useState} from 'react';
 import {Link} from 'react-router-dom';
-import {MessageCircle,RefreshCw,Search,Mail,Phone,StickyNote} from 'lucide-react';
+import {MessageCircle,RefreshCw,Search,StickyNote} from 'lucide-react';
 import {Badge,Button,Card} from '../components/Ui';
 import {supabase} from '../lib/supabase';
 const date=(v:string)=>new Date(v).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'});
