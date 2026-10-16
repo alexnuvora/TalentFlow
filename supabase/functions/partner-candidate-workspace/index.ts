@@ -142,22 +142,26 @@ Deno.serve(async(req)=>{
 
   if(action==='manage_interview'){
     const interviewId=String(body?.interview_id||'').trim(),operation=String(body?.operation||'');
-    if(!interviewId||!['reschedule','cancel','complete','no_show'].includes(operation))return json(req,{error:'Valid interview action required'},400);
+    if(!interviewId||!['reschedule','cancel','complete','no_show','feedback'].includes(operation))return json(req,{error:'Valid interview action required'},400);
     const ir=await service.from('interviews').select('id,job_id,candidate_id,status,scheduled_at,recruiter_notes').eq('id',interviewId).eq('company_id',profile.company_id).eq('candidate_id',candidateId).maybeSingle();
     if(ir.error)throw ir.error;const i=ir.data;if(!i)return json(req,{error:'Interview not found'},404);
     const ar=await service.from('partner_assignments').select('id').eq('company_id',profile.company_id).eq('partner_id',user.id).eq('job_id',i.job_id).is('completed_at',null).limit(1);
     if(ar.error)throw ar.error;if(!ar.data?.length)return json(req,{error:'Assigned vacancy required'},403);
-    if(['completed','cancelled','no_show'].includes(i.status)&&operation!=='reschedule')return json(req,{error:'This interview is already closed'},409);
+    if(['completed','complete','cancelled','no_show'].includes(i.status)&&!['reschedule','feedback'].includes(operation)return json(req,{error:'This interview is already closed'},409);
     const patch:any={updated_at:new Date().toISOString()};let summary='';
-    if(operation==='reschedule'){
+    if(operation==='feedback'){
+      if(!['completed','complete'].includes(i.status))return json(req,{error:'Complete the interview before recording follow-up feedback'},409);
+      const feedback=clean(body?.notes,5000);if(!feedback||feedback.length<10)return json(req,{error:'Record at least 10 characters of genuine interview feedback'},400);
+      patch.client_notes=[i.client_notes,feedback].filter(Boolean).join('\n\n').slice(0,5000);summary='Interview feedback recorded.';
+    }else if(operation==='reschedule'){
       const when=new Date(String(body?.scheduled_at||''));if(!Number.isFinite(when.getTime())||when.getTime()<=Date.now())return json(req,{error:'Choose a future interview time'},400);
       patch.scheduled_at=when.toISOString();patch.status='scheduled';const d=Number(body?.duration_minutes||45);if(d<15||d>240)return json(req,{error:'Interview duration must be between 15 and 240 minutes'},400);patch.duration_minutes=d;
       if(body?.meeting_url!==undefined)patch.meeting_url=clean(body.meeting_url,2000);summary='Interview rescheduled.';
     }else{
       if((operation==='complete'||operation==='no_show')&&new Date(i.scheduled_at).getTime()>Date.now()+15*60*1000)return json(req,{error:'A future interview cannot be marked complete or no-show yet'},409);
-      patch.status=operation==='cancel'?'cancelled':operation;summary=operation==='cancel'?'Interview cancelled.':operation==='complete'?'Interview marked completed.':'Interview marked no-show.';
+      patch.status=operation==='cancel'?'cancelled':operation==='complete'?'completed':operation;summary=operation==='cancel'?'Interview cancelled.':operation==='complete'?'Interview marked completed.':'Interview marked no-show.';
     }
-    const note=clean(body?.notes,5000);if(note)patch.recruiter_notes=[i.recruiter_notes,note].filter(Boolean).join('\n\n').slice(0,5000);
+    const note=clean(body?.notes,5000);if(note&&operation!=='feedback')patch.recruiter_notes=[i.recruiter_notes,note].filter(Boolean).join('\n\n').slice(0,5000);
     const ur=await service.from('interviews').update(patch).eq('id',i.id).eq('company_id',profile.company_id);if(ur.error)throw ur.error;
     const er=await service.from('partner_communication_events').insert({company_id:profile.company_id,partner_id:user.id,candidate_id:candidateId,job_id:i.job_id,event_type:'interview',channel:'meeting',direction:'internal',subject:'Interview '+operation,summary:note?summary+' '+note:summary,metadata:{interview_id:i.id,operation}});if(er.error)throw er.error;
     return json(req,{ok:true});
