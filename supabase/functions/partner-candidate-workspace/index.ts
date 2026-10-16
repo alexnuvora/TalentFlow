@@ -23,6 +23,20 @@ Deno.serve(async(req)=>{
   if(!pp?.active||onb?.status!=='active'||!['candidate_sourcer','hybrid'].includes(pp.specialism||''))return json(req,{error:'Candidate sourcing access required'},403);
   if(processing!==true)return json(req,{error:'Candidate processing is not currently active.'},409);
   const body=await req.json().catch(()=>({})),action=String(body?.action||'get'),candidateId=String(body?.candidate_id||'').trim();
+  if(action==='calendar'){
+    const now=new Date(),start=new Date(now.getTime()-30*864e5).toISOString(),end=new Date(now.getTime()+120*864e5).toISOString();
+    const assignment=await service.from('partner_assignments').select('candidate_id').eq('company_id',profile.company_id).eq('partner_id',user.id).is('completed_at',null).not('candidate_id','is',null);
+    if(assignment.error)throw assignment.error;
+    const ids=[...new Set((assignment.data||[]).map((x:any)=>x.candidate_id).filter(Boolean))] as string[];
+    const tasks=await service.from('partner_tasks').select('id,title,description,due_at,status,candidate_id,job_id').eq('company_id',profile.company_id).eq('partner_id',user.id).gte('due_at',start).lte('due_at',end).order('due_at',{ascending:true}).limit(250);
+    if(tasks.error)throw tasks.error;
+    let interviews:any[]=[];
+    if(ids.length){
+      const meetings=await service.from('interviews').select('id,candidate_id,job_id,scheduled_at,duration_minutes,status,meeting_url').eq('company_id',profile.company_id).in('candidate_id',ids).gte('scheduled_at',start).lte('scheduled_at',end).order('scheduled_at',{ascending:true}).limit(250);
+      if(meetings.error)throw meetings.error;interviews=meetings.data||[];
+    }
+    return json(req,{tasks:tasks.data||[],interviews});
+  }
   if(!candidateId)return json(req,{error:'Candidate is required'},400);
   const assigned=await service.from('partner_assignments').select('id').eq('company_id',profile.company_id).eq('partner_id',user.id).eq('candidate_id',candidateId).is('completed_at',null).limit(1);
   if(assigned.error)throw assigned.error;if(!assigned.data?.length)return json(req,{error:'Assigned candidate required'},403);
