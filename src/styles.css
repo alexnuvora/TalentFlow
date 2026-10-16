@@ -1126,3 +1126,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
  .mail-folders{flex-direction:row;align-items:center;min-height:auto}
  .mail-folders .mail-compose-side{margin:0 0 0 auto;flex:0 0 auto}
 }
+
+/* Explain why a reviewed partner prospect cannot be promoted. */
+.prospect-promotion-action{display:flex;flex-direction:column;align-items:flex-start;gap:5px;max-width:260px}
+.prospect-promotion-reason{font-size:12px;line-height:1.4;color:#9d433c;overflow-wrap:anywhere}
