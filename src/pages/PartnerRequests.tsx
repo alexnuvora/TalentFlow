@@ -3,7 +3,7 @@ import {Link} from 'react-router-dom';
 import {RefreshCw,Handshake,ShieldCheck} from 'lucide-react';
 import {Badge,Button,Card} from '../components/Ui';
 import {supabase} from '../lib/supabase';
-const isRequest=(x:any)=>['handoff','application','candidate'].includes(x.kind)||String(x.key||'').startsWith('pipe:review:');
+const isRequest=(x:any)=>['handoff','application'].includes(x.kind)||['pipe:review:','pipe:submission-revise:','pipe:submission-wait:','pipe:official-wait:','submission:feedback:','submission:wait:','submission:interview:'].some(prefix=>String(x.key||'').startsWith(prefix));
 export default function PartnerRequests(){
  const [actions,setActions]=useState<any[]>([]),[waiting,setWaiting]=useState<any[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState('');
  async function load(){setLoading(true);setError('');const{data,error:e}=await supabase.functions.invoke('partner-work-queue',{body:{}});if(e||data?.error){setError(data?.error||e?.message||'Unable to load partner requests');setActions([]);setWaiting([])}else{setActions((data?.actions||[]).filter(isRequest));setWaiting((data?.waiting||[]).filter(isRequest))}setLoading(false)}
