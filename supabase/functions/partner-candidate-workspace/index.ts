@@ -46,7 +46,7 @@ Deno.serve(async(req)=>{
   if(action==='get'){
     const results=await Promise.all([
       service.from('partner_candidate_pipeline').select('id,job_id,stage,notes,next_action,next_action_at,manager_status,manager_notes,updated_at').eq('company_id',profile.company_id).eq('partner_id',user.id).eq('candidate_id',candidateId).order('updated_at',{ascending:false}),
-      service.from('applications').select('id,job_id,status,source,submitted_at,source_details').eq('company_id',profile.company_id).eq('candidate_id',candidateId).order('submitted_at',{ascending:false}),
+      service.from('applications').select('id,job_id,status,source,submitted_at,source_details,willingness_evidence,suitability_evidence,qualification_verification_evidence').eq('company_id',profile.company_id).eq('candidate_id',candidateId).order('submitted_at',{ascending:false}),
       service.from('candidate_submissions').select('id,job_id,status,client_decision,client_feedback,client_rating,submitted_at,client_decision_at').eq('company_id',profile.company_id).eq('candidate_id',candidateId).order('created_at',{ascending:false}),
       service.from('interviews').select('id,job_id,client_id,scheduled_at,duration_minutes,meeting_url,status,recruiter_notes,client_notes,updated_at').eq('company_id',profile.company_id).eq('candidate_id',candidateId).order('scheduled_at',{ascending:false}),
       service.from('partner_communication_events').select('id,job_id,event_type,channel,direction,subject,summary,occurred_at,metadata').eq('company_id',profile.company_id).eq('candidate_id',candidateId).order('occurred_at',{ascending:false}).limit(100),
@@ -57,12 +57,12 @@ Deno.serve(async(req)=>{
     for(const r of results)if(r.error)throw r.error;
     const[pipeline,apps,subs,interviews,events,tasks,offers,attrs]=results.map(r=>r.data||[]);
     const jobIds=[...new Set([...pipeline,...apps,...subs,...interviews].map((x:any)=>x.job_id).filter(Boolean))] as string[];
-    const jr=jobIds.length?await service.from('jobs').select('id,client_id,title,status,location').eq('company_id',profile.company_id).in('id',jobIds):{data:[],error:null};if(jr.error)throw jr.error;
+    const jr=jobIds.length?await service.from('jobs').select('id,client_id,title,status,location,qualification_verification_required,works_with_vulnerable_people').eq('company_id',profile.company_id).in('id',jobIds):{data:[],error:null};if(jr.error)throw jr.error;
     const jobs=jr.data||[],clientIds=[...new Set(jobs.map((x:any)=>x.client_id).filter(Boolean))] as string[];
     const cr=clientIds.length?await service.from('clients').select('id,company_name').eq('company_id',profile.company_id).in('id',clientIds):{data:[],error:null};if(cr.error)throw cr.error;
     const placementIds=[...new Set((attrs||[]).map((x:any)=>x.placement_id).filter(Boolean))] as string[];
     const pr=placementIds.length?await service.from('placements').select('id,client_id,job_id,candidate_id,start_date,annual_salary,fee_amount,currency,invoice_status,guarantee_end,created_at').eq('company_id',profile.company_id).eq('candidate_id',candidateId).in('id',placementIds):{data:[],error:null};if(pr.error)throw pr.error;
-    return json(req,{candidate,pipeline,applications:apps.map((a:any)=>({id:a.id,job_id:a.job_id,status:a.status,source:a.source,submitted_at:a.submitted_at})),confirmed_introductions:apps.filter((a:any)=>Boolean(a.source_details?.candidate_sharing_authorisation)).map((a:any)=>a.job_id),submissions:subs,interviews,events,tasks,offers,placements:pr.data||[],jobs,clients:cr.data||[]});
+    return json(req,{candidate,pipeline,qualification_applications:apps.filter((a:any)=>pipeline.some((p:any)=>p.job_id===a.job_id)).map((a:any)=>({id:a.id,job_id:a.job_id,willingness_evidence:a.willingness_evidence,suitability_evidence:a.suitability_evidence,qualification_verification_evidence:a.qualification_verification_evidence,source_details:{candidate_sharing_authorisation:a.source_details?.candidate_sharing_authorisation||null},jobs:jobs.find((j:any)=>j.id===a.job_id)||null})),applications:apps.map((a:any)=>({id:a.id,job_id:a.job_id,status:a.status,source:a.source,submitted_at:a.submitted_at})),confirmed_introductions:apps.filter((a:any)=>Boolean(a.source_details?.candidate_sharing_authorisation)).map((a:any)=>a.job_id),submissions:subs,interviews,events,tasks,offers,placements:pr.data||[],jobs,clients:cr.data||[]});
   }
 
   if(action==='qualification_update_details'){

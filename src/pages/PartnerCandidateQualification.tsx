@@ -13,15 +13,15 @@ export default function PartnerCandidateQualification(){
  const [details,setDetails]=useState({full_name:'',email:'',phone:'',location:'',linkedin_url:''});
  const [evidence,setEvidence]=useState<Record<string,{authority:string,willingness:string,suitability:string,qualification:string}>>({});
  async function load(){if(!id)return;setLoading(true);setError('');
-  const [c,a,p]=await Promise.all([
-   supabase.from('candidates').select('id,full_name,email,phone,location,linkedin_url,resume_path,work_seeker_terms_agreed_at,work_seeker_terms_evidence,erased_at').eq('id',id).is('erased_at',null).maybeSingle(),
-   supabase.from('applications').select('id,job_id,willingness_evidence,suitability_evidence,qualification_verification_evidence,source_details,jobs!tenant_applications_job_id_fkey(title,qualification_verification_required,works_with_vulnerable_people)').eq('candidate_id',id),
+  const [result,p]=await Promise.all([
+   supabase.functions.invoke('partner-candidate-workspace',{body:{action:'get',candidate_id:id}}),
    supabase.from('partner_submission_packs').select('id,job_id,status,manager_notes').eq('candidate_id',id).order('created_at',{ascending:false})
   ]);
-  if(c.error||a.error||p.error)setError(c.error?.message||a.error?.message||p.error?.message||'Unable to load candidate qualification');
-  setCandidate(c.data);setApplications(a.data||[]);setPacks(p.data||[]);
-  if(c.data)setDetails({full_name:c.data.full_name||'',email:c.data.email||'',phone:c.data.phone||'',location:c.data.location||'',linkedin_url:c.data.linkedin_url||''});
-  setEvidence(Object.fromEntries((a.data||[]).map((x:any)=>[x.id,{authority:x.source_details?.candidate_sharing_authorisation||'',willingness:x.willingness_evidence||'',suitability:x.suitability_evidence||'',qualification:x.qualification_verification_evidence||''}])));
+  const payload=result.data||{},items=payload.qualification_applications||[],candidate=payload.candidate||null;
+  if(result.error||payload.error||p.error)setError(payload.error||result.error?.message||p.error?.message||'Unable to load candidate qualification');
+  setCandidate(candidate);setApplications(items);setPacks(p.data||[]);
+  if(candidate)setDetails({full_name:candidate.full_name||'',email:candidate.email||'',phone:candidate.phone||'',location:candidate.location||'',linkedin_url:candidate.linkedin_url||''});
+  setEvidence(Object.fromEntries(items.map((x:any)=>[x.id,{authority:x.source_details?.candidate_sharing_authorisation||'',willingness:x.willingness_evidence||'',suitability:x.suitability_evidence||'',qualification:x.qualification_verification_evidence||''}])));
   setLoading(false);
  }
  useEffect(()=>{void load()},[id]);
