@@ -34,7 +34,7 @@ Deno.serve(async req=>{
    db.from('candidate_submissions').select('id,client_id,job_id,candidate_id,status,client_feedback,client_feedback_at,submitted_at,updated_at').eq('company_id',company),
    db.from('partner_submission_packs').select('id,job_id,candidate_id,status,manager_notes,candidate_submission_id,updated_at').eq('company_id',company).eq('partner_id',user.id),
    db.from('partner_candidate_offers').select('id,candidate_id,job_id,status,placement_review_status,placement_id,proposed_start_date,updated_at').eq('company_id',company).eq('partner_id',user.id),
-   db.from('interviews').select('id,client_id,job_id,candidate_id,scheduled_at,status,updated_at').eq('company_id',company),
+   db.from('interviews').select('id,client_id,job_id,candidate_id,scheduled_at,status,recruiter_notes,client_notes,updated_at').eq('company_id',company),
    db.from('placements').select('id,client_id,job_id,candidate_id,start_date,invoice_status,created_at').eq('company_id',company),
    db.from('partner_commercial_handoffs').select('id,client_id,approved_job_id,status,updated_at').eq('company_id',company).eq('partner_id',user.id)
   ]);
@@ -118,8 +118,10 @@ Deno.serve(async req=>{
    if(!assignedJobs.has(i.job_id)&&!assignedCandidates.has(i.candidate_id))continue;
    const cand=candMap.get(i.candidate_id),j=jobMap.get(i.job_id);if(!cand||!j)continue;
    if(i.status==='scheduled'){
-     const when=new Date(i.scheduled_at),soon=when.getTime()-Date.now()<=24*3600*1000;
-     add({key:'interview:'+i.id,kind:'candidate',source:'derived',title:(soon?'Interview due soon · ':'Prepare interview · ')+cand.full_name,detail:j.title+' · '+when.toLocaleString('en-GB'),priority:soon?'urgent':'high',due_at:i.scheduled_at,job_id:i.job_id,candidate_id:i.candidate_id,route:route('candidate',cand.id),action_label:'Open candidate'});
+     const when=new Date(i.scheduled_at),hours=when.getTime()-Date.now(),past=hours<0,soon=hours<=24*3600*1000;
+     add({key:'interview:'+i.id,kind:'candidate',source:'derived',title:(past?'Confirm interview outcome & feedback · ':soon?'Interview due soon · ':'Prepare interview · ')+cand.full_name,detail:(past?'Scheduled interview time has passed. Confirm whether it happened and record feedback. ':'')+j.title+' · '+when.toLocaleString('en-GB'),priority:past?'urgent':soon?'urgent':'high',due_at:i.scheduled_at,job_id:i.job_id,candidate_id:i.candidate_id,route:route('candidate',cand.id),action_label:past?'Record outcome':'Open candidate'});
+   }else if(i.status==='completed'&&!String(i.client_notes||'').trim()){
+     add({key:'interview:feedback:'+i.id,kind:'candidate',source:'derived',title:'Client interview feedback outstanding · '+cand.full_name,detail:'Interview marked complete for '+j.title+' but client feedback is not yet recorded.',priority:'high',job_id:i.job_id,candidate_id:i.candidate_id,route:route('candidate',cand.id),action_label:'Record feedback'});
    }
   }
 
