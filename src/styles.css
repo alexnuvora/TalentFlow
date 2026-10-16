@@ -1187,3 +1187,13 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 .partner-page .recruiter-vacancy-facts small{font-size:.7rem;color:var(--muted,#65756f)}
 .partner-page .recruiter-vacancy-facts strong{font-size:.81rem}
 .partner-page .recruiter-vacancy-status{font-size:.8rem;color:var(--muted,#65756f);line-height:1.45}
+
+
+.partner-nav-group{margin:3px 0}
+.partner-nav-group>summary{display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none;padding:11px 15px;border-radius:9px;font-size:.9rem;font-weight:700}
+.partner-nav-group>summary::-webkit-details-marker{display:none}
+.partner-nav-group>summary:after{content:'⌄';margin-left:auto;opacity:.75}
+.partner-nav-group[open]>summary:after{transform:rotate(180deg)}
+.partner-nav-children{padding:3px 0 5px 16px;display:flex;flex-direction:column}
+.partner-nav-children>a{font-size:.83rem;min-height:35px}
+.partner-nav-divider{height:1px;margin:15px 10px;background:currentColor;opacity:.15}
