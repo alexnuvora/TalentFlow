@@ -51,6 +51,35 @@ Deno.serve(async(req)=>{
     return json(req,{candidate,pipeline,applications:apps.map((a:any)=>({id:a.id,job_id:a.job_id,status:a.status,source:a.source,submitted_at:a.submitted_at})),confirmed_introductions:apps.filter((a:any)=>Boolean(a.source_details?.candidate_sharing_authorisation)).map((a:any)=>a.job_id),submissions:subs,interviews,events,tasks,offers,placements:pr.data||[],jobs,clients:cr.data||[]});
   }
 
+  if(action==='qualification_update_details'){
+    const input=body?.details||{},name=clean(input.full_name,180);
+    if(!name)return json(req,{error:'Candidate name is required'},400);
+    const email=clean(input.email,240),phone=clean(input.phone,80);
+    if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return json(req,{error:'Invalid candidate email'},400);
+    const fields={full_name:name,email,phone,location:clean(input.location,240),linkedin_url:clean(input.linkedin_url,500)};
+    const updated=await service.from('candidates').update(fields).eq('id',candidateId).eq('company_id',profile.company_id).is('erased_at',null).select('id').maybeSingle();
+    if(updated.error)throw updated.error;if(!updated.data)return json(req,{error:'Candidate record unavailable'},404);
+    return json(req,{ok:true});
+  }
+  if(action==='qualification_save_evidence'){
+    const applicationId=String(body?.application_id||'').trim();
+    if(!applicationId)return json(req,{error:'Application required'},400);
+    const a=await service.from('applications').select('id,job_id,source_details').eq('id',applicationId).eq('candidate_id',candidateId).eq('company_id',profile.company_id).maybeSingle();
+    if(a.error)throw a.error;if(!a.data)return json(req,{error:'Application unavailable'},404);
+    const assignment=await service.from('partner_candidate_pipeline').select('id').eq('partner_id',user.id).eq('company_id',profile.company_id).eq('candidate_id',candidateId).eq('job_id',a.data.job_id).limit(1);
+    if(assignment.error)throw assignment.error;if(!assignment.data?.length)return json(req,{error:'Candidate not assigned to you for this vacancy'},403);
+    const job=await service.from('jobs').select('qualification_verification_required,works_with_vulnerable_people').eq('id',a.data.job_id).eq('company_id',profile.company_id).maybeSingle();
+    if(job.error)throw job.error;if(!job.data)return json(req,{error:'Vacancy unavailable'},404);
+    if(job.data.works_with_vulnerable_people)return json(req,{error:'Additional reference and safeguarding verification requires management review'},409);
+    const authority=clean(body?.authority,5000),willingness=clean(body?.willingness,5000),suitability=clean(body?.suitability,5000),qualification=clean(body?.qualification,5000);
+    if(!authority||authority.length<20||!willingness||!suitability)return json(req,{error:'Record genuine consent (at least 20 characters), willingness and suitability evidence'},400);
+    if(job.data.qualification_verification_required&&!qualification)return json(req,{error:'Qualification verification evidence required'},400);
+    const source_details={...(a.data.source_details||{}),candidate_sharing_authorisation:authority,candidate_sharing_authorisation_recorded_at:new Date().toISOString(),candidate_sharing_authorisation_recorded_by:user.id};
+    const stamp=new Date().toISOString();
+    const updated=await service.from('applications').update({source_details,vacancy_particulars_provided_at:stamp,willingness_confirmed_at:stamp,willingness_evidence:willingness,suitability_checked_at:stamp,suitability_evidence:suitability,qualification_verified_at:qualification?stamp:null,qualification_verification_evidence:qualification}).eq('id',applicationId).eq('candidate_id',candidateId).eq('company_id',profile.company_id).select('id').maybeSingle();
+    if(updated.error)throw updated.error;if(!updated.data)return json(req,{error:'Application unavailable'},404);
+    return json(req,{ok:true});
+  }
   if(action==='upsert_offer'){
     const jobId=String(body?.job_id||'').trim(),status=String(body?.status||'extended'),offerType=String(body?.offer_type||'verbal');
     const evidence=clean(body?.evidence,5000),notes=clean(body?.notes,5000),salary=body?.salary==null||body?.salary===''?null:Number(body.salary);
