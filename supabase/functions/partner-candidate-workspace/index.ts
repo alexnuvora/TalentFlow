@@ -23,6 +23,19 @@ Deno.serve(async(req)=>{
   if(!pp?.active||onb?.status!=='active'||!['candidate_sourcer','hybrid'].includes(pp.specialism||''))return json(req,{error:'Candidate sourcing access required'},403);
   if(processing!==true)return json(req,{error:'Candidate processing is not currently active.'},409);
   const body=await req.json().catch(()=>({})),action=String(body?.action||'get'),candidateId=String(body?.candidate_id||'').trim();
+  if(action==='communication_feed'){
+    const ar=await service.from('partner_assignments').select('candidate_id').eq('company_id',profile.company_id).eq('partner_id',user.id).is('completed_at',null).not('candidate_id','is',null);
+    if(ar.error)throw ar.error;
+    const ids=[...new Set((ar.data||[]).map((a:any)=>a.candidate_id).filter(Boolean))] as string[];
+    if(!ids.length)return json(req,{events:[]});
+    const [er,cr]=await Promise.all([
+      service.from('partner_communication_events').select('id,candidate_id,job_id,event_type,channel,direction,subject,summary,occurred_at,metadata').eq('company_id',profile.company_id).in('candidate_id',ids).order('occurred_at',{ascending:false}).limit(150),
+      service.from('candidates').select('id,full_name').eq('company_id',profile.company_id).in('id',ids).is('erased_at',null)
+    ]);
+    if(er.error)throw er.error;if(cr.error)throw cr.error;
+    const names=new Map((cr.data||[]).map((c:any)=>[c.id,c.full_name]));
+    return json(req,{events:(er.data||[]).filter((e:any)=>names.has(e.candidate_id)).map((e:any)=>({...e,candidate_name:names.get(e.candidate_id)}))});
+  }
   if(action==='calendar'){
     const now=new Date(),start=new Date(now.getTime()-30*864e5).toISOString(),end=new Date(now.getTime()+120*864e5).toISOString();
     const assignment=await service.from('partner_assignments').select('candidate_id').eq('company_id',profile.company_id).eq('partner_id',user.id).is('completed_at',null).not('candidate_id','is',null);
