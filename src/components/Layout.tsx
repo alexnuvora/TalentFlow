@@ -34,6 +34,7 @@ const partnerNav=[
  ...(access.partnerActive?[[ '/dashboard/candidate-requests','Partner Requests',ClipboardList] as const]:[]),
  ...(access.partnerCanCloseClients?[[ '/dashboard/partner/handoffs','Commercial handoffs',Handshake] as const]:[]),
  ...(access.partnerActive?[[ '/dashboard/partner/earnings','Placements & earnings',Receipt] as const]:[]),
+ ...(access.partnerActive?[[ '/dashboard/partner/reports','Reports & Analytics',ChartNoAxesCombined] as const]:[]),
  ['/dashboard/partner/profile','Profile',UserRound] as const,
  ['/dashboard/partner/resources','Help & Support',LifeBuoy] as const
 ];const staffLinks=visibleNav.filter(([to])=>{if((to==='/dashboard/billing'||to==='/dashboard/ceo')&&!access.loading&&!access.isOwner)return false;if((to==='/dashboard/ceo'||to==='/dashboard/partner-management'||to==='/dashboard/ai-governance'||to==='/dashboard/clients'||to==='/dashboard/commercial'||to==='/dashboard/acquisition'||to==='/dashboard/automations'||to==='/dashboard/partner-management/chat'||to==='/dashboard/inbox')&&!access.loading&&!access.canManageWorkspace)return false;if(to==='/dashboard/ceo'&&!access.loading&&access.subscription?.features?.ceo_dashboard!==true)return false;return true});
