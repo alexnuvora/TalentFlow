@@ -22,7 +22,7 @@ Deno.serve(async req=>{
   const company=profile.company_id;const canSourceNow=canSource===true&&candidatePhase===true;
   const [
    {data:assignments},{data:tasks},{data:clients},{data:activity},{data:jobs},{data:pipeline},
-   {data:candidates},{data:submissions},{data:packs},{data:offers},{data:interviews},{data:placements},{data:handoffs}
+   {data:candidates},{data:submissions},{data:packs},{data:offers},{data:interviews},{data:placements},{data:handoffs},{data:aftercareEvents}
   ]=await Promise.all([
    db.from('partner_assignments').select('id,client_id,candidate_id,job_id,priority,objective,due_at,assigned_at').eq('company_id',company).eq('partner_id',user.id).is('completed_at',null),
    db.from('partner_tasks').select('id,title,description,task_type,client_id,candidate_id,job_id,due_at,priority,status,outreach_channel,outreach_enrollment_id').eq('company_id',company).eq('partner_id',user.id).not('status','in','("done","cancelled")'),
@@ -36,7 +36,8 @@ Deno.serve(async req=>{
    db.from('partner_candidate_offers').select('id,candidate_id,job_id,status,placement_review_status,placement_id,proposed_start_date,updated_at').eq('company_id',company).eq('partner_id',user.id),
    db.from('interviews').select('id,client_id,job_id,candidate_id,scheduled_at,status,recruiter_notes,client_notes,updated_at').eq('company_id',company),
    db.from('placements').select('id,client_id,job_id,candidate_id,start_date,invoice_status,created_at').eq('company_id',company),
-   db.from('partner_commercial_handoffs').select('id,client_id,approved_job_id,status,updated_at').eq('company_id',company).eq('partner_id',user.id)
+   db.from('partner_commercial_handoffs').select('id,client_id,approved_job_id,status,updated_at').eq('company_id',company).eq('partner_id',user.id),
+   db.from('partner_communication_events').select('candidate_id,job_id,subject,occurred_at,metadata').eq('company_id',company).eq('partner_id',user.id).eq('event_type','note').gte('occurred_at',new Date(Date.now()-90*864e5).toISOString()).limit(500)
   ]);
 
   const clientMap=new Map((clients||[]).map((x:any)=>[x.id,x])),jobMap=new Map((jobs||[]).map((x:any)=>[x.id,x])),candMap=new Map((candidates||[]).map((x:any)=>[x.id,x]));
@@ -129,6 +130,23 @@ Deno.serve(async req=>{
    const cand=candMap.get(o.candidate_id),j=jobMap.get(o.job_id);if(!cand||!j)continue;
    if(o.status==='extended')add({key:'offer:follow:'+o.id,kind:'candidate',source:'derived',title:'Follow up offer · '+cand.full_name,detail:'Offer is outstanding for '+j.title+'. Record acceptance, decline or withdrawal with evidence.',priority:'urgent',job_id:o.job_id,candidate_id:o.candidate_id,route:route('candidate',cand.id),action_label:'Open offer'});
    else if(o.status==='accepted'&&['requested','under_review'].includes(o.placement_review_status))add({key:'offer:placement:'+o.id,kind:'candidate',source:'derived',title:'Placement confirmation pending · '+cand.full_name,detail:'Accepted offer has been sent to Vorlen for authoritative placement review.',priority:'normal',job_id:o.job_id,candidate_id:o.candidate_id,route:route('candidate',cand.id),action_label:'Open candidate'},true);
+  }
+
+  // Placement aftercare is derived from confirmed start dates and does not send messages automatically.
+  // Recruiters can complete each check-in by recording an 'aftercare' activity with the named milestone in its subject.
+  for(const placement of placements||[]){
+    if(!canSourceNow||(!assignedCandidates.has(placement.candidate_id)&&!assignedJobs.has(placement.job_id)))continue;
+    if(!placement.start_date)continue;
+    const candidate=candMap.get(placement.candidate_id),job=jobMap.get(placement.job_id);
+    if(!candidate||!job)continue;
+    const start=new Date(String(placement.start_date).slice(0,10)+'T12:00:00Z');
+    if(Number.isNaN(start.getTime()))continue;
+    const day=Math.floor((Date.now()-start.getTime())/864e5);
+    const hasCheck=(phrase:string,minimum:number)=>((aftercareEvents||[]) as any[]).some(e=>e.candidate_id===placement.candidate_id&&e.job_id===placement.job_id&&String(e.metadata?.workflow_kind||'')==='aftercare'&&String(e.subject||'').toLowerCase().includes(phrase.toLowerCase())&&new Date(e.occurred_at).getTime()>=start.getTime()+minimum*864e5);
+    const base={kind:'candidate',source:'derived',candidate_id:candidate.id,job_id:job.id,route:route('candidate',candidate.id),action_label:'Record aftercare',priority:'normal'};
+    if(day>=-3&&day<=6&&!hasCheck('start',-3))add({...base,key:'placement:start:'+placement.id,title:'Confirm placement start · '+candidate.full_name,detail:'Check the planned start date with the candidate and record the actual outcome for '+job.title+'.',priority:day>=0?'high':'normal'});
+    if(day>=7&&day<=21&&!hasCheck('7-day',5))add({...base,key:'placement:week1:'+placement.id,title:'7-day placement check-in · '+candidate.full_name,detail:'Ask the candidate how the first week went, capture any concerns and record a dated aftercare note for '+job.title+'.',priority:day>=12?'high':'normal'});
+    if(day>=28&&day<=50&&!hasCheck('30-day',26))add({...base,key:'placement:month1:'+placement.id,title:'30-day placement check-in · '+candidate.full_name,detail:'Confirm ongoing placement progress and any support needed, then record a dated aftercare note for '+job.title+'.',priority:day>=35?'high':'normal'});
   }
 
   for(const h of handoffs||[]){
