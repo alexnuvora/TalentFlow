@@ -415,6 +415,7 @@ export default function PartnerChat({mode}:{mode:Mode}){
  if(loading)return <div className="page"><SkeletonCards count={5}/></div>;
  return <div className="page chat-page">
   <div className="page-actions chat-page-head"><div><div className="eyebrow">PARTNER COMMUNICATIONS</div><h2>{mode==='partner'?'Chat with Vorlen':'Partner messages'}</h2><p>{mode==='partner'?'Private 1-to-1 communication with Vorlen management.':'Live partner conversations, linked directly to operational work.'}</p></div>{notifySupported&&!pushEnabled&&<Button className="chat-notification-cta" variant="ghost" onClick={enableNotifications} disabled={notificationBusy}><Bell size={15}/><span>{notificationBusy?'Enabling…':'Enable notifications'}</span></Button>}</div>
+  {mode==='partner'&&<div className="recruiter-chat-actions"><div><strong>Stay connected to the work</strong><span>Use partner chat for decisions, and keep candidate conversations recorded against the candidate.</span></div><div className="button-row"><Link className="btn ghost" to="/dashboard/partner/inbox">Candidate Inbox</Link><Link className="btn ghost" to="/dashboard/partner/requests">Partner Requests</Link><Link className="btn ghost" to="/dashboard/partner/tasks">My Tasks</Link></div></div>}
   {error&&<div className="alert error" role="alert">{error}</div>}
   <div className={`chat-shell ${mode==='partner'?'partner-only':''}`}>
    {mode==='manager'&&<aside className={`chat-list ${conversationId?'has-selection':''}`}>
