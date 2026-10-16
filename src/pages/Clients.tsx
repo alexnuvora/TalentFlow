@@ -1,5 +1,5 @@
 import {useEffect,useState} from 'react';
-import {Plus,ChevronRight} from 'lucide-react';
+import {Plus,ChevronRight,Search} from 'lucide-react';
 import {Link} from 'react-router-dom';
 import {Card,Button,Badge,Empty,useToast} from '../components/Ui';
 import {supabase} from '../lib/supabase';
@@ -8,10 +8,21 @@ const TERMS_VERSION='client-tob-2026-10-15';
 const blank={company_name:'',contact_name:'',email:'',phone:'',website:'',status:'prospect',business_nature:'',recruitment_fee_percent:'15',payment_terms_days:'14',rebate_terms:'Standard proposed 12-week sliding-scale placement fee rebate (excluding VAT): days 1-28 inclusive 100%; days 29-42 inclusive 50%; days 43-84 inclusive 25%; day 85 onwards 0%. Subject to timely invoice payment, written notification within 7 days of departure, and agreed exclusions including redundancy, employer breach and material changes to employment. Applies only subject to client acceptance of the relevant terms.',terms_accepted:false,terms_accepted_by:'',terms_acceptance_method:'email',terms_evidence:'',pecr_subscriber_type:'unknown',email_marketing_basis:'none',email_marketing_evidence:'',tps_ctps_screened_at:'',tps_ctps_clear:false,tps_ctps_evidence:'',marketing_call_consent_at:''};
 
 export default function Clients(){
+ const [clientQuery,setClientQuery]=useState('');
+ const [clientFilter,setClientFilter]=useState('all');
  const toast=useToast();
  const[rows,setRows]=useState<any[]>([]),[show,setShow]=useState(false),[f,setF]=useState<any>(blank),[error,setError]=useState('');
  const load=()=>supabase.from('clients').select('*').order('created_at',{ascending:false}).then(r=>setRows(r.data||[]));
  useEffect(()=>{load()},[]);
+ const filteredRows=rows.filter(c=>{
+  const q=clientQuery.trim().toLocaleLowerCase();
+  const matchesName=!q||String(c.company_name||'').toLocaleLowerCase().includes(q);
+  const matchesStatus=clientFilter==='all'
+   ||(clientFilter==='terms_required'&&!c.terms_accepted_at)
+   ||(clientFilter==='terms_agreed'&&!!c.terms_accepted_at)
+   ||c.status===clientFilter;
+  return matchesName&&matchesStatus;
+ });
  function openNew(){setF(blank);setShow(true)}
  async function submit(e:any){
   e.preventDefault();setError('');
@@ -39,8 +50,24 @@ export default function Clients(){
    {f.terms_accepted&&<><label>Accepted by<input required value={f.terms_accepted_by} onChange={e=>setF({...f,terms_accepted_by:e.target.value})}/></label><label>Acceptance method<select value={f.terms_acceptance_method} onChange={e=>setF({...f,terms_acceptance_method:e.target.value})}><option value="email">Email</option><option value="signed_document">Signed document</option><option value="portal">Portal</option></select></label><label className="full">Acceptance evidence / reference<textarea required rows={2} value={f.terms_evidence} onChange={e=>setF({...f,terms_evidence:e.target.value})}/></label></>}
    <div className="form-actions full"><Button type="submit">Create client</Button><Button type="button" variant="ghost" onClick={()=>setShow(false)}>Cancel</Button></div>
   </form></Card>}
+  <div className="card" style={{padding:'16px',marginBottom:'16px'}}>
+   <div style={{display:'flex',flexWrap:'wrap',alignItems:'end',gap:'12px'}}>
+    <label style={{flex:'2 1 230px',display:'grid',gap:'6px'}}><span>Search clients by name</span><span style={{display:'flex',alignItems:'center',gap:'8px'}}><Search size={18} aria-hidden="true"/><input type="search" aria-label="Search clients by name" placeholder="Enter company name…" value={clientQuery} onChange={e=>setClientQuery(e.target.value)} style={{width:'100%',minWidth:0}}/></span></label>
+    <label style={{flex:'1 1 180px',display:'grid',gap:'6px'}}><span>Filter clients</span><select aria-label="Filter clients" value={clientFilter} onChange={e=>setClientFilter(e.target.value)}>
+     <option value="all">All clients</option>
+     <option value="active">Active</option>
+     <option value="prospect">Prospect</option>
+     <option value="paused">Paused</option>
+     <option value="closed">Closed</option>
+     <option value="terms_required">Terms required</option>
+     <option value="terms_agreed">Terms agreed</option>
+    </select></label>
+    <span aria-live="polite" style={{paddingBottom:'8px',whiteSpace:'nowrap'}}>{filteredRows.length} of {rows.length} clients</span>
+   </div>
+  </div>
   {rows.length===0?<Empty title="No clients yet" text="Add a client and agree Terms of Business before recruiting."/>:
-   <div className="cards-list client-list-grid">{rows.map(c=><Link to={'/dashboard/clients/'+c.id} className="client-card-link" key={c.id}><Card className="client-list-card">
+   filteredRows.length===0?<Empty title="No matching clients" text="Try another name or change the status filter."/>:
+   <div className="cards-list client-list-grid">{filteredRows.map(c=><Link to={'/dashboard/clients/'+c.id} className="client-card-link" key={c.id}><Card className="client-list-card">
     <div className="card-head"><div><h3>{c.company_name}</h3><p>{c.contact_name}{c.email?' · '+c.email:''}</p></div><Badge tone={c.terms_accepted_at?'green':'amber'}>{c.terms_accepted_at?'terms agreed':'terms required'}</Badge></div>
     <p>{c.business_nature||'Nature of business not recorded'}</p>
     <div className="client-call-summary"><span><b>Call status</b> {String(c.call_status||'not_contacted').replaceAll('_',' ')}</span><span><b>Last outcome</b> {String(c.last_call_outcome||'None recorded').replaceAll('_',' ')}</span>{c.last_call_note&&<span className="client-call-note"><b>Call note</b> {c.last_call_note}</span>}</div>
