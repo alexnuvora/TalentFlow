@@ -53,7 +53,7 @@ Deno.serve(async(req)=>{
   if(!candidateId)return json(req,{error:'Candidate is required'},400);
   const assigned=await service.from('partner_assignments').select('id').eq('company_id',profile.company_id).eq('partner_id',user.id).eq('candidate_id',candidateId).is('completed_at',null).limit(1);
   if(assigned.error)throw assigned.error;if(!assigned.data?.length)return json(req,{error:'Assigned candidate required'},403);
-  const{data:candidate,error:candidateError}=await service.from('candidates').select('id,full_name,email,phone,location,linkedin_url,stage,next_action,next_action_at,resume_path,work_seeker_terms_agreed_at,work_seeker_terms_evidence,experience_summary,training_qualifications,authorisations,created_at,erased_at').eq('id',candidateId).eq('company_id',profile.company_id).maybeSingle();
+  const{data:candidate,error:candidateError}=await service.from('candidates').select('id,full_name,email,phone,location,linkedin_url,stage,next_action,next_action_at,resume_path,work_seeker_terms_agreed_at,work_seeker_terms_evidence,postal_address,date_of_birth,under_22,experience_summary,training_qualifications,authorisations,created_at,erased_at').eq('id',candidateId).eq('company_id',profile.company_id).maybeSingle();
   if(candidateError)throw candidateError;if(!candidate||candidate.erased_at)return json(req,{error:'Candidate not found'},404);
 
   if(action==='get'){
@@ -83,7 +83,11 @@ Deno.serve(async(req)=>{
     if(!name)return json(req,{error:'Candidate name is required'},400);
     const email=clean(input.email,240),phone=clean(input.phone,80);
     if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return json(req,{error:'Invalid candidate email'},400);
-    const fields={full_name:name,email,phone,location:clean(input.location,240),linkedin_url:clean(input.linkedin_url,500)};
+    const postalAddress=clean(input.postal_address,500),dob=clean(input.date_of_birth,10),ageDeclaration=input.under_22;
+    if(dob&&(!/^\\d{4}-\\d{2}-\\d{2}$/.test(dob)||Number.isNaN(Date.parse(dob))||new Date(dob).toISOString().slice(0,10)!==dob||dob>new Date().toISOString().slice(0,10)))return json(req,{error:'Enter a valid past date of birth.'},400);
+    if(ageDeclaration!==null&&ageDeclaration!==undefined&&typeof ageDeclaration!=='boolean')return json(req,{error:'Select yes, no or not confirmed for the under-22 declaration.'},400);
+    if(dob&&typeof ageDeclaration==='boolean'){const today=new Date(),birth=new Date(dob+'T00:00:00Z');let years=today.getUTCFullYear()-birth.getUTCFullYear();if(today.getUTCMonth()<birth.getUTCMonth()||(today.getUTCMonth()===birth.getUTCMonth()&&today.getUTCDate()<birth.getUTCDate()))years--;if((years<22)!==ageDeclaration)return json(req,{error:'Under-22 declaration does not agree with the recorded date of birth.'},400)}
+    const fields={full_name:name,email,phone,location:clean(input.location,240),linkedin_url:clean(input.linkedin_url,500),postal_address:postalAddress,date_of_birth:dob,under_22:ageDeclaration??null};
     const updated=await service.from('candidates').update(fields).eq('id',candidateId).eq('company_id',profile.company_id).is('erased_at',null).select('id').maybeSingle();
     if(updated.error)throw updated.error;if(!updated.data)return json(req,{error:'Candidate record unavailable'},404);
     return json(req,{ok:true});
