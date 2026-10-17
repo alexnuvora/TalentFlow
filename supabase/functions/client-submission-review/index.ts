@@ -37,7 +37,7 @@ Deno.serve(async req=>{
     const [{data:c},{data:j},{data:cl},{data:co}]=await Promise.all([
       db.from('candidates').select('full_name,location,email,phone,linkedin_url,postal_address,resume_path').eq('id',s.candidate_id).single(),
       db.from('jobs').select('title,location,employment_type').eq('id',s.job_id).single(),
-      db.from('clients').select('company_name').eq('id',s.client_id).single(),
+      db.from('clients').select('id,company_name').eq('id',s.client_id).single(),
       db.from('companies').select('name,legal_name').eq('id',s.company_id).single()
     ]);
     let cvText:null|string=null;
