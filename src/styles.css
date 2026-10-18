@@ -1199,3 +1199,11 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 .partner-nav-divider{height:1px;margin:15px 10px;background:currentColor;opacity:.15}
 
 .recruiter-journey-row{border:1px solid var(--border,#dde7e3);border-radius:12px;padding:17px;margin:12px 0}.recruiter-journey-row .card-head{margin-bottom:12px}.recruiter-journey-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px}.recruiter-journey-facts>div{display:flex;flex-direction:column;gap:5px;padding:10px;background:var(--muted-bg,#f3f7f5);border-radius:8px}.recruiter-journey-facts small{color:var(--muted,#667);font-size:.73rem}.recruiter-journey-facts strong{font-size:.84rem}@media(max-width:600px){.recruiter-journey-facts{grid-template-columns:1fr}}
+
+/* Public recruitment application: retain a reachable action on narrow screens. */
+.mobile-apply-cta{display:none}
+@media(max-width:700px){.mobile-apply-cta{display:flex;position:sticky;top:0;z-index:30;align-items:center;justify-content:space-between;gap:1rem;background:#163e35;color:#fff;text-decoration:none;font-weight:700;padding:14px 18px;min-height:50px;box-shadow:0 3px 12px #0002}.mobile-apply-cta:focus-visible{outline:3px solid #f0b95a;outline-offset:-3px}.job-apply-column{scroll-margin-top:70px}}
+
+/* Mobile account access deliberately separate from space-constrained desktop header actions. */
+.vp-mobile-account{display:none}
+@media(max-width:700px){.vp-mobile-account{display:flex;justify-content:space-between;gap:8px;padding:10px 16px;background:#f4f0e7;border-bottom:1px solid #d8d8d1}.vp-mobile-account a{color:#163e35;font-size:.86rem;font-weight:650;text-decoration:underline;text-underline-offset:3px;min-height:38px;display:flex;align-items:center}.vp-mobile-account a:focus-visible{outline:3px solid #b87b2c;outline-offset:2px}}

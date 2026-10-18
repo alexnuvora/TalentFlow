@@ -6,4 +6,16 @@
   <url><loc>https://www.vorlen.co.uk/privacy</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
   <url><loc>https://www.vorlen.co.uk/candidate-terms</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
   <url><loc>https://www.vorlen.co.uk/accessibility</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://www.vorlen.co.uk/employers</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vorlen.co.uk/candidates</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.vorlen.co.uk/partners</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.vorlen.co.uk/services/permanent-recruitment</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vorlen.co.uk/services/candidate-sourcing</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vorlen.co.uk/services/recruitment-for-smes</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.vorlen.co.uk/sectors/technology</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.vorlen.co.uk/sectors/sales-business-development</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.vorlen.co.uk/sectors/finance-accounting</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.vorlen.co.uk/sectors/engineering</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.vorlen.co.uk/locations/manchester</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.vorlen.co.uk/locations/greater-manchester</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
 </urlset>

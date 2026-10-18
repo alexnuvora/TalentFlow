@@ -10,7 +10,8 @@ const faqs=[
   ['How does Vorlen assess candidates?','Recruiters review job-related evidence, experience and suitability against the vacancy. Technology may assist with evidence review, but candidate progression and client introductions remain human-reviewed.'],
   ['Where does Vorlen recruit?','Vorlen supports permanent recruitment for employers across the United Kingdom.'],
   ['Can candidates apply directly?','Yes. Candidates can browse published opportunities through Vorlen Careers and apply securely online.'],
-  ['Does Vorlen work with recruitment partners?','Yes. Vorlen operates a selective partner network subject to formal terms, onboarding and approval.']
+  ['Does Vorlen work with recruitment partners?','Yes. Vorlen operates a selective partner network subject to formal terms, onboarding and approval.'],
+  ['What happens after I enquire?','Your enquiry is recorded for the Vorlen team. We review the role and hiring requirements before discussing whether and how we can assist.']
 ];
 
 const services=[
@@ -50,16 +51,17 @@ export default function Landing(){
         <Link to="/partners">Partners</Link>
       </nav>
       <div className="vp-nav-actions">
-        <Link className="vp-signin" to="/login">Sign in</Link>
+        <Link className="vp-signin" to="/login" style={{display:"inline-flex",alignItems:"center",whiteSpace:"nowrap"}}>Sign in</Link>
         <Link className="vp-btn vp-btn-small" to="/contact">Discuss a vacancy</Link>
       </div>
     </header>
+    <nav className="vp-mobile-account" aria-label="Mobile account and candidate access"><Link to="/login">Client or recruiter sign in</Link><Link to="/careers">Find a job</Link></nav>
 
     <main id="main">
       <section className="vp-hero">
         <div className="vp-hero-copy">
           <p className="vp-kicker">UK PERMANENT RECRUITMENT</p>
-          <h1>Better hires begin with a better search.</h1>
+          <h1>Find the right people. Hire with confidence.</h1>
           <p className="vp-lead">Vorlen helps employers find and hire people for permanent roles through focused sourcing, careful candidate review and a recruitment process that stays clear from brief to placement.</p>
           <div className="vp-hero-actions">
             <Link className="vp-btn" to="/contact">Discuss your vacancy <ArrowRight size={17}/></Link>
@@ -154,8 +156,7 @@ export default function Landing(){
           <h2>Technology can support the process. People remain responsible for the decisions.</h2>
         </div>
         <div className="vp-confidence-copy">
-          <p>Vorlen uses technology to connect vacancy information, candidate evidence, client feedback and recruitment activity. It does not replace recruiter judgement.</p>
-          <p>Candidate progression and client introductions remain subject to human review, with recruitment and privacy controls built into the operating process.</p>
+          <p>Our operating workflow requires a vacancy-specific screening record and candidate permission before a client introduction.</p><ul><li><strong>Relevant evidence:</strong> recruiter assessment is tied to the actual vacancy and its requirements.</li><li><strong>Controlled sharing:</strong> employers review approved candidate information and a client-safe CV rather than receiving unrestricted candidate records.</li><li><strong>Human decisions:</strong> management authorises introductions and hiring managers can record feedback and interview requests securely.</li></ul><p>These are workflow controls, not claims about placements or hiring outcomes.</p>
         </div>
       </section>
 

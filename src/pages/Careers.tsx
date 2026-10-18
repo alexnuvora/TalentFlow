@@ -33,7 +33,7 @@ return <div className="customer-public job-page-v2">
       </div>
     </section>
 
-    <main className="job-layout-v2">
+    {!result&&<a className="mobile-apply-cta" href="#apply">Apply for this opportunity <ArrowRight size={16}/></a>}\n    <main className="job-layout-v2">
       <article className="job-content-v2">
         <section className="job-section job-about-section">
           <div className="job-section-heading">
@@ -76,7 +76,7 @@ return <div className="customer-public job-page-v2">
         </section>
       </article>
 
-      <aside className="job-apply-column">
+      <aside id="apply" className="job-apply-column">
         <Card className="job-apply-card">
           {result?<div className="success job-success"><CheckCircle2 size={34}/><h2>{interest?'Interest registered':'Application received'}</h2><p>{interest?'Your details are in the talent pool for this opportunity.':'The Vorlen recruitment team has received your application.'}</p>{result.portal_url&&<a className="btn" href={result.portal_url}>Track your application</a>}</div>:
           <form className="conversion-form job-application-form" onSubmit={submit}>
@@ -95,8 +95,8 @@ return <div className="customer-public job-page-v2">
               <label>Email<input required type="email" autoComplete="email" value={form.email} onChange={e=>update('email',e.target.value)}/></label>
               <label>Phone<input autoComplete="tel" value={form.phone} onChange={e=>update('phone',e.target.value)}/></label>
               <label>Location<input autoComplete="address-level2" value={form.location} onChange={e=>update('location',e.target.value)}/></label>
-              <label className="full">Postal address<textarea required rows={2} autoComplete="street-address" value={form.postal_address} onChange={e=>update('postal_address',e.target.value)}/></label>
-              <label>Age record<select required value={form.age_band} onChange={e=>update('age_band',e.target.value)}><option value="">Select…</option><option value="22_or_over">22 or over</option><option value="under_22">Under 22</option></select></label>
+              <label className="full">Postal address <small>Required for the recruitment record; not displayed in public job listings.</small><textarea required rows={2} autoComplete="street-address" value={form.postal_address} onChange={e=>update('postal_address',e.target.value)}/></label>
+              <label>Age record <small>Used for recruitment record-keeping; it is not used to assess your suitability.</small><select required value={form.age_band} onChange={e=>update('age_band',e.target.value)}><option value="">Select…</option><option value="22_or_over">22 or over</option><option value="under_22">Under 22</option></select></label>
               {form.age_band==='under_22'&&<label>Date of birth<input required type="date" value={form.date_of_birth} onChange={e=>update('date_of_birth',e.target.value)}/></label>}
             </div>}
 

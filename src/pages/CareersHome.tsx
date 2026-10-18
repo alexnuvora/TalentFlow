@@ -5,7 +5,7 @@ import {supabase} from '../lib/supabase';
 import {setSeo} from '../lib/seo';
 import VorlenBrand from '../components/VorlenBrand';
 
-type Opportunity={id:string;slug:string;title:string;location:string|null;employment_type:string;description:string|null;commission_text:string|null;application_mode?:string};
+type Opportunity={id:string;slug:string;title:string;location:string|null;employment_type:string;description:string|null;commission_text:string|null;minimum_remuneration_text:string|null;salary_min:number|null;salary_max:number|null;pay_interval:string|null;application_mode?:string};
 
 export function CareersHeader(){return <header className="careers-nav careers-nav-editorial"><VorlenBrand to="/careers"/><nav><Link to="/careers">Opportunities</Link><Link to="/candidates">Candidate guide</Link><Link to="/candidate-terms">Terms</Link><Link to="/" className="workspace-link">Vorlen <ArrowUpRight size={14}/></Link></nav></header>}
 
@@ -13,9 +13,11 @@ export function CareersFooter(){return <footer className="careers-footer careers
 
 export default function CareersHome(){
   const [jobs,setJobs]=useState<Opportunity[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(false),[query,setQuery]=useState(''),[place,setPlace]=useState(''),[type,setType]=useState('');
-  useEffect(()=>{setSeo({title:'Recruitment opportunities | Vorlen Careers',description:'Explore current vacancies and clearly labelled candidate-pool opportunities managed through Vorlen.',path:'/careers'});supabase.from('jobs').select('id,slug,title,location,employment_type,description,commission_text,application_mode').eq('status','published').order('created_at',{ascending:false}).then(r=>{setJobs(r.data||[]);setError(!!r.error);setLoading(false)})},[]);
+  async function loadJobs(){setLoading(true);setError(false);const r=await supabase.from('jobs').select('id,slug,title,location,employment_type,description,commission_text,minimum_remuneration_text,salary_min,salary_max,pay_interval,application_mode').eq('status','published').order('created_at',{ascending:false});setJobs(r.data||[]);setError(!!r.error);setLoading(false)}
+  useEffect(()=>{setSeo({title:'Recruitment opportunities | Vorlen Careers',description:'Explore current vacancies and clearly labelled candidate-pool opportunities managed through Vorlen.',path:'/careers'});void loadJobs()},[]);
   const types=[...new Set(jobs.map(j=>j.employment_type).filter(Boolean))].sort();
   const filtered=jobs.filter(j=>(j.title+' '+(j.description||'')).toLowerCase().includes(query.toLowerCase())&&String(j.location||'').toLowerCase().includes(place.toLowerCase())&&(!type||j.employment_type===type));
+  const pay=(j:Opportunity)=>j.minimum_remuneration_text||((j.salary_min||j.salary_max)?([j.salary_min!=null?'£'+Number(j.salary_min).toLocaleString('en-GB'):null,j.salary_max!=null?'£'+Number(j.salary_max).toLocaleString('en-GB'):null].filter(Boolean).join(' – ')+(j.pay_interval?' / '+j.pay_interval:'')):j.commission_text||'Pay details in the role brief');
   const excerpt=(s:string|null)=>{const clean=String(s||'').replace(/\s+/g,' ').trim();return clean.length>185?clean.slice(0,182)+'…':clean};
 
   return <div className="careers-site careers-editorial">
@@ -39,7 +41,7 @@ export default function CareersHome(){
       <section id="opportunities" className="ce-opportunities">
         <div className="ce-opportunities-head">
           <div><span className="careers-kicker">SEARCH THE CURRENT LIST</span><h2>Opportunities</h2></div>
-          <p>{loading?'Loading opportunities…':error?'Currently unavailable':String(filtered.length)+' matching '+(filtered.length===1?'role':'roles')}</p>
+          <p>{loading?'Loading current vacancies…':error?'Unable to load vacancies — please try again shortly':String(filtered.length)+' matching '+(filtered.length===1?'role':'roles')}</p>
         </div>
 
         <form className="ce-filter" onSubmit={e=>e.preventDefault()} role="search">
@@ -49,15 +51,16 @@ export default function CareersHome(){
         </form>
 
         <div className="ce-list" aria-live="polite">
-          {error&&<div className="careers-state"><h3>We couldn't load opportunities.</h3><p>Please refresh the page or try again shortly.</p></div>}
+          {loading&&<div role="status" aria-label="Loading opportunities">{[1,2,3].map(n=><article key={n} className="ce-job" style={{opacity:.5}}><span className="ce-job-index">—</span><div className="ce-job-main"><h3>Loading vacancy…</h3><p>Retrieving the latest published opportunities</p></div></article>)}</div>}
+          {error&&<div className="careers-state"><h3>We couldn't load opportunities.</h3><p>Please try again. Your search has been preserved.</p><button className="btn" type="button" onClick={()=>void loadJobs()}>Retry loading vacancies</button></div>}
           {!loading&&!error&&filtered.map((j,i)=><article className="ce-job" key={j.id}>
             <span className="ce-job-index">{String(i+1).padStart(2,'0')}</span>
             <div className="ce-job-main">
-              <div className="ce-job-meta"><span>{j.application_mode==='register_interest'?'REGISTER INTEREST':j.employment_type?.replaceAll('_',' ')}</span><span>{j.location||'Location flexible'}</span></div>
+              <div className="ce-job-meta"><span>{j.application_mode==='register_interest'?'REGISTER INTEREST':j.employment_type?.replaceAll('_',' ')}</span><span>{j.location||'Location not provided'}</span></div>
               <h3><Link to={'/careers/'+encodeURIComponent(j.slug)}>{j.title}</Link></h3>
               <p>{excerpt(j.description)}</p>
             </div>
-            <div className="ce-job-terms"><span>PAY / TERMS</span><p>{excerpt(j.commission_text||'See the full opportunity for pay and terms.')}</p></div>
+            <div className="ce-job-terms"><span>PAY / TERMS</span><p>{excerpt(pay(j))}</p></div>
             <Link className="ce-job-link" to={'/careers/'+encodeURIComponent(j.slug)} aria-label={'View '+j.title}><ArrowUpRight size={20}/></Link>
           </article>)}
           {!loading&&!error&&filtered.length===0&&<div className="careers-state"><BriefcaseBusiness size={28}/><h3>No matching opportunities.</h3><p>Try a broader keyword, location or employment type.</p></div>}
