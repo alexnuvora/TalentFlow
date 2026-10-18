@@ -129,7 +129,8 @@ export default function SeoLanding(){
   const {pathname}=useLocation();
   const page=pages[pathname]||pages['/employers'];
   const Icon=iconFor(pathname);
-  const title=`${page.eyebrow.replaceAll('_',' ').replace(/\b\w/g,m=>m.toUpperCase())} | Vorlen`;
+  const pageTitles:Record<string,string>={'/employers':'UK Permanent Recruitment for Employers | Vorlen','/candidates':'Find Jobs and Apply for Permanent Roles | Vorlen','/partners':'UK Recruitment Partner Network | Vorlen','/services/permanent-recruitment':'Permanent Recruitment Agency UK | Vorlen','/services/candidate-sourcing':'Candidate Sourcing Services UK | Vorlen','/services/recruitment-for-smes':'Recruitment for SMEs UK | Vorlen','/sectors/technology':'Technology Recruitment UK | Vorlen','/sectors/sales-business-development':'Sales and Business Development Recruitment UK | Vorlen','/sectors/finance-accounting':'Finance and Accounting Recruitment UK | Vorlen','/sectors/engineering':'Engineering Recruitment UK | Vorlen','/locations/manchester':'Manchester Recruitment Agency | Vorlen','/locations/greater-manchester':'Greater Manchester Permanent Recruitment | Vorlen'};
+  const title=pageTitles[pathname]||`${page.eyebrow.replaceAll('_',' ').replace(/\\b\\w/g,m=>m.toUpperCase())} | Vorlen`;
   useEffect(()=>{
     const service={'@context':'https://schema.org','@type':'Service',name:page.serviceType||page.eyebrow,serviceType:page.serviceType||page.eyebrow,provider:{'@id':'https://www.vorlen.co.uk/#organization'},areaServed:{'@type':'AdministrativeArea',name:page.area||'United Kingdom'},url:`https://www.vorlen.co.uk${pathname}`,description:page.intro};
     const faq={'@context':'https://schema.org','@type':'FAQPage',mainEntity:page.faq.map(([q,a])=>({'@type':'Question',name:q,acceptedAnswer:{'@type':'Answer',text:a}}))};
