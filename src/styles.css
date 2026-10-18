@@ -1203,3 +1203,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 /* Public recruitment application: retain a reachable action on narrow screens. */
 .mobile-apply-cta{display:none}
 @media(max-width:700px){.mobile-apply-cta{display:flex;position:sticky;top:0;z-index:30;align-items:center;justify-content:space-between;gap:1rem;background:#163e35;color:#fff;text-decoration:none;font-weight:700;padding:14px 18px;min-height:50px;box-shadow:0 3px 12px #0002}.mobile-apply-cta:focus-visible{outline:3px solid #f0b95a;outline-offset:-3px}.job-apply-column{scroll-margin-top:70px}}
+
+/* Mobile account access deliberately separate from space-constrained desktop header actions. */
+.vp-mobile-account{display:none}
+@media(max-width:700px){.vp-mobile-account{display:flex;justify-content:space-between;gap:8px;padding:10px 16px;background:#f4f0e7;border-bottom:1px solid #d8d8d1}.vp-mobile-account a{color:#163e35;font-size:.86rem;font-weight:650;text-decoration:underline;text-underline-offset:3px;min-height:38px;display:flex;align-items:center}.vp-mobile-account a:focus-visible{outline:3px solid #b87b2c;outline-offset:2px}}
