@@ -160,3 +160,34 @@
   .vp-footer{grid-template-columns:1fr;padding:46px 18px 24px}.vp-footer-base{grid-column:1!important;flex-direction:column!important;gap:5px!important}
 }
 @media(prefers-reduced-motion:reduce){.vp-site *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+
+/* Vorlen homepage: accessible footer and employer-focused discovery sections. */
+.vp-site .vp-footer{background:#102f2b;border:1px solid #254f43;border-radius:18px;margin:0 auto 32px;padding:55px 38px 28px;max-width:1280px;color:#fff}
+.vp-site .vp-footer strong,.vp-site .vp-footer .vp-footer-brand,.vp-site .vp-footer .vp-footer-brand strong{color:#fff}
+.vp-site .vp-footer p,.vp-site .vp-footer a,.vp-site .vp-footer span{color:#e4f0ea!important}
+.vp-site .vp-footer a:hover{color:#fff!important;text-decoration:underline;text-underline-offset:4px}
+.vp-site .vp-footer a:focus-visible{outline:3px solid #f3c866;outline-offset:3px;border-radius:3px}
+.vp-site .vp-footer .vp-footer-socials a{color:#fff!important;border-color:#74968a;background:#234e41}
+.vp-site .vp-footer .vp-footer-socials a:hover{background:#346552}
+.vp-site .vp-footer .vp-footer-base{border-color:#486b5f}
+.vp-site .vp-footer .google-preferred-source-btn{background:#fff;color:#153329!important}
+.vp-specialisms,.vp-discover{max-width:1280px;margin:auto;padding:90px 32px}
+.vp-specialisms .vp-section-head,.vp-discover .vp-section-head{max-width:800px}
+.vp-specialisms .vp-section-head p:not(.vp-kicker),.vp-discover .vp-section-head p:not(.vp-kicker){font-size:15px;line-height:1.75;color:#64746c;max-width:680px}
+.vp-specialisms-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:30px}
+.vp-specialisms-grid article{border:1px solid #d8e4dc;border-radius:12px;background:#fff;padding:32px;display:flex;flex-direction:column;align-items:flex-start;min-height:250px}
+.vp-specialisms-grid h3,.vp-discover-cards h3{font-size:23px;letter-spacing:-.025em;line-height:1.2;color:#173b30;margin:0 0 14px}
+.vp-specialisms-grid p,.vp-discover-cards p{color:#5d7067;line-height:1.7;font-size:14px;flex:1}
+.vp-specialisms-grid a,.vp-discover-cards a{display:inline-flex;gap:8px;align-items:center;font-weight:750;color:#146248;text-decoration:none;font-size:13px;margin-top:18px}
+.vp-specialisms-grid a:focus-visible,.vp-discover a:focus-visible,.vp-employer-assurance a:focus-visible{outline:3px solid #ad8744;outline-offset:4px}
+.vp-section-note{font-size:12px;color:#52645a;margin-top:18px}
+.vp-employer-assurance{background:#e8f0eb;padding:76px max(32px,calc((100vw - 1216px)/2));display:grid;grid-template-columns:1fr 1fr;gap:55px;align-items:center}
+.vp-employer-assurance h2{font-size:clamp(32px,4vw,52px);letter-spacing:-.045em;line-height:1.08;margin:12px 0;color:#14382e}
+.vp-employer-assurance p:not(.vp-kicker){font-size:16px;line-height:1.8;color:#445d51}
+.vp-employer-assurance a{color:#135c45;text-decoration:underline;text-underline-offset:4px;display:inline-flex;gap:8px;align-items:center}
+.vp-discover-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:28px}
+.vp-discover-cards article{border:1px solid #d7e5db;border-radius:14px;padding:35px;background:#fff}
+.vp-discover-cards article>svg{color:#14755a;margin-bottom:20px}
+@media(max-width:900px){.vp-specialisms-grid{grid-template-columns:1fr}.vp-specialisms-grid article{min-height:0}.vp-employer-assurance{grid-template-columns:1fr;gap:20px;padding:68px 24px}}
+@media(max-width:620px){.vp-site .vp-footer{margin:0 14px 18px;padding:42px 22px 24px}.vp-specialisms,.vp-discover{padding:65px 18px}.vp-specialisms-grid article,.vp-discover-cards article{padding:25px}.vp-discover-cards{grid-template-columns:1fr}.vp-employer-assurance{padding:58px 18px}}
