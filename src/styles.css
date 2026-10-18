@@ -1247,3 +1247,20 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 .ce-hero-jump:focus-visible{outline:3px solid #d6a342;outline-offset:3px}
 .careers-footer a,.careers-footer p,.careers-footer span,.careers-footer nav a,.vp-footer a,.vp-footer span{color:#e0eee7!important}
 .careers-footer a:hover,.vp-footer a:hover{text-decoration:underline}
+
+
+/* Partner/staff navigation: keep labels and disclosure arrows inside the fixed sidebar. */
+@media(min-width:801px){
+ .app-shell .sidebar{width:268px;min-width:268px;overflow:hidden;padding-inline:12px}
+ .app-shell .main{margin-left:268px;width:calc(100% - 268px)}
+ .app-shell .sidebar nav{min-width:0;width:100%;overflow-x:hidden;overflow-y:auto;scrollbar-gutter:stable;padding-right:4px}
+ .app-shell .sidebar nav a,.app-shell .sidebar .nav-btn{min-width:0;max-width:100%;width:100%;box-sizing:border-box;white-space:normal;overflow-wrap:anywhere;gap:9px}
+ .app-shell .sidebar nav a>span:not(.work-queue-badge):not(.chat-unread-badge):not(.mail-unread-badge){min-width:0;flex:1}
+ .app-shell .sidebar .partner-nav-group{min-width:0;max-width:100%;width:100%;box-sizing:border-box}
+ .app-shell .sidebar .partner-nav-group>summary{min-width:0;max-width:100%;box-sizing:border-box;overflow:hidden;display:flex;align-items:center;gap:9px;white-space:normal}
+ .app-shell .sidebar .partner-nav-group>summary>span{min-width:0;flex:1;overflow-wrap:anywhere}
+ .app-shell .sidebar .partner-nav-group>summary>svg{flex-shrink:0}
+ .app-shell .sidebar .partner-nav-children{min-width:0;max-width:100%;box-sizing:border-box;padding-left:9px}
+ .app-shell .sidebar .partner-nav-children>a{padding-left:8px;padding-right:7px}
+ .app-shell .sidebar .partner-nav-group>summary:after{flex-shrink:0}
+}
