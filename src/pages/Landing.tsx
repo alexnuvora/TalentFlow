@@ -50,7 +50,7 @@ export default function Landing(){
         <Link to="/partners">Partners</Link>
       </nav>
       <div className="vp-nav-actions">
-        <Link className="vp-signin" to="/login">Sign in</Link>
+        <Link className="vp-signin" to="/login" style={{display:"inline-flex",alignItems:"center",whiteSpace:"nowrap"}}>Sign in</Link>
         <Link className="vp-btn vp-btn-small" to="/contact">Discuss a vacancy</Link>
       </div>
     </header>
@@ -59,7 +59,7 @@ export default function Landing(){
       <section className="vp-hero">
         <div className="vp-hero-copy">
           <p className="vp-kicker">UK PERMANENT RECRUITMENT</p>
-          <h1>Better hires begin with a better search.</h1>
+          <h1>Find the right people. Hire with confidence.</h1>
           <p className="vp-lead">Vorlen helps employers find and hire people for permanent roles through focused sourcing, careful candidate review and a recruitment process that stays clear from brief to placement.</p>
           <div className="vp-hero-actions">
             <Link className="vp-btn" to="/contact">Discuss your vacancy <ArrowRight size={17}/></Link>
