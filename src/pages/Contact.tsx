@@ -20,7 +20,7 @@ export default function Contact(){
   }
 
   return <div className="vorlen-contact-page">
-    <header className="vorlen-nav"><VorlenBrand/><nav><Link to="/">About Vorlen</Link><Link to="/careers">Careers</Link></nav><div className="vorlen-nav-actions"><Link className="vorlen-text-link" to="/login">Sign in</Link></div></header>
+    <header className="vorlen-nav"><VorlenBrand/><nav><Link to="/">About Vorlen</Link><Link to="/careers">Careers</Link></nav><div className="vorlen-nav-actions"><Link className="vorlen-text-link" to="/login">Sign in</Link></div><div className="vorlen-mobile-signin"><Link to="/login">Client or recruiter sign in</Link></div></header>
     <main className="vorlen-contact-main">
       <section className="vorlen-contact-intro"><p className="vorlen-eyebrow">CONTACT VORLEN</p><h1>Start with what you need.</h1><p>Hiring for a permanent role, asking about an application or exploring the Vorlen partner network? Send the context and we’ll route it properly.</p><div className="vorlen-contact-direct"><span>Prefer email?</span><a href="mailto:contact@vorlen.co.uk">contact@vorlen.co.uk</a></div></section>
       <section className="vorlen-contact-card">
