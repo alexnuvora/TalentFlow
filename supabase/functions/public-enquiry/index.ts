@@ -19,10 +19,10 @@ Deno.serve(async req=>{
   if((count||0)>=3)return reply({error:'Please wait before submitting another enquiry or email contact@vorlen.co.uk.'},429);
   const {data,error}=await db.from('public_enquiries').insert({name,email,company:company||null,reason,message,role_title:roleTitle||null,source_page:sourcePage||null,utm_source:utmSource||null,utm_campaign:utmCampaign||null}).select('id').single();
   if(error)throw error;
-  const apiKey=Deno.env.get('RESEND_API_KEY');
-  if(apiKey){
+  const apiKey=Deno.env.get('RESEND_API_KEY'),sender=Deno.env.get('VORLEN_ENQUIRY_FROM');
+  if(apiKey&&sender){
    try{
-    const er=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({from:Deno.env.get('VORLEN_ENQUIRY_FROM')||'Vorlen Enquiries <notifications@vorlen.co.uk>',to:['contact@vorlen.co.uk'],reply_to:email,subject:'New Vorlen '+reason+' enquiry',text:'Name: '+name+'\nEmail: '+email+'\nCompany: '+company+'\nVacancy: '+roleTitle+'\nType: '+reason+'\nSource: '+sourcePage+'\n\n'+message})});
+    const er=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({from:sender,to:['contact@vorlen.co.uk'],reply_to:email,subject:'New Vorlen '+reason+' enquiry',text:'Name: '+name+'\nEmail: '+email+'\nCompany: '+company+'\nVacancy: '+roleTitle+'\nType: '+reason+'\nSource: '+sourcePage+'\n\n'+message})});
     await db.from('public_enquiries').update({notification_status:er.ok?'sent':'failed',notification_error:er.ok?null:'Provider returned '+er.status}).eq('id',data.id);
    }catch{await db.from('public_enquiries').update({notification_status:'failed',notification_error:'Notification transport error'}).eq('id',data.id)}
   }
