@@ -54,6 +54,7 @@ export default function Landing(){
         <Link className="vp-btn vp-btn-small" to="/contact">Discuss a vacancy</Link>
       </div>
     </header>
+    <nav className="vp-mobile-account" aria-label="Mobile account and candidate access"><Link to="/login">Client or recruiter sign in</Link><Link to="/careers">Find a job</Link></nav>
 
     <main id="main">
       <section className="vp-hero">
