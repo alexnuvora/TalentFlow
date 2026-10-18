@@ -25,7 +25,7 @@ Deno.serve(async req=>{
     const er=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({from:sender,to:['contact@vorlen.co.uk'],reply_to:email,subject:'New Vorlen '+reason+' enquiry',text:'Name: '+name+'\nEmail: '+email+'\nCompany: '+company+'\nVacancy: '+roleTitle+'\nType: '+reason+'\nSource: '+sourcePage+'\n\n'+message})});
     await db.from('public_enquiries').update({notification_status:er.ok?'sent':'failed',notification_error:er.ok?null:'Provider returned '+er.status}).eq('id',data.id);
    }catch{await db.from('public_enquiries').update({notification_status:'failed',notification_error:'Notification transport error'}).eq('id',data.id)}
-  }
+  }else{await db.from('public_enquiries').update({notification_status:'not_configured'}).eq('id',data.id)}
   return reply({ok:true,reference:data.id});
  }catch(e){console.error('public-enquiry',e);return reply({error:'Unable to save your enquiry. Please email contact@vorlen.co.uk.'},500)}
 });
