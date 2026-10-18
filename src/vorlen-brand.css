@@ -191,3 +191,34 @@
 .vp-discover-cards article>svg{color:#14755a;margin-bottom:20px}
 @media(max-width:900px){.vp-specialisms-grid{grid-template-columns:1fr}.vp-specialisms-grid article{min-height:0}.vp-employer-assurance{grid-template-columns:1fr;gap:20px;padding:68px 24px}}
 @media(max-width:620px){.vp-site .vp-footer{margin:0 14px 18px;padding:42px 22px 24px}.vp-specialisms,.vp-discover{padding:65px 18px}.vp-specialisms-grid article,.vp-discover-cards article{padding:25px}.vp-discover-cards{grid-template-columns:1fr}.vp-employer-assurance{padding:58px 18px}}
+
+
+/* Homepage visual polish: override the two-column service heading for narrative sections. */
+.vp-site .vp-specialisms .vp-section-head,
+.vp-site .vp-discover .vp-section-head{
+  display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;
+  gap:12px;margin-bottom:30px;max-width:850px
+}
+.vp-site .vp-specialisms .vp-section-head h2,
+.vp-site .vp-discover .vp-section-head h2{
+  font-size:clamp(31px,3.6vw,48px);line-height:1.12;letter-spacing:-.04em;
+  margin:0;max-width:780px
+}
+.vp-site .vp-specialisms .vp-section-head .vp-kicker,
+.vp-site .vp-discover .vp-section-head .vp-kicker{margin:0 0 8px}
+.vp-site .vp-specialisms .vp-section-head p:not(.vp-kicker),
+.vp-site .vp-discover .vp-section-head p:not(.vp-kicker){margin:4px 0 0;color:#40574a;max-width:690px}
+.vp-site .vp-discover .vp-section-head>a{margin-top:8px;color:#125a44;font-size:14px}
+.vp-site .vp-specialisms-grid{gap:18px}
+.vp-site .vp-specialisms-grid article{border-radius:16px;padding:29px;min-height:240px}
+.vp-site .vp-discover-cards article{min-width:0}
+.vp-site .vp-footer{width:calc(100% - 48px);box-shadow:0 12px 34px rgba(16,47,43,.08)}
+.vp-site .vp-footer .google-preferred-source-btn,
+.vp-site .vp-footer .google-preferred-source-btn span{color:#153329!important}
+.vp-site .vp-footer .vp-footer-base span{overflow-wrap:anywhere;line-height:1.6}
+@media(max-width:620px){
+ .vp-site .vp-specialisms .vp-section-head h2,.vp-site .vp-discover .vp-section-head h2{font-size:34px}
+ .vp-site .vp-footer{width:calc(100% - 28px);padding:36px 20px 24px}
+ .vp-site .vp-footer-base{margin-top:10px}
+ .vp-site .vp-specialisms-grid article{padding:24px}
+}
