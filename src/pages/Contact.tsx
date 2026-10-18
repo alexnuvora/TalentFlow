@@ -12,7 +12,7 @@ const reasons=[
 ];
 
 export default function Contact(){
-  const[name,setName]=useState(''),[email,setEmail]=useState(''),[company,setCompany]=useState(''),[reason,setReason]=useState('employer'),[message,setMessage]=useState(''),[sent,setSent]=useState(false);
+  const[name,setName]=useState(''),[email,setEmail]=useState(''),[company,setCompany]=useState(''),[reason,setReason]=useState('employer'),[message,setMessage]=useState(''),[sent,setSent]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[reference,setReference]=useState(''),[website,setWebsite]=useState('');
   useEffect(()=>setSeo({title:'Contact Vorlen | UK Permanent Recruitment',description:'Talk to Vorlen about a permanent vacancy, candidate query or recruitment partnership.',path:'/contact'}),[]);
   async function submit(e:any){
     e.preventDefault();setError('');setBusy(true);
