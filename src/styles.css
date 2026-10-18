@@ -1207,3 +1207,21 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 /* Mobile account access deliberately separate from space-constrained desktop header actions. */
 .vp-mobile-account{display:none}
 @media(max-width:700px){.vp-mobile-account{display:flex;justify-content:space-between;gap:8px;padding:10px 16px;background:#f4f0e7;border-bottom:1px solid #d8d8d1}.vp-mobile-account a{color:#163e35;font-size:.86rem;font-weight:650;text-decoration:underline;text-underline-offset:3px;min-height:38px;display:flex;align-items:center}.vp-mobile-account a:focus-visible{outline:3px solid #b87b2c;outline-offset:2px}}
+
+
+/* Public responsive QA corrections — 18 October 2026. */
+.vorlen-mobile-signin{display:none}
+.candidate-recovery-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:18px 0}
+.candidate-recovery-actions .btn{display:inline-flex;align-items:center;justify-content:center;max-width:100%;white-space:normal;text-align:center;text-decoration:none}
+.candidate-recovery-actions .btn.ghost{color:#163e35;border:1px solid #b9c7bf}
+@media(max-width:768px){
+  .vorlen-mobile-signin{display:flex;align-items:center;justify-content:center;padding:10px 14px;background:#f3f0e8;border-bottom:1px solid #d5ded6}
+  .vorlen-mobile-signin a{font-size:.92rem;font-weight:650;color:#163e35;min-height:32px;display:inline-flex;align-items:center;text-decoration:underline;text-underline-offset:3px}
+}
+@media(max-width:600px){
+  .candidate-recovery-actions{flex-direction:column;align-items:stretch}
+  .candidate-recovery-actions .btn{width:100%}
+  .mobile-apply-cta{position:relative;top:auto}
+  .job-apply-column{scroll-margin-top:16px}
+}
+.careers-footer,.careers-footer a,.careers-footer p,.careers-footer span,.vp-footer,.vp-footer a,.vp-footer span{color:#d5e5dd}
