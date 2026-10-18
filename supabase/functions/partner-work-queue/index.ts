@@ -49,7 +49,7 @@ Deno.serve(async req=>{
   const add=(x:any,blocked=false)=>{const key=x.key||[x.kind,x.client_id,x.job_id,x.candidate_id,x.title].join(':');if(seen.has(key))return;seen.add(key);(blocked?waiting:queue).push({...x,key,blocked})};
   const route=(kind:string,id?:string)=>kind==='client'?'/dashboard/partner/clients'+(id?'?client='+encodeURIComponent(id):''):kind==='job'?'/dashboard/partner/vacancies':kind==='pipeline'?'/dashboard/partner/pipeline'+(id?'?job='+encodeURIComponent(id):''):kind==='candidate'&&id?'/dashboard/partner/candidates/'+id:kind==='application'?'/dashboard/partner/applications':kind==='handoff'?'/dashboard/partner/handoffs':kind==='earnings'?'/dashboard/partner/earnings':'/dashboard/partner/tasks';
 
-  for(const t of tasks||[]) add({key:'task:'+t.id,kind:'task',source:'task',title:t.title,detail:t.description||'Recorded Vorlen task',priority:t.priority||'normal',due_at:t.due_at,client_id:t.client_id,job_id:t.job_id,candidate_id:t.candidate_id,route:'/dashboard/partner/tasks',action_label:t.outreach_channel==='email'&&t.outreach_enrollment_id?'Open task & send':'Open task'});
+  for(const t of tasks||[]) add({key:'task:'+t.id,kind:'task',source:'task',title:t.title,detail:t.description||'Recorded Vorlen task',priority:t.priority||'normal',due_at:t.due_at,client_id:t.client_id,job_id:t.job_id,candidate_id:t.candidate_id,route:'/dashboard/partner/tasks?task='+encodeURIComponent(t.id),action_label:t.outreach_channel==='email'&&t.outreach_enrollment_id?'Open task & send':'Open task'});
 
   if(canDevelop===true){
    for(const a of (assignments||[]).filter((x:any)=>x.client_id)){
