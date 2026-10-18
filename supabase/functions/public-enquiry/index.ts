@@ -9,7 +9,7 @@ Deno.serve(async req=>{
  if(!allowed.has(origin))return reply({error:'Origin not allowed'},403);
  try{
   const b=await req.json();
-  const name=String(b.name||'').trim().slice(0,150),email=String(b.email||'').trim().toLowerCase().slice(0,250),company=String(b.company||'').trim().slice(0,200),reason=String(b.reason||''),message=String(b.message||'').trim().slice(0,5000);
+  const name=String(b.name||'').trim().slice(0,150),email=String(b.email||'').trim().toLowerCase().slice(0,250),company=String(b.company||'').trim().slice(0,200),reason=String(b.reason||''),message=String(b.message||'').trim().slice(0,5000),roleTitle=String(b.role_title||'').trim().slice(0,180),sourcePage=String(b.source_page||'').trim().slice(0,150),utmSource=String(b.utm_source||'').trim().slice(0,80),utmCampaign=String(b.utm_campaign||'').trim().slice(0,80);
   if(b.website)return reply({ok:true});
   if(name.length<2||!/^\S+@\S+\.\S+$/.test(email)||!['employer','candidate','partner'].includes(reason)||message.length<15)return reply({error:'Please provide a valid name, email, enquiry type and at least 15 characters of detail.'},400);
   const db=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
@@ -17,12 +17,12 @@ Deno.serve(async req=>{
   const {count,error:rateError}=await db.from('public_enquiries').select('id',{head:true,count:'exact'}).eq('email',email).gte('created_at',since);
   if(rateError)throw rateError;
   if((count||0)>=3)return reply({error:'Please wait before submitting another enquiry or email contact@vorlen.co.uk.'},429);
-  const {data,error}=await db.from('public_enquiries').insert({name,email,company:company||null,reason,message}).select('id').single();
+  const {data,error}=await db.from('public_enquiries').insert({name,email,company:company||null,reason,message,role_title:roleTitle||null,source_page:sourcePage||null,utm_source:utmSource||null,utm_campaign:utmCampaign||null}).select('id').single();
   if(error)throw error;
   const apiKey=Deno.env.get('RESEND_API_KEY');
   if(apiKey){
    try{
-    const er=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({from:Deno.env.get('VORLEN_ENQUIRY_FROM')||'Vorlen Enquiries <notifications@vorlen.co.uk>',to:['contact@vorlen.co.uk'],reply_to:email,subject:'New Vorlen '+reason+' enquiry',text:'Name: '+name+'\nEmail: '+email+'\nCompany: '+company+'\nType: '+reason+'\n\n'+message})});
+    const er=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({from:Deno.env.get('VORLEN_ENQUIRY_FROM')||'Vorlen Enquiries <notifications@vorlen.co.uk>',to:['contact@vorlen.co.uk'],reply_to:email,subject:'New Vorlen '+reason+' enquiry',text:'Name: '+name+'\nEmail: '+email+'\nCompany: '+company+'\nVacancy: '+roleTitle+'\nType: '+reason+'\nSource: '+sourcePage+'\n\n'+message})});
     await db.from('public_enquiries').update({notification_status:er.ok?'sent':'failed',notification_error:er.ok?null:'Provider returned '+er.status}).eq('id',data.id);
    }catch{await db.from('public_enquiries').update({notification_status:'failed',notification_error:'Notification transport error'}).eq('id',data.id)}
   }
