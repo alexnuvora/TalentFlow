@@ -39,7 +39,7 @@ export default function CareersHome(){
       <section id="opportunities" className="ce-opportunities">
         <div className="ce-opportunities-head">
           <div><span className="careers-kicker">SEARCH THE CURRENT LIST</span><h2>Opportunities</h2></div>
-          <p>{loading?'Loading opportunities…':error?'Currently unavailable':String(filtered.length)+' matching '+(filtered.length===1?'role':'roles')}</p>
+          <p>{loading?'Loading current vacancies…':error?'Unable to load vacancies — please try again shortly':String(filtered.length)+' matching '+(filtered.length===1?'role':'roles')}</p>
         </div>
 
         <form className="ce-filter" onSubmit={e=>e.preventDefault()} role="search">
