@@ -1239,3 +1239,11 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
   .recruiter-chat-actions strong,.recruiter-chat-actions span{display:block;white-space:normal;overflow-wrap:anywhere}
   .recruiter-chat-actions .button-row{display:flex;flex-wrap:wrap;gap:8px}
 }
+
+
+/* Careers discovery and contrast regression corrections. */
+.ce-hero-jump{display:inline-flex;align-items:center;gap:9px;margin-top:18px;padding:12px 17px;border-radius:6px;background:#173f35;color:#fff!important;font-weight:700;text-decoration:none;min-height:44px;max-width:100%}
+.ce-hero-jump:hover,.ce-hero-jump:focus-visible{background:#225f4c;color:#fff}
+.ce-hero-jump:focus-visible{outline:3px solid #d6a342;outline-offset:3px}
+.careers-footer a,.careers-footer p,.careers-footer span,.careers-footer nav a,.vp-footer a,.vp-footer span{color:#e0eee7!important}
+.careers-footer a:hover,.vp-footer a:hover{text-decoration:underline}
