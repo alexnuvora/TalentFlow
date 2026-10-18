@@ -118,6 +118,27 @@ export default function Landing(){
         </div>
       </section>
 
+      <section className="vp-specialisms" aria-labelledby="vp-specialisms-title">
+        <div className="vp-section-head">
+          <p className="vp-kicker">RECRUITMENT SPECIALISMS</p>
+          <h2 id="vp-specialisms-title">Focused recruitment for the roles your business needs.</h2>
+          <p>From technical vacancies to business support, each search starts with your actual requirements. Talk to us about your role and the experience that matters.</p>
+        </div>
+        <div className="vp-specialisms-grid">
+          {[
+            ['Engineering & technical','Permanent roles requiring relevant technical knowledge, qualifications and practical experience.'],
+            ['Office & administration','Reliable administrative and operational support, from office staff to experienced coordinators.'],
+            ['Accounting & finance','Finance and accounts positions where accuracy, experience and attention to detail count.']
+          ].map(([title,copy])=><article key={title}><h3>{title}</h3><p>{copy}</p><Link to="/contact">Discuss a role <ArrowRight size={15}/></Link></article>)}
+        </div>
+        <p className="vp-section-note">Based in Greater Manchester, supporting permanent recruitment enquiries across the UK. Every assignment is reviewed individually.</p>
+      </section>
+
+      <section className="vp-employer-assurance" aria-labelledby="vp-assurance-title">
+        <div><p className="vp-kicker">FOR HIRING TEAMS</p><h2 id="vp-assurance-title">A shortlist should tell you more than a CV can.</h2></div>
+        <div><p>We focus on the role requirements, candidate evidence and permission to share information, so introductions arrive with useful context — not as unexplained CV attachments.</p><Link className="vp-text-link" to="/employers">How we support employers <ArrowRight size={15}/></Link></div>
+      </section>
+
       <section className="vp-process">
         <div className="vp-process-intro">
           <p className="vp-kicker vp-kicker-light">OUR APPROACH</p>
@@ -160,6 +181,19 @@ export default function Landing(){
         </div>
       </section>
 
+      <section className="vp-discover" aria-labelledby="vp-discover-title">
+        <div className="vp-section-head">
+          <p className="vp-kicker">CURRENT OPPORTUNITIES</p>
+          <h2 id="vp-discover-title">Explore roles being recruited now.</h2>
+          <p>Our careers page displays the current published opportunities, with the role details and a secure application route. The list stays up to date as vacancies change.</p>
+          <Link to="/careers">Browse live opportunities <ArrowRight size={16}/></Link>
+        </div>
+        <div className="vp-discover-cards">
+          <article><BriefcaseBusiness size={24}/><h3>Hiring for your team?</h3><p>Share the title, location, salary range and essential requirements. We will review the brief and discuss the next step.</p><Link to="/contact">Start an employer enquiry <ArrowRight size={16}/></Link></article>
+          <article><Users size={24}/><h3>Considering your next role?</h3><p>Review published vacancies and apply directly when there is a suitable opportunity. New roles are added to Vorlen Careers.</p><Link to="/careers">View opportunities <ArrowRight size={16}/></Link></article>
+        </div>
+      </section>
+
       <section className="vp-faq">
         <div className="vp-faq-head">
           <p className="vp-kicker">COMMON QUESTIONS</p>
@@ -186,8 +220,8 @@ export default function Landing(){
     <footer className="vp-footer">
       <div className="vp-footer-brand"><VorlenBrand/><p>Permanent recruitment, properly run.</p><div className="vp-footer-socials" aria-label="Vorlen social media"><a href="https://www.facebook.com/share/19pqmJPH3v/" target="_blank" rel="noopener noreferrer" aria-label="Vorlen on Facebook"><Facebook size={18}/></a><a href="https://www.linkedin.com/company/vorlen/" target="_blank" rel="noopener noreferrer" aria-label="Vorlen on LinkedIn"><Linkedin size={18}/></a></div><div className="google-preferred-source"><GooglePreferredSource/></div></div>
       <div><strong>Employers</strong><Link to="/employers">For employers</Link><Link to="/services/permanent-recruitment">Permanent recruitment</Link><Link to="/services/candidate-sourcing">Candidate sourcing</Link><Link to="/services/recruitment-for-smes">Recruitment for SMEs</Link></div>
-      <div><strong>Candidates</strong><Link to="/candidates">For candidates</Link><Link to="/careers">Open opportunities</Link><Link to="/candidate-terms">Candidate terms</Link></div>
-      <div><strong>Vorlen</strong><Link to="/partners">Partner network</Link><Link to="/locations/manchester">Manchester</Link><Link to="/locations/greater-manchester">Greater Manchester</Link><Link to="/contact">Contact</Link></div>
+      <div><strong>Candidates</strong><Link to="/candidates">For candidates</Link><Link to="/careers">Open opportunities</Link><Link to="/candidate-terms">Candidate terms</Link><Link to="/privacy">Privacy policy</Link></div>
+      <div><strong>Vorlen</strong><Link to="/partners">Partner network</Link><Link to="/locations/manchester">Manchester</Link><Link to="/locations/greater-manchester">Greater Manchester</Link><Link to="/contact">Contact</Link><Link to="/accessibility">Accessibility</Link></div>
       <div className="vp-footer-base"><span>© {new Date().getFullYear()} Vorlen</span><span>Vorlen Ltd · Company No. 17387520 · Registered in England and Wales · Registered office: Rochdale, OL16 2EP · ICO Ref: ZC275029</span></div>
     </footer>
   </div>
