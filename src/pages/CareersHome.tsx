@@ -29,7 +29,7 @@ export default function CareersHome(){
         <div className="ce-hero-copy">
           <span className="careers-kicker"><span/> CURRENT OPPORTUNITIES</span>
           <h1>Make the move.<br/><em>Know what you’re moving toward.</em></h1>
-          <p>Explore permanent opportunities with clear role information, a secure application route and human review behind the process.</p>
+          <p>Explore permanent opportunities with clear role information, a secure application route and human review behind the process.</p><a className="ce-hero-jump" href="#opportunities">Browse {loading?'opportunities':jobs.length+' current opportunities'} <ArrowRight size={17}/></a>
         </div>
         <div className="ce-hero-side">
           <span>BEFORE YOU APPLY</span>
