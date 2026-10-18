@@ -10,7 +10,8 @@ const faqs=[
   ['How does Vorlen assess candidates?','Recruiters review job-related evidence, experience and suitability against the vacancy. Technology may assist with evidence review, but candidate progression and client introductions remain human-reviewed.'],
   ['Where does Vorlen recruit?','Vorlen supports permanent recruitment for employers across the United Kingdom.'],
   ['Can candidates apply directly?','Yes. Candidates can browse published opportunities through Vorlen Careers and apply securely online.'],
-  ['Does Vorlen work with recruitment partners?','Yes. Vorlen operates a selective partner network subject to formal terms, onboarding and approval.']
+  ['Does Vorlen work with recruitment partners?','Yes. Vorlen operates a selective partner network subject to formal terms, onboarding and approval.'],
+  ['What happens after I enquire?','Your enquiry is recorded for the Vorlen team. We review the role and hiring requirements before discussing whether and how we can assist.']
 ];
 
 const services=[
@@ -155,8 +156,7 @@ export default function Landing(){
           <h2>Technology can support the process. People remain responsible for the decisions.</h2>
         </div>
         <div className="vp-confidence-copy">
-          <p>Vorlen uses technology to connect vacancy information, candidate evidence, client feedback and recruitment activity. It does not replace recruiter judgement.</p>
-          <p>Candidate progression and client introductions remain subject to human review, with recruitment and privacy controls built into the operating process.</p>
+          <p>Our operating workflow requires a vacancy-specific screening record and candidate permission before a client introduction.</p><ul><li><strong>Relevant evidence:</strong> recruiter assessment is tied to the actual vacancy and its requirements.</li><li><strong>Controlled sharing:</strong> employers review approved candidate information and a client-safe CV rather than receiving unrestricted candidate records.</li><li><strong>Human decisions:</strong> management authorises introductions and hiring managers can record feedback and interview requests securely.</li></ul><p>These are workflow controls, not claims about placements or hiring outcomes.</p>
         </div>
       </section>
 
