@@ -33,7 +33,8 @@ return <div className="customer-public job-page-v2">
       </div>
     </section>
 
-    {!result&&<a className="mobile-apply-cta" href="#apply">Apply for this opportunity <ArrowRight size={16}/></a>}\n    <main className="job-layout-v2">
+    {!result&&<a className="mobile-apply-cta" href="#apply">Apply for this opportunity <ArrowRight size={16}/></a>}
+    <main className="job-layout-v2">
       <article className="job-content-v2">
         <section className="job-section job-about-section">
           <div className="job-section-heading">
