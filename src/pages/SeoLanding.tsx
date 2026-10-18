@@ -149,7 +149,7 @@ export default function SeoLanding(){
         <Link to="/partners">Partners</Link>
       </nav>
       <div className="vorlen-nav-actions"><Link className="vorlen-text-link" to="/login">Sign in</Link><Link className="vorlen-button small" to="/contact">Talk to Vorlen <ArrowRight size={15}/></Link></div>
-    </header>
+<div className="vorlen-mobile-signin"><Link to="/login">Client or recruiter sign in</Link></div>    </header>
     <main id="main">
       <section className="seo-hero">
         <div>
