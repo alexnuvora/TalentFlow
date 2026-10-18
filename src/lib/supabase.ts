@@ -5,6 +5,7 @@ export const isConfigured = Boolean(url && key && !url.includes('YOUR_PROJECT'))
 if (!isConfigured) {
   throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY. Copy .env.example to .env.local and configure the deployment.');
 }
+export const publicSupabase = createClient(url, key, {auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},global:{headers:{'x-vorlen-public':'careers'}}});
 export const supabase = createClient(url, key, {
   auth: {persistSession:true, autoRefreshToken:true, detectSessionInUrl:true},
 });

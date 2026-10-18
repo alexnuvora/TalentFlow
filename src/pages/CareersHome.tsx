@@ -1,7 +1,7 @@
 import {useEffect,useState} from 'react';
 import {Link} from 'react-router-dom';
 import {ArrowRight,ArrowUpRight,BriefcaseBusiness,MapPin,Search} from 'lucide-react';
-import {supabase} from '../lib/supabase';
+import {publicSupabase} from '../lib/supabase';
 import {setSeo} from '../lib/seo';
 import VorlenBrand from '../components/VorlenBrand';
 
@@ -13,7 +13,7 @@ export function CareersFooter(){return <footer className="careers-footer careers
 
 export default function CareersHome(){
   const [jobs,setJobs]=useState<Opportunity[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(false),[query,setQuery]=useState(''),[place,setPlace]=useState(''),[type,setType]=useState('');
-  async function loadJobs(){setLoading(true);setError(false);const r=await supabase.from('jobs').select('id,slug,title,location,employment_type,description,commission_text,minimum_remuneration_text,salary_min,salary_max,pay_interval,application_mode').eq('status','published').order('created_at',{ascending:false});setJobs(r.data||[]);setError(!!r.error);setLoading(false)}
+  async function loadJobs(){setLoading(true);setError(false);const r=await publicSupabase.from('jobs').select('id,slug,title,location,employment_type,description,commission_text,minimum_remuneration_text,salary_min,salary_max,pay_interval,application_mode').eq('status','published').order('created_at',{ascending:false});setJobs(r.data||[]);setError(!!r.error);setLoading(false)}
   useEffect(()=>{setSeo({title:'Recruitment opportunities | Vorlen Careers',description:'Explore current vacancies and clearly labelled candidate-pool opportunities managed through Vorlen.',path:'/careers'});void loadJobs()},[]);
   const types=[...new Set(jobs.map(j=>j.employment_type).filter(Boolean))].sort();
   const filtered=jobs.filter(j=>(j.title+' '+(j.description||'')).toLowerCase().includes(query.toLowerCase())&&String(j.location||'').toLowerCase().includes(place.toLowerCase())&&(!type||j.employment_type===type));
