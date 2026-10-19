@@ -177,7 +177,12 @@ export default function Landing(){
           <h2>Technology can support the process. People remain responsible for the decisions.</h2>
         </div>
         <div className="vp-confidence-copy">
-          <p>Our operating workflow requires a vacancy-specific screening record and candidate permission before a client introduction.</p><ul><li><strong>Relevant evidence:</strong> recruiter assessment is tied to the actual vacancy and its requirements.</li><li><strong>Controlled sharing:</strong> employers review approved candidate information and a client-safe CV rather than receiving unrestricted candidate records.</li><li><strong>Human decisions:</strong> management authorises introductions and hiring managers can record feedback and interview requests securely.</li></ul><p>These are workflow controls, not claims about placements or hiring outcomes.</p>
+          <p className="vp-confidence-intro">Every candidate introduction follows a clear, considered process — from role-specific assessment to secure sharing and human approval.</p>
+          <div className="vp-assurance-list">
+            <article className="vp-assurance-item"><span className="vp-assurance-number" aria-hidden="true">01</span><div><h3>Assessed against your vacancy</h3><p>We review relevant experience and evidence against the requirements of your role.</p></div></article>
+            <article className="vp-assurance-item"><span className="vp-assurance-number" aria-hidden="true">02</span><div><h3>Shared with permission</h3><p>Approved candidate information and a client-safe CV are shared only through our controlled introduction process.</p></div></article>
+            <article className="vp-assurance-item"><span className="vp-assurance-number" aria-hidden="true">03</span><div><h3>Decisions stay human</h3><p>Our team reviews introductions, while hiring managers can securely give feedback and request interviews.</p></div></article>
+          </div>
         </div>
       </section>
 
