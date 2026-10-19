@@ -258,3 +258,14 @@
  .app-shell>.sidebar{display:none!important}
  .app-shell>.main{margin-left:0!important;width:100%!important}
 }
+
+
+/* Recruitment accountability: editorial cards in place of dense bullets */
+.vp-site .vp-confidence-copy{min-width:0}
+.vp-site .vp-confidence-intro{font-size:clamp(15px,1.25vw,18px);line-height:1.75;color:#455b51;margin:0 0 24px}
+.vp-site .vp-assurance-list{display:grid;gap:11px}
+.vp-site .vp-assurance-item{display:grid;grid-template-columns:44px minmax(0,1fr);gap:15px;align-items:start;padding:20px 21px;background:#fff;border:1px solid #d9e3dc;border-radius:13px;box-shadow:0 4px 16px rgba(16,35,29,.025)}
+.vp-site .vp-assurance-number{display:grid;place-items:center;width:38px;height:38px;background:#e7f0e9;border:1px solid #d0e0d6;border-radius:10px;color:#175741;font-size:12px;font-weight:800;letter-spacing:.04em}
+.vp-site .vp-assurance-item h3{font-size:17px;line-height:1.3;letter-spacing:-.025em;color:#17392e;margin:0 0 6px;font-weight:750}
+.vp-site .vp-assurance-item p{font-size:13px;line-height:1.65;color:#54695e;margin:0}
+@media(max-width:620px){.vp-site .vp-assurance-item{grid-template-columns:36px minmax(0,1fr);padding:16px;gap:12px}.vp-site .vp-assurance-number{width:33px;height:33px}.vp-site .vp-assurance-item h3{font-size:16px}.vp-site .vp-assurance-item p{font-size:13px}}
