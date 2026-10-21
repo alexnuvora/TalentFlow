@@ -1,6 +1,7 @@
 import {useEffect,useState} from 'react';
 import {Card,SkeletonCards} from '../components/Ui';
 import {getCeoDashboard} from '../lib/api';
+import {supabase} from '../lib/supabase';
 
 const money=(n:number)=>new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP',maximumFractionDigits:0}).format(Number(n||0));
 const when=(v?:string|null)=>v?new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short'}).format(new Date(v)):'—';
@@ -8,8 +9,10 @@ const badge=(s?:string|null)=>{const x=String(s||'unknown').toLowerCase();return
 
 export default function CeoDashboard(){
  const[data,setData]=useState<any>(null),[error,setError]=useState('');
+ const[clientLogins,setClientLogins]=useState<any[]>([]),[clientError,setClientError]=useState('');
+ const loadClientLogins=async()=>{const {data,error}=await supabase.rpc('ceo_client_login_activity');if(error){setClientError(error.message);return}setClientError('');setClientLogins(Array.isArray(data)?data:[])};
  const load=()=>getCeoDashboard().then(setData).catch(e=>setError(e.message));
- useEffect(()=>{load();const id=setInterval(load,30000);return()=>clearInterval(id)},[]);
+ useEffect(()=>{load();void loadClientLogins();const id=setInterval(()=>{load();void loadClientLogins()},30000);return()=>clearInterval(id)},[]);
  if(error)return <div className="page"><div className="alert error">{error}</div></div>;
  if(!data)return <div className="page"><SkeletonCards count={8}/></div>;
  const o=data.operations||{},call=o.active_call,c=o.campaign,calls=o.calls_24h||{},out=o.outcomes||{},tx=o.transcripts||{},v=o.vacancies||{},r=o.recruitment||{};
@@ -85,6 +88,12 @@ export default function CeoDashboard(){
     <div className="card-head"><div><h2>Partner activity</h2><p>Last successful sign-in from Supabase Auth. Use this alongside work output, not as a productivity score.</p></div><span className="badge blue">{data.partners?.active||0} active</span></div>
     <div className="partner-login-summary"><span>{data.partners?.recent_7d||0} signed in within 7 days</span><span>{data.partners?.never_signed_in||0} never signed in</span></div>
     {(data.partners?.activity||[]).length?<div className="table-wrap"><table><thead><tr><th>Partner</th><th>Role</th><th>Status</th><th>Last login</th></tr></thead><tbody>{(data.partners.activity||[]).map((x:any)=><tr key={x.id}><td><strong>{x.full_name}</strong><span>{x.email||'—'}</span></td><td>{String(x.specialism||'partner').replaceAll('_',' ')}</td><td><span className={'badge '+(x.activity_status==='recent'?'green':x.activity_status==='stale'?'amber':x.activity_status==='never'?'neutral':'red')}>{x.activity_status==='recent'?'Recent':x.activity_status==='stale'?'7–30 days':x.activity_status==='inactive'?'30+ days':'Never'}</span>{!x.active&&<span className="badge neutral">inactive partner</span>}</td><td>{when(x.last_sign_in_at)}</td></tr>)}</tbody></table></div>:<div className="empty small">No partner accounts found.</div>}
+   </Card>
+
+   <Card>
+    <div className="card-head"><div><h2>Client activity</h2><p>Last successful portal sign-in for each active client's enabled portal users, from Supabase Auth. Dates and times shown in UK time.</p></div><span className="badge blue">{clientLogins.length} portal users</span></div>
+    <div className="partner-login-summary"><span>{clientLogins.filter(x=>x.last_sign_in_at&&new Date(x.last_sign_in_at).getTime()>=Date.now()-7*86400000).length} signed in within 7 days</span><span>{clientLogins.filter(x=>!x.last_sign_in_at).length} never signed in</span></div>
+    {clientError?<div className="alert error" role="alert">Client activity could not be loaded: {clientError} <button type="button" className="btn ghost" onClick={()=>void loadClientLogins()}>Retry</button></div>:clientLogins.length?<div className="table-wrap"><table><thead><tr><th>Client</th><th>Portal user</th><th>Status</th><th>Last login (UK)</th></tr></thead><tbody>{clientLogins.map((x:any)=><tr key={x.client_id+'-'+x.email}><td><strong>{x.company_name}</strong></td><td><strong>{x.full_name||x.email||'Portal user'}</strong><span>{x.email||'—'} · {String(x.portal_role||'member').replaceAll('_',' ')}</span></td><td><span className={'badge '+(x.activity_status==='recent'?'green':x.activity_status==='stale'?'amber':'neutral')}>{x.activity_status==='recent'?'Within 7 days':x.activity_status==='stale'?'7–30 days':x.activity_status==='never'?'Never signed in':'30+ days'}</span></td><td>{x.last_sign_in_at?new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',dateStyle:'medium',timeStyle:'short'}).format(new Date(x.last_sign_in_at)):'Never'}</td></tr>)}</tbody></table></div>:<div className="empty small">No active clients with active portal access found.</div>}
    </Card>
 
    <Card>
