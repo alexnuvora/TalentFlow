@@ -6,23 +6,23 @@ import GooglePreferredSource from '../components/GooglePreferredSource';
 import {orgSchema,setSeo} from '../lib/seo';
 
 const faqs=[
-  ['What does Vorlen do?','We help UK businesses recruit permanent staff. Tell us about the vacancy and we'll discuss the search, review suitable candidates and help arrange interviews.'],
-  ['How does Vorlen assess candidates?','A recruiter looks at each person's relevant experience and suitability for the role before recommending them to an employer.'],
+  ['What does Vorlen do?','We help UK businesses recruit permanent staff. Tell us about the vacancy and we will discuss the search, review suitable candidates and help arrange interviews.'],
+  ['How does Vorlen assess candidates?','A recruiter looks at each person’s relevant experience and suitability for the role before recommending them to an employer.'],
   ['Where does Vorlen recruit?','Vorlen supports permanent recruitment for employers across the United Kingdom.'],
   ['Can candidates apply directly?','Yes. Candidates can browse published opportunities through Vorlen Careers and apply securely online.'],
   ['Does Vorlen work with recruitment partners?','Yes. Vorlen operates a selective partner network subject to formal terms, onboarding and approval.'],
-  ['What happens after I enquire?','We'll read through the details, get in touch to understand what you need and explain how we could help.']
+  ['What happens after I enquire?','We will read through the details, get in touch to understand what you need and explain how we could help.']
 ];
 
 const services=[
   {icon:Search,title:'Finding the right candidates',copy:'We look for people whose skills and experience match your vacancy, including candidates who may not be actively applying.'},
-  {icon:Users,title:'Candidates we've spoken to',copy:'We review suitability before putting anyone forward, so you spend less time sorting through unsuitable CVs.'},
-  {icon:Handshake,title:'Help through the hiring process',copy:'From arranging interviews to keeping everyone informed, we're here to help things run smoothly.'}
+  {icon:Users,title:'Candidates we have spoken to',copy:'We review suitability before putting anyone forward, so you spend less time sorting through unsuitable CVs.'},
+  {icon:Handshake,title:'Help through the hiring process',copy:'From arranging interviews to keeping everyone informed, we are here to help things run smoothly.'}
 ];
 
 const steps=[
-  ['01','Define the brief','We find out who you're hiring, what they'll be doing and what matters most to your business.'],
-  ['02','Search the market','We advertise and search for suitable people, including those who aren't actively looking.'],
+  ['01','Define the brief','We find out who you are hiring, what they will be doing and what matters most to your business.'],
+  ['02','Search the market','We advertise and search for suitable people, including those who are not actively looking.'],
   ['03','Speak to candidates','We review their experience and discuss the role with them before making an introduction.'],
   ['04','Arrange the next steps','We help with interviews, feedback and the steps leading up to an offer.']
 ];
@@ -62,7 +62,7 @@ export default function Landing(){
         <div className="vp-hero-copy">
           <p className="vp-kicker">UK PERMANENT RECRUITMENT</p>
           <h1>Good people make a good business. Let's find yours.</h1>
-          <p className="vp-lead">Need someone new on your team? Tell us who you're looking for. We'll help you find suitable people, arrange introductions and make hiring a little easier.</p>
+          <p className="vp-lead">Need someone new on your team? Tell us who you are looking for. We will help you find suitable people, arrange introductions and make hiring a little easier.</p>
           <div className="vp-hero-actions">
             <Link className="vp-btn" to="/contact">Discuss your vacancy <ArrowRight size={17}/></Link>
             <Link className="vp-text-link" to="/careers">Looking for a role? View opportunities</Link>
@@ -70,7 +70,7 @@ export default function Landing(){
           <div className="vp-proof-row" aria-label="Vorlen service principles">
             <span><CheckCircle2 size={16}/> Permanent recruitment</span>
             <span><CheckCircle2 size={16}/> UK-wide search</span>
-            <span><CheckCircle2 size={16}/> Candidates we've spoken to</span>
+            <span><CheckCircle2 size={16}/> Candidates we have spoken to</span>
           </div>
         </div>
 
@@ -78,11 +78,11 @@ export default function Landing(){
           <div className="vp-panel-label">WHAT YOU CAN EXPECT</div>
           <div className="vp-panel-item">
             <span>01</span>
-            <div><strong>Tell us what you need</strong><p>We'll ask about the role, your team and what you're looking for.</p></div>
+            <div><strong>Tell us what you need</strong><p>We will ask about the role, your team and what you are looking for.</p></div>
           </div>
           <div className="vp-panel-item">
             <span>02</span>
-            <div><strong>We'll start looking</strong><p>We search for people with the right experience for the job.</p></div>
+            <div><strong>We will start looking</strong><p>We search for people with the right experience for the job.</p></div>
           </div>
           <div className="vp-panel-item">
             <span>03</span>
@@ -90,7 +90,7 @@ export default function Landing(){
           </div>
           <div className="vp-panel-item">
             <span>04</span>
-            <div><strong>Help until you've hired</strong><p>We'll help organise interviews and keep you updated.</p></div>
+            <div><strong>Help until you've hired</strong><p>We will help organise interviews and keep you updated.</p></div>
           </div>
         </aside>
       </section>
@@ -100,7 +100,7 @@ export default function Landing(){
           <p className="vp-kicker">WHY VORLEN</p>
           <h2>Recruitment shouldn't take over your working day.</h2>
         </div>
-        <p>Hiring takes time, especially when you're running a business as well. We can take some of that work off your hands, from finding candidates to arranging interviews.</p>
+        <p>Hiring takes time, especially when you are running a business as well. We can take some of that work off your hands, from finding candidates to arranging interviews.</p>
       </section>
 
       <section className="vp-services">
@@ -122,7 +122,7 @@ export default function Landing(){
         <div className="vp-section-head">
           <p className="vp-kicker">RECRUITMENT SPECIALISMS</p>
           <h2 id="vp-specialisms-title">Looking for someone with the right experience?</h2>
-          <p>Whether you need an engineer, an accountant or someone to keep the office running, tell us about the position and we'll talk through your options.</p>
+          <p>Whether you need an engineer, an accountant or someone to keep the office running, tell us about the position and we will talk through your options.</p>
         </div>
         <div className="vp-specialisms-grid">
           {[
@@ -158,7 +158,7 @@ export default function Landing(){
           <BriefcaseBusiness size={24}/>
           <p className="vp-kicker">FOR EMPLOYERS</p>
           <h2>Hiring for a permanent role?</h2>
-          <p>Tell us about your vacancy and the kind of person you're hoping to find. We'll discuss how we can help.</p>
+          <p>Tell us about your vacancy and the kind of person you are hoping to find. We will discuss how we can help.</p>
           <Link className="vp-btn" to="/contact">Discuss your vacancy <ArrowRight size={16}/></Link>
         </article>
         <article className="vp-candidate">
@@ -190,11 +190,11 @@ export default function Landing(){
         <div className="vp-section-head">
           <p className="vp-kicker">CURRENT OPPORTUNITIES</p>
           <h2 id="vp-discover-title">See who's hiring.</h2>
-          <p>Browse our current vacancies and apply online. We'll add new opportunities as they become available.</p>
+          <p>Browse our current vacancies and apply online. We will add new opportunities as they become available.</p>
           <Link to="/careers">Browse live opportunities <ArrowRight size={16}/></Link>
         </div>
         <div className="vp-discover-cards">
-          <article><BriefcaseBusiness size={24}/><h3>Hiring for your team?</h3><p>Tell us the job title, where the role is based and what you're looking for. We'll take it from there.</p><Link to="/contact">Start an employer enquiry <ArrowRight size={16}/></Link></article>
+          <article><BriefcaseBusiness size={24}/><h3>Hiring for your team?</h3><p>Tell us the job title, where the role is based and what you are looking for. We will take it from there.</p><Link to="/contact">Start an employer enquiry <ArrowRight size={16}/></Link></article>
           <article><Users size={24}/><h3>Considering your next role?</h3><p>See a role that sounds right for you? Read the details and apply through our careers page.</p><Link to="/careers">View opportunities <ArrowRight size={16}/></Link></article>
         </div>
       </section>
@@ -216,7 +216,7 @@ export default function Landing(){
         <div>
           <p className="vp-kicker vp-kicker-light">HAVE A ROLE TO FILL?</p>
           <h2>Let's talk about your vacancy.</h2>
-          <p>Tell us what you need and we'll get back to you.</p>
+          <p>Tell us what you need and we will get back to you.</p>
         </div>
         <Link className="vp-final-btn" to="/contact">Discuss a vacancy <ArrowRight size={17}/></Link>
       </section>
