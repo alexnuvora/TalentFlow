@@ -33,6 +33,7 @@ async function jobs(){
 
 const crawlLinks=[
   ['/services/permanent-recruitment','Permanent recruitment'],
+  ['/guides/employer-recruitment-questions','Employer hiring questions'],
   ['/services/candidate-sourcing','Candidate sourcing'],
   ['/services/recruitment-for-smes','Recruitment for SMEs'],
   ['/sectors/technology','Technology recruitment'],
@@ -44,6 +45,10 @@ const crawlLinks=[
   ['/employers','For employers'],['/candidates','For candidates'],['/careers','Careers'],['/contact','Contact Vorlen']
 ];
 const crawlDetails={
+  '/guides/employer-recruitment-questions':[
+    'UK employers should compare agency fees, contract terms, candidate sourcing methods and recruitment alternatives before engaging a supplier.',
+    'A useful vacancy brief includes salary, location, working arrangements, essential skills, hiring timeline and interview process.'
+  ],
   '/services/permanent-recruitment':[
     'Vorlen runs defined permanent searches from vacancy brief through sourcing, human-reviewed assessment, client introduction, interview coordination and placement support.',
     'The search stays tied to the employer brief so candidate evidence, feedback and recruitment activity remain connected to the role being filled.'
@@ -140,6 +145,7 @@ const homePage={title:'Vorlen | UK Permanent Recruitment Agency for Employers',d
 
 const staticPages=[
   {route:'/careers',title:'Open recruitment opportunities | Vorlen Careers',description:'Browse current permanent recruitment opportunities and apply securely through Vorlen Careers.',lastmod:RELEASE_LASTMOD,jsonLd:{'@context':'https://schema.org','@type':'CollectionPage',name:'Vorlen Careers',url:`${base}/careers`,description:'Current permanent recruitment opportunities published through Vorlen.',isPartOf:{'@id':`${base}/#website`},mainEntity:{'@type':'ItemList',itemListElement:rows.slice(0,50).map((j,i)=>({'@type':'ListItem',position:i+1,url:`${base}/careers/${encodeURIComponent(j.slug)}`,name:j.title}))}}},
+  {route:'/guides/employer-recruitment-questions',title:'Recruitment Agency Fees and Hiring FAQs UK | Vorlen',description:'Plain-English answers for UK employers about recruitment agency fees, hiring timelines, vacancy briefs and choosing a permanent recruitment partner.',lastmod:RELEASE_LASTMOD,jsonLd:{'@context':'https://schema.org','@type':'WebPage',name:'UK employer recruitment questions',url:`${base}/guides/employer-recruitment-questions`,about:organization}},
   {route:'/contact',title:'Contact Vorlen | UK Permanent Recruitment',description:'Talk to Vorlen about a permanent vacancy, candidate query or recruitment partnership.',lastmod:RELEASE_LASTMOD,jsonLd:{'@context':'https://schema.org','@type':'ContactPage',name:'Contact Vorlen',url:`${base}/contact`,about:organization}},
   {route:'/employers',title:'Recruitment Agency for Employers UK | Vorlen',description:'UK recruitment agency helping employers fill permanent vacancies through focused candidate sourcing, human-reviewed introductions and connected hiring support.',lastmod:RELEASE_LASTMOD,jsonLd:service('Permanent recruitment for employers','/employers','Permanent recruitment for UK employers with focused candidate sourcing, human-reviewed introductions and connected recruitment delivery.')},
   {route:'/candidates',title:'For Candidates | Vorlen Recruitment',description:'Explore permanent opportunities through Vorlen with clear role information, secure applications, human review and connected interview activity.',lastmod:RELEASE_LASTMOD,jsonLd:service('Candidate recruitment services','/candidates','Candidate recruitment services for people exploring permanent opportunities in the United Kingdom.')},
