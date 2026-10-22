@@ -4,7 +4,7 @@ import {join} from 'node:path';
 
 const root = new URL('../dist/', import.meta.url);
 const base = 'https://www.vorlen.co.uk';
-const publicRoutes = ['/', '/guides/employer-recruitment-questions', '/employers', '/contact', '/careers', '/services/permanent-recruitment',
+const publicRoutes = ['/', '/guides/employer-recruitment-questions', '/guides/ai-recruitment-questions', '/employers', '/contact', '/careers', '/services/permanent-recruitment',
   '/services/candidate-sourcing', '/services/recruitment-for-smes', '/sectors/technology',
   '/sectors/engineering', '/sectors/finance-accounting', '/sectors/sales-business-development',
   '/locations/manchester', '/locations/greater-manchester'];
