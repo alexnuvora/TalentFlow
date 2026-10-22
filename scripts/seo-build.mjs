@@ -7,7 +7,7 @@ const dist=path.resolve('dist');
 const base='https://www.vorlen.co.uk';
 const sb=env.VITE_SUPABASE_URL;
 const key=env.VITE_SUPABASE_ANON_KEY;
-const RELEASE_LASTMOD='2026-10-01';
+const RELEASE_LASTMOD='2026-10-22';
 
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const xml=s=>esc(s);
@@ -136,7 +136,7 @@ const service=(name,route,description,area='United Kingdom')=>({
   areaServed:{'@type':'AdministrativeArea',name:area},url:`${base}${route}`,description
 });
 
-const homePage={title:'Vorlen | UK Permanent Recruitment Agency for Employers',description:'Vorlen is a UK permanent recruitment agency helping employers fill permanent vacancies through focused sourcing, human-reviewed introductions and hiring support.',jsonLd:[{'@context':'https://schema.org','@type':['Organization','EmploymentAgency'],'@id':`${base}/#organization`,name:'Vorlen',legalName:'IVY AND PEARLS LTD',url:`${base}/`,logo:`${base}/vorlen-logo.svg`,email:'contact@vorlen.co.uk',areaServed:{'@type':'Country',name:'United Kingdom'},identifier:{'@type':'PropertyValue',propertyID:'UK Company Number',value:'17387520'},description:'UK permanent recruitment agency helping employers fill permanent vacancies.'},{'@context':'https://schema.org','@type':'WebSite','@id':`${base}/#website`,name:'Vorlen',url:`${base}/`,publisher:{'@id':`${base}/#organization`}}]};
+const homePage={title:'Vorlen | UK Permanent Recruitment Agency for Employers',description:'Vorlen is a UK permanent recruitment agency helping employers fill permanent vacancies through focused sourcing, human-reviewed introductions and hiring support.',jsonLd:[{'@context':'https://schema.org','@type':['Organization','EmploymentAgency'],'@id':`${base}/#organization`,name:'Vorlen',legalName:'VORLEN LTD',url:`${base}/`,logo:`${base}/vorlen-logo.svg`,email:'contact@vorlen.co.uk',areaServed:{'@type':'Country',name:'United Kingdom'},identifier:{'@type':'PropertyValue',propertyID:'UK Company Number',value:'17387520'},description:'UK permanent recruitment agency helping employers fill permanent vacancies.'},{'@context':'https://schema.org','@type':'WebSite','@id':`${base}/#website`,name:'Vorlen',url:`${base}/`,publisher:{'@id':`${base}/#organization`}}]};
 
 const staticPages=[
   {route:'/careers',title:'Open recruitment opportunities | Vorlen Careers',description:'Browse current permanent recruitment opportunities and apply securely through Vorlen Careers.',lastmod:RELEASE_LASTMOD,jsonLd:{'@context':'https://schema.org','@type':'CollectionPage',name:'Vorlen Careers',url:`${base}/careers`,description:'Current permanent recruitment opportunities published through Vorlen.',isPartOf:{'@id':`${base}/#website`},mainEntity:{'@type':'ItemList',itemListElement:rows.slice(0,50).map((j,i)=>({'@type':'ListItem',position:i+1,url:`${base}/careers/${encodeURIComponent(j.slug)}`,name:j.title}))}}},
