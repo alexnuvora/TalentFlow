@@ -9,7 +9,7 @@ type Opportunity={id:string;slug:string;title:string;location:string|null;employ
 
 export function CareersHeader(){return <header className="careers-nav careers-nav-editorial"><VorlenBrand to="/careers"/><nav><Link to="/careers">Opportunities</Link><Link to="/candidates">Candidate guide</Link><Link to="/candidate-terms">Terms</Link><Link to="/" className="workspace-link">Vorlen <ArrowUpRight size={14}/></Link></nav></header>}
 
-export function CareersFooter(){return <footer className="careers-footer careers-footer-editorial"><div><VorlenBrand/><p>Permanent recruitment, handled with clarity.</p></div><nav><Link to="/candidates">For candidates</Link><Link to="/privacy">Privacy</Link><Link to="/candidate-terms">Candidate terms</Link><Link to="/accessibility">Accessibility</Link></nav></footer>}
+export function CareersFooter(){return <footer className="careers-footer careers-footer-editorial"><div><VorlenBrand/><p>Find work that suits you.</p></div><nav><Link to="/candidates">For candidates</Link><Link to="/privacy">Privacy</Link><Link to="/candidate-terms">Candidate terms</Link><Link to="/accessibility">Accessibility</Link></nav></footer>}
 
 export default function CareersHome(){
   const [jobs,setJobs]=useState<Opportunity[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(false),[query,setQuery]=useState(''),[place,setPlace]=useState(''),[type,setType]=useState('');
@@ -28,8 +28,8 @@ export default function CareersHome(){
         <div className="ce-hero-mark"><span>CAREERS / VORLEN</span><span>UK</span></div>
         <div className="ce-hero-copy">
           <span className="careers-kicker"><span/> CURRENT OPPORTUNITIES</span>
-          <h1>Make the move.<br/><em>Know what you’re moving toward.</em></h1>
-          <p>Explore permanent opportunities with clear role information, a secure application route and human review behind the process.</p><a className="ce-hero-jump" href="#opportunities">Browse {loading?'opportunities':jobs.length+' current opportunities'} <ArrowRight size={17}/></a>
+          <h1>Find your next role.<br/><em>See what’s out there.</em></h1>
+          <p>Browse our current vacancies, read about the jobs and apply online when something feels right.</p><a className="ce-hero-jump" href="#opportunities">Browse {loading?'opportunities':jobs.length+' current opportunities'} <ArrowRight size={17}/></a>
         </div>
         <div className="ce-hero-side">
           <span>BEFORE YOU APPLY</span>
@@ -40,7 +40,7 @@ export default function CareersHome(){
 
       <section id="opportunities" className="ce-opportunities">
         <div className="ce-opportunities-head">
-          <div><span className="careers-kicker">SEARCH THE CURRENT LIST</span><h2>Opportunities</h2></div>
+          <div><span className="careers-kicker">FIND A ROLE</span><h2>Opportunities</h2></div>
           <p>{loading?'Loading current vacancies…':error?'Unable to load vacancies — please try again shortly':String(filtered.length)+' matching '+(filtered.length===1?'role':'roles')}</p>
         </div>
 
@@ -68,7 +68,7 @@ export default function CareersHome(){
       </section>
 
       <section className="ce-close">
-        <div><span>NOT READY TO APPLY?</span><h2>Understand how Vorlen works with candidates first.</h2></div>
+        <div><span>NOT READY TO APPLY?</span><h2>Want to know more about applying through Vorlen?</h2></div>
         <Link to="/candidates">Candidate guide <ArrowRight size={15}/></Link>
       </section>
     </main>
