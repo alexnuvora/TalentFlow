@@ -6,31 +6,31 @@ import GooglePreferredSource from '../components/GooglePreferredSource';
 import {orgSchema,setSeo} from '../lib/seo';
 
 const faqs=[
-  ['What does Vorlen do?','Vorlen is a UK permanent recruitment agency. We work with employers on genuine vacancies, source and assess candidates, coordinate introductions and interviews, and support the process through to placement.'],
-  ['How does Vorlen assess candidates?','Recruiters review job-related evidence, experience and suitability against the vacancy. Technology may assist with evidence review, but candidate progression and client introductions remain human-reviewed.'],
+  ['What does Vorlen do?','We help UK businesses recruit permanent staff. Tell us about the vacancy and we'll discuss the search, review suitable candidates and help arrange interviews.'],
+  ['How does Vorlen assess candidates?','A recruiter looks at each person's relevant experience and suitability for the role before recommending them to an employer.'],
   ['Where does Vorlen recruit?','Vorlen supports permanent recruitment for employers across the United Kingdom.'],
   ['Can candidates apply directly?','Yes. Candidates can browse published opportunities through Vorlen Careers and apply securely online.'],
   ['Does Vorlen work with recruitment partners?','Yes. Vorlen operates a selective partner network subject to formal terms, onboarding and approval.'],
-  ['What happens after I enquire?','Your enquiry is recorded for the Vorlen team. We review the role and hiring requirements before discussing whether and how we can assist.']
+  ['What happens after I enquire?','We'll read through the details, get in touch to understand what you need and explain how we could help.']
 ];
 
 const services=[
-  {icon:Search,title:'Focused candidate search',copy:'We work from the vacancy outward — defining what matters, sourcing relevant people and reviewing evidence against the actual role.'},
-  {icon:Users,title:'Human-reviewed introductions',copy:'You receive candidates who have been reviewed for the role, not an unfiltered stream of CVs.'},
-  {icon:Handshake,title:'Connected hiring support',copy:'Feedback, interviews and placement activity stay connected so the process keeps moving.'}
+  {icon:Search,title:'Finding the right candidates',copy:'We look for people whose skills and experience match your vacancy, including candidates who may not be actively applying.'},
+  {icon:Users,title:'Candidates we've spoken to',copy:'We review suitability before putting anyone forward, so you spend less time sorting through unsuitable CVs.'},
+  {icon:Handshake,title:'Help through the hiring process',copy:'From arranging interviews to keeping everyone informed, we're here to help things run smoothly.'}
 ];
 
 const steps=[
-  ['01','Define the brief','We capture the role, hiring context, requirements and agreed terms before the search begins.'],
-  ['02','Search the market','We combine applications with proactive sourcing where appropriate to reach relevant candidates.'],
-  ['03','Review the evidence','Recruiters assess job-related experience and suitability before any client introduction.'],
-  ['04','Progress the hire','We coordinate introductions, feedback, interviews and placement support through to outcome.']
+  ['01','Define the brief','We find out who you're hiring, what they'll be doing and what matters most to your business.'],
+  ['02','Search the market','We advertise and search for suitable people, including those who aren't actively looking.'],
+  ['03','Speak to candidates','We review their experience and discuss the role with them before making an introduction.'],
+  ['04','Arrange the next steps','We help with interviews, feedback and the steps leading up to an offer.']
 ];
 
 export default function Landing(){
   useEffect(()=>setSeo({
     title:'Vorlen | UK Permanent Recruitment Agency',
-    description:'Vorlen helps UK employers make better permanent hires through focused candidate search, human-reviewed introductions and connected recruitment delivery.',
+    description:'Vorlen helps UK businesses recruit permanent staff. We find suitable candidates, review their experience and help employers through the hiring process.',
     path:'/',
     jsonLd:[
       orgSchema(),
@@ -61,8 +61,8 @@ export default function Landing(){
       <section className="vp-hero">
         <div className="vp-hero-copy">
           <p className="vp-kicker">UK PERMANENT RECRUITMENT</p>
-          <h1>Find the right people. Hire with confidence.</h1>
-          <p className="vp-lead">Vorlen helps employers find and hire people for permanent roles through focused sourcing, careful candidate review and a recruitment process that stays clear from brief to placement.</p>
+          <h1>Good people make a good business. Let's find yours.</h1>
+          <p className="vp-lead">Need someone new on your team? Tell us who you're looking for. We'll help you find suitable people, arrange introductions and make hiring a little easier.</p>
           <div className="vp-hero-actions">
             <Link className="vp-btn" to="/contact">Discuss your vacancy <ArrowRight size={17}/></Link>
             <Link className="vp-text-link" to="/careers">Looking for a role? View opportunities</Link>
@@ -70,7 +70,7 @@ export default function Landing(){
           <div className="vp-proof-row" aria-label="Vorlen service principles">
             <span><CheckCircle2 size={16}/> Permanent recruitment</span>
             <span><CheckCircle2 size={16}/> UK-wide search</span>
-            <span><CheckCircle2 size={16}/> Human-reviewed introductions</span>
+            <span><CheckCircle2 size={16}/> Candidates we've spoken to</span>
           </div>
         </div>
 
@@ -78,19 +78,19 @@ export default function Landing(){
           <div className="vp-panel-label">WHAT YOU CAN EXPECT</div>
           <div className="vp-panel-item">
             <span>01</span>
-            <div><strong>A clear brief</strong><p>We start with the vacancy, not the CV database.</p></div>
+            <div><strong>Tell us what you need</strong><p>We'll ask about the role, your team and what you're looking for.</p></div>
           </div>
           <div className="vp-panel-item">
             <span>02</span>
-            <div><strong>A focused search</strong><p>Sourcing is shaped around the role and hiring context.</p></div>
+            <div><strong>We'll start looking</strong><p>We search for people with the right experience for the job.</p></div>
           </div>
           <div className="vp-panel-item">
             <span>03</span>
-            <div><strong>Reviewed introductions</strong><p>Candidate evidence is considered before it reaches you.</p></div>
+            <div><strong>Meet suitable candidates</strong><p>We review candidates before introducing them to you.</p></div>
           </div>
           <div className="vp-panel-item">
             <span>04</span>
-            <div><strong>Momentum through the process</strong><p>Feedback, interviews and next steps stay connected.</p></div>
+            <div><strong>Help until you've hired</strong><p>We'll help organise interviews and keep you updated.</p></div>
           </div>
         </aside>
       </section>
@@ -98,15 +98,15 @@ export default function Landing(){
       <section className="vp-positioning">
         <div>
           <p className="vp-kicker">WHY VORLEN</p>
-          <h2>You do not need more CVs. You need a clearer path to the right person.</h2>
+          <h2>Recruitment shouldn't take over your working day.</h2>
         </div>
-        <p>Recruitment becomes expensive when time is spent reviewing irrelevant applications, chasing feedback and reconstructing context across emails. Vorlen is designed to keep the search disciplined and the hiring process moving.</p>
+        <p>Hiring takes time, especially when you're running a business as well. We can take some of that work off your hands, from finding candidates to arranging interviews.</p>
       </section>
 
       <section className="vp-services">
         <div className="vp-section-head">
           <p className="vp-kicker">WHAT WE DO</p>
-          <h2>Permanent recruitment, handled properly.</h2>
+          <h2>We help you hire permanent staff.</h2>
           <Link to="/services/permanent-recruitment">Explore our recruitment service <ArrowRight size={15}/></Link>
         </div>
         <div className="vp-service-grid">
@@ -121,8 +121,8 @@ export default function Landing(){
       <section className="vp-specialisms" aria-labelledby="vp-specialisms-title">
         <div className="vp-section-head">
           <p className="vp-kicker">RECRUITMENT SPECIALISMS</p>
-          <h2 id="vp-specialisms-title">Focused recruitment for the roles your business needs.</h2>
-          <p>From technical vacancies to business support, each search starts with your actual requirements. Talk to us about your role and the experience that matters.</p>
+          <h2 id="vp-specialisms-title">Looking for someone with the right experience?</h2>
+          <p>Whether you need an engineer, an accountant or someone to keep the office running, tell us about the position and we'll talk through your options.</p>
         </div>
         <div className="vp-specialisms-grid">
           {[
@@ -135,15 +135,15 @@ export default function Landing(){
       </section>
 
       <section className="vp-employer-assurance" aria-labelledby="vp-assurance-title">
-        <div><p className="vp-kicker">FOR HIRING TEAMS</p><h2 id="vp-assurance-title">A shortlist should tell you more than a CV can.</h2></div>
-        <div><p>We focus on the role requirements, candidate evidence and permission to share information, so introductions arrive with useful context — not as unexplained CV attachments.</p><Link className="vp-text-link" to="/employers">How we support employers <ArrowRight size={15}/></Link></div>
+        <div><p className="vp-kicker">FOR HIRING TEAMS</p><h2 id="vp-assurance-title">Get to know the person behind the CV.</h2></div>
+        <div><p>A CV only tells part of the story. We look at relevant experience and suitability before introducing someone, so you have more to go on when deciding who to interview.</p><Link className="vp-text-link" to="/employers">How we support employers <ArrowRight size={15}/></Link></div>
       </section>
 
       <section className="vp-process">
         <div className="vp-process-intro">
           <p className="vp-kicker vp-kicker-light">OUR APPROACH</p>
-          <h2>A recruitment process built around the hire.</h2>
-          <p>Technology supports the administration and evidence trail. Recruiters remain responsible for judgement, progression and client introductions.</p>
+          <h2>Here's how we work with you.</h2>
+          <p>You'll deal with people who understand your vacancy and can talk you through the next steps.</p>
         </div>
         <div className="vp-process-list">
           {steps.map(([n,title,copy])=><article key={n}>
@@ -158,14 +158,14 @@ export default function Landing(){
           <BriefcaseBusiness size={24}/>
           <p className="vp-kicker">FOR EMPLOYERS</p>
           <h2>Hiring for a permanent role?</h2>
-          <p>Tell us who you need, what the role involves and what a successful hire looks like. We will build the search around that.</p>
+          <p>Tell us about your vacancy and the kind of person you're hoping to find. We'll discuss how we can help.</p>
           <Link className="vp-btn" to="/contact">Discuss your vacancy <ArrowRight size={16}/></Link>
         </article>
         <article className="vp-candidate">
           <Users size={24}/>
           <p className="vp-kicker">FOR CANDIDATES</p>
           <h2>Looking for your next move?</h2>
-          <p>Browse published opportunities, understand the role before you apply and submit your details securely through Vorlen Careers.</p>
+          <p>Take a look at our latest vacancies. If one interests you, you can apply through Vorlen Careers.</p>
           <Link className="vp-outline-link" to="/careers">View current opportunities <ArrowRight size={16}/></Link>
         </article>
       </section>
@@ -174,14 +174,14 @@ export default function Landing(){
         <div>
           <ShieldCheck size={26}/>
           <p className="vp-kicker">RECRUITMENT WITH ACCOUNTABILITY</p>
-          <h2>Technology can support the process. People remain responsible for the decisions.</h2>
+          <h2>Real people, making recruitment decisions.</h2>
         </div>
         <div className="vp-confidence-copy">
-          <p className="vp-confidence-intro">Every candidate introduction follows a clear, considered process — from role-specific assessment to secure sharing and human approval.</p>
+          <p className="vp-confidence-intro">We take care with every introduction. Our team reviews suitability and shares candidate information through the right channels.</p>
           <div className="vp-assurance-list">
-            <article className="vp-assurance-item"><span className="vp-assurance-number" aria-hidden="true">01</span><div><h3>Assessed against your vacancy</h3><p>We review relevant experience and evidence against the requirements of your role.</p></div></article>
-            <article className="vp-assurance-item"><span className="vp-assurance-number" aria-hidden="true">02</span><div><h3>Shared with permission</h3><p>Approved candidate information and a client-safe CV are shared only through our controlled introduction process.</p></div></article>
-            <article className="vp-assurance-item"><span className="vp-assurance-number" aria-hidden="true">03</span><div><h3>Decisions stay human</h3><p>Our team reviews introductions, while hiring managers can securely give feedback and request interviews.</p></div></article>
+            <article className="vp-assurance-item"><span className="vp-assurance-number" aria-hidden="true">01</span><div><h3>Assessed against your vacancy</h3><p>We look at the experience and skills you told us matter.</p></div></article>
+            <article className="vp-assurance-item"><span className="vp-assurance-number" aria-hidden="true">02</span><div><h3>Shared with permission</h3><p>We only share candidate details when we have the right permission.</p></div></article>
+            <article className="vp-assurance-item"><span className="vp-assurance-number" aria-hidden="true">03</span><div><h3>Decisions stay human</h3><p>Our team checks introductions. You decide who you'd like to meet.</p></div></article>
           </div>
         </div>
       </section>
@@ -189,20 +189,20 @@ export default function Landing(){
       <section className="vp-discover" aria-labelledby="vp-discover-title">
         <div className="vp-section-head">
           <p className="vp-kicker">CURRENT OPPORTUNITIES</p>
-          <h2 id="vp-discover-title">Explore roles being recruited now.</h2>
-          <p>Our careers page displays the current published opportunities, with the role details and a secure application route. The list stays up to date as vacancies change.</p>
+          <h2 id="vp-discover-title">See who's hiring.</h2>
+          <p>Browse our current vacancies and apply online. We'll add new opportunities as they become available.</p>
           <Link to="/careers">Browse live opportunities <ArrowRight size={16}/></Link>
         </div>
         <div className="vp-discover-cards">
-          <article><BriefcaseBusiness size={24}/><h3>Hiring for your team?</h3><p>Share the title, location, salary range and essential requirements. We will review the brief and discuss the next step.</p><Link to="/contact">Start an employer enquiry <ArrowRight size={16}/></Link></article>
-          <article><Users size={24}/><h3>Considering your next role?</h3><p>Review published vacancies and apply directly when there is a suitable opportunity. New roles are added to Vorlen Careers.</p><Link to="/careers">View opportunities <ArrowRight size={16}/></Link></article>
+          <article><BriefcaseBusiness size={24}/><h3>Hiring for your team?</h3><p>Tell us the job title, where the role is based and what you're looking for. We'll take it from there.</p><Link to="/contact">Start an employer enquiry <ArrowRight size={16}/></Link></article>
+          <article><Users size={24}/><h3>Considering your next role?</h3><p>See a role that sounds right for you? Read the details and apply through our careers page.</p><Link to="/careers">View opportunities <ArrowRight size={16}/></Link></article>
         </div>
       </section>
 
       <section className="vp-faq">
         <div className="vp-faq-head">
           <p className="vp-kicker">COMMON QUESTIONS</p>
-          <h2>Before you work with Vorlen.</h2>
+          <h2>A few things you might want to know.</h2>
         </div>
         <div className="vp-faq-list">
           {faqs.map(([q,a])=><details key={q}>
@@ -215,15 +215,15 @@ export default function Landing(){
       <section className="vp-final">
         <div>
           <p className="vp-kicker vp-kicker-light">HAVE A ROLE TO FILL?</p>
-          <h2>Start with the vacancy.</h2>
-          <p>Tell us about the role and we will take it from there.</p>
+          <h2>Let's talk about your vacancy.</h2>
+          <p>Tell us what you need and we'll get back to you.</p>
         </div>
         <Link className="vp-final-btn" to="/contact">Discuss a vacancy <ArrowRight size={17}/></Link>
       </section>
     </main>
 
     <footer className="vp-footer">
-      <div className="vp-footer-brand"><VorlenBrand/><p>Permanent recruitment, properly run.</p><div className="vp-footer-socials" aria-label="Vorlen social media"><a href="https://www.facebook.com/share/19pqmJPH3v/" target="_blank" rel="noopener noreferrer" aria-label="Vorlen on Facebook"><Facebook size={18}/></a><a href="https://www.linkedin.com/company/vorlen/" target="_blank" rel="noopener noreferrer" aria-label="Vorlen on LinkedIn"><Linkedin size={18}/></a></div><div className="google-preferred-source"><GooglePreferredSource/></div></div>
+      <div className="vp-footer-brand"><VorlenBrand/><p>Good recruitment starts with a conversation.</p><div className="vp-footer-socials" aria-label="Vorlen social media"><a href="https://www.facebook.com/share/19pqmJPH3v/" target="_blank" rel="noopener noreferrer" aria-label="Vorlen on Facebook"><Facebook size={18}/></a><a href="https://www.linkedin.com/company/vorlen/" target="_blank" rel="noopener noreferrer" aria-label="Vorlen on LinkedIn"><Linkedin size={18}/></a></div><div className="google-preferred-source"><GooglePreferredSource/></div></div>
       <div><strong>Employers</strong><Link to="/employers">For employers</Link><Link to="/services/permanent-recruitment">Permanent recruitment</Link><Link to="/services/candidate-sourcing">Candidate sourcing</Link><Link to="/services/recruitment-for-smes">Recruitment for SMEs</Link></div>
       <div><strong>Candidates</strong><Link to="/candidates">For candidates</Link><Link to="/careers">Open opportunities</Link><Link to="/candidate-terms">Candidate terms</Link><Link to="/privacy">Privacy policy</Link></div>
       <div><strong>Vorlen</strong><Link to="/partners">Partner network</Link><Link to="/locations/manchester">Manchester</Link><Link to="/locations/greater-manchester">Greater Manchester</Link><Link to="/contact">Contact</Link><Link to="/accessibility">Accessibility</Link></div>
