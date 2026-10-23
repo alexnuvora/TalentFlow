@@ -4,6 +4,7 @@ import {ArrowRight,CheckCircle2,ChevronDown,ShieldCheck,Users,BriefcaseBusiness,
 import VorlenBrand from '../components/VorlenBrand';
 import GooglePreferredSource from '../components/GooglePreferredSource';
 import {orgSchema,setSeo} from '../lib/seo';
+import './VorixInspiredLanding.css';
 
 const faqs=[
   ['What does Vorlen do?','We help UK businesses recruit permanent staff. Tell us about the vacancy and we will discuss the search, review suitable candidates and help arrange interviews.'],
@@ -39,7 +40,7 @@ export default function Landing(){
     ]
   }),[]);
 
-  return <div className="vp-site">
+  return <div className="vp-site vorix-concept">
     <a className="skip-link" href="#main">Skip to content</a>
 
     <header className="vp-nav">
@@ -58,10 +59,10 @@ export default function Landing(){
     <nav className="vp-mobile-account" aria-label="Mobile account and candidate access"><Link to="/login">Client or recruiter sign in</Link><Link to="/careers">Find a job</Link></nav>
 
     <main id="main">
-      <section className="vp-hero">
+      <section className="vp-hero vorix-hero">
         <div className="vp-hero-copy">
-          <p className="vp-kicker">UK PERMANENT RECRUITMENT</p>
-          <h1>Good people make a good business. Let's find yours.</h1>
+          <p className="vp-kicker"><span className="vorix-dot"/> INDEPENDENT UK RECRUITMENT PARTNER</p>
+          <h1>Finding people.<br/><span>Building teams.</span><br/>Growing businesses.</h1>
           <p className="vp-lead">Need someone new on your team? Tell us who you are looking for. We will help you find suitable people, arrange introductions and make hiring a little easier.</p>
           <div className="vp-hero-actions">
             <Link className="vp-btn" to="/contact">Discuss your vacancy <ArrowRight size={17}/></Link>
@@ -74,7 +75,7 @@ export default function Landing(){
           </div>
         </div>
 
-        <aside className="vp-hero-panel" aria-label="What employers can expect">
+        <aside className="vp-hero-panel vorix-visual" aria-label="Vorlen recruitment services"><div className="vorix-art"><div className="vorix-art-orbit"/><div className="vorix-art-core"><span>V</span></div><span className="vorix-art-pill vorix-art-pill-one">People first</span><span className="vorix-art-pill vorix-art-pill-two">Recruitment that feels personal</span><span className="vorix-art-cross">✳</span></div><div className="vorix-visual-details">
           <div className="vp-panel-label">WHAT YOU CAN EXPECT</div>
           <div className="vp-panel-item">
             <span>01</span>
@@ -92,9 +93,10 @@ export default function Landing(){
             <span>04</span>
             <div><strong>Help until you've hired</strong><p>We will help organise interviews and keep you updated.</p></div>
           </div>
-        </aside>
+        </div></aside>
       </section>
 
+      <div className="vorix-marquee" aria-label="Our recruitment specialisms"><div className="vorix-marquee-track" aria-hidden="true">{Array.from({length:3}).map((_,i)=><span key={i}>PERMANENT RECRUITMENT <b>✳</b> ENGINEERING <b>✳</b> TECHNOLOGY <b>✳</b> FINANCE <b>✳</b> SALES <b>✳</b> </span>)}</div></div>
       <section className="vp-positioning">
         <div>
           <p className="vp-kicker">WHY VORLEN</p>
