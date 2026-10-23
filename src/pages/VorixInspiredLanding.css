@@ -192,3 +192,96 @@
  .vfx-site .vfx-services-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
  .vfx-site .vfx-service-card:nth-child(3),.vfx-site .vfx-insight-grid .vfx-insight:last-child{display:flex}
 }
+
+/* Vorix PDF matching pass: original mobile document uses a narrow 320-340px
+   content rail, white section transitions, outlined tall services,
+   photographic project stack and full-width awards-style horizontal cards. */
+.vfx-site{background:#fff;--vfx-lime:#c5df85;--vfx-cloud:#fff}
+.vfx-header{background:#fff}
+.vfx-site .vfx-hero{padding-top:100px;padding-bottom:80px}
+.vfx-site .vfx-hero h1{font-size:clamp(66px,8.1vw,120px);font-weight:700;line-height:1.23;letter-spacing:-.058em}
+.vfx-hero-line{color:#131313!important}
+.vfx-site .vfx-photo-banner{background:#f3f4f0;isolation:isolate}
+.vfx-photo-banner>img{object-position:center center}
+.vfx-site .vfx-services{background:white;padding-bottom:145px}
+.vfx-services-grid{overflow:hidden}
+.vfx-service-card{border-color:#c9c9c9;background:white}
+.vfx-site .vfx-work{background:#fff}
+.vfx-site .vfx-work-card img{filter:none!important}
+.vfx-site .vfx-work-card:hover img{transform:scale(1.03)}
+.vfx-work-overlay{background:linear-gradient(0deg,rgba(0,0,0,.5),transparent 65%)}
+.vfx-site .vfx-process{padding-top:135px;padding-bottom:135px}
+.vfx-step{border-bottom:0;align-items:center;padding:10px 0 12px}
+.vfx-step>span{background:transparent;color:#a4aaa6;font-size:20px}
+.vfx-step>div{padding:28px 30px;border:1px solid #c6cbc6;border-radius:20px}
+.vfx-step>svg{display:none}
+.vfx-step h3{font-size:20px}
+.vfx-image-break{height:610px}
+.vfx-values h2{margin-bottom:52px}
+.vfx-value-cards{display:grid;gap:20px}
+.vfx-value-card{border:1px solid #bfc4bd;border-radius:20px;padding:24px 28px;display:grid;grid-template-columns:minmax(0,1fr) 230px 85px;gap:25px;align-items:center;min-height:235px}
+.vfx-value-card h3{font-size:22px;line-height:1.3;margin:0 0 12px}
+.vfx-value-card p{max-width:460px;color:#6f756e;font-size:14px;line-height:1.7;margin:0}
+.vfx-value-card img{width:100%;height:170px;border-radius:13px;object-fit:cover}
+.vfx-value-card b{font:700 33px Unbounded,Arial,sans-serif;text-align:right}
+.vfx-vorix-contact{min-height:650px}
+.vfx-vorix-contact .vfx-questions{background:#f6f6f5}
+.vfx-quote-symbol{font:700 110px Georgia,serif;color:#92b75c;line-height:1.1;margin-top:28px}
+.vfx-quote-copy{max-width:620px;font:500 clamp(19px,2vw,27px)/1.6 Unbounded,Arial,sans-serif}
+.vfx-quote-source{font-size:11px;letter-spacing:.12em;font-weight:700;margin-top:50px}
+.vfx-vorix-contact .vfx-contact-card{padding:46px 36px}
+.vfx-vorix-contact .vfx-contact-card h3{font-size:30px}
+.vfx-vorix-contact form{display:flex;flex-direction:column;gap:18px}
+.vfx-vorix-contact form :is(input,textarea){font:400 14px Poppins,Arial,sans-serif;background:#fff;border:1px solid #cfd3cd;border-radius:11px;padding:15px 16px;color:#171b17;width:100%}
+.vfx-vorix-contact form input{height:53px}
+.vfx-vorix-contact form textarea{resize:vertical}
+.vfx-vorix-contact form .vfx-pill{align-self:flex-start;margin-top:8px}
+.vfx-cta{background:#c5df85}
+.vfx-site .vfx-footer{background:#fff}
+@media(max-width:780px){
+ .vfx-site .vfx-hero{padding-top:68px;padding-bottom:85px}
+ .vfx-site .vfx-hero h1{font-size:clamp(42px,9.5vw,66px);line-height:1.18}
+ .vfx-site .vfx-hero-line-two{display:block}
+ .vfx-site .vfx-hero-line-two .vfx-hero-intro{max-width:480px;display:block;margin-top:23px}
+ .vfx-values{padding-top:90px}
+ .vfx-value-card{grid-template-columns:1fr 110px;gap:15px}
+ .vfx-value-card img{height:120px}
+ .vfx-value-card b{grid-column:2;grid-row:1;text-align:right}
+ .vfx-vorix-contact{grid-template-columns:1fr}
+ .vfx-vorix-contact .vfx-questions{padding:80px 40px}
+ .vfx-quote-copy{font-size:19px}
+}
+@media(max-width:520px){
+ .vfx-site .vfx-header{height:68px}
+ .vfx-site .vfx-hero{padding-top:72px;padding-bottom:80px;min-height:607px}
+ .vfx-site .vfx-hero h1{font-size:clamp(36px,9.9vw,49px);line-height:1.16;letter-spacing:-.059em}
+ .vfx-site .vfx-hero-line{white-space:normal}
+ .vfx-site .vfx-hero-line-two .vfx-hero-intro{font-size:14px;line-height:1.65;max-width:315px;margin-top:20px}
+ .vfx-site .vfx-hero-foot{display:none}
+ .vfx-site .vfx-photo-banner{height:440px}
+ .vfx-site .vfx-band-overlay{width:calc(100% - 45px);bottom:-90px}
+ .vfx-site .vfx-services{padding-top:180px;padding-bottom:115px}
+ .vfx-site .vfx-service-card{min-height:360px}
+ .vfx-site .vfx-about{padding-top:85px}
+ .vfx-site .vfx-work{padding-top:110px}
+ .vfx-site .vfx-work-grid{display:grid;grid-template-columns:1fr;gap:22px}
+ .vfx-site .vfx-work-card{height:325px}
+ .vfx-site .vfx-process{padding-top:105px}
+ .vfx-site .vfx-step{grid-template-columns:25px 1fr;gap:10px}
+ .vfx-site .vfx-step>span{font-size:13px;width:24px;height:auto}
+ .vfx-site .vfx-step>div{padding:21px 18px}
+ .vfx-site .vfx-step h3{font-size:16px}
+ .vfx-site .vfx-step p{font-size:13px}
+ .vfx-site .vfx-image-break{height:430px}
+ .vfx-site .vfx-values h2{font-size:30px}
+ .vfx-site .vfx-value-card{display:grid;grid-template-columns:1fr 90px;gap:16px;padding:18px;min-height:205px}
+ .vfx-site .vfx-value-card h3{font-size:15px}
+ .vfx-site .vfx-value-card p{font-size:12px}
+ .vfx-site .vfx-value-card img{width:90px;height:80px;grid-column:2;grid-row:2}
+ .vfx-site .vfx-value-card b{font-size:22px;grid-column:2;grid-row:1}
+ .vfx-vorix-contact .vfx-questions{padding:76px 22px}
+ .vfx-quote-symbol{font-size:76px}
+ .vfx-quote-copy{font-size:17px;line-height:1.6}
+ .vfx-vorix-contact .vfx-contact-picture{padding:24px 16px}
+ .vfx-vorix-contact .vfx-contact-card{padding:26px 22px}
+}
