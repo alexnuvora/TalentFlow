@@ -9,6 +9,7 @@ import './customer.css';
 import './v9.css';
 import './dashboard-fixes.css';
 import './vorlen-brand.css';
+import './pages/VorixInspiredLanding.css';
 
 createRoot(document.getElementById('root')!).render(<React.StrictMode><ErrorBoundary><ToastProvider><App/></ToastProvider></ErrorBoundary></React.StrictMode>);
 
