@@ -51,12 +51,12 @@ export default function Landing(){
    </div></header>
    <main id="content">
     <section className="vfx-hero vfx-wrap">
-      <h1><span className="vfx-hero-line">People First.</span><span className="vfx-hero-line vfx-hero-line-two">Recruitment. <span className="vfx-hero-intro">Vorlen helps UK businesses find permanent staff, with real people reviewing candidates and keeping you informed.</span></span></h1>
+      <h1><span className="vfx-hero-line">Permanent Hiring</span><span className="vfx-hero-line vfx-hero-line-two">Made Human. <span className="vfx-hero-intro">Vorlen helps UK businesses find permanent staff, with real people reviewing candidates and keeping you informed.</span></span></h1>
       <div className="vfx-hero-foot"><span>VORLEN / UK RECRUITMENT</span><Link to="/contact">LET'S TALK ABOUT YOUR NEXT HIRE <ArrowUpRight size={17}/></Link></div>
     </section>
     <section className="vfx-photo-banner" aria-label="Recruitment for ambitious UK businesses">
       <img src={photography.team} alt="Colleagues discussing work around an office table" loading="eager"/>
-      <div className="vfx-band-overlay vfx-wrap"><div className="vfx-photo-label"><span>VORLEN</span><strong>People behind every placement.</strong></div><div className="vfx-band-facts"><div><strong>UK</strong><span>WIDE SEARCH</span></div><div><strong>100%</strong><span>PERMANENT FOCUS</span></div><div><strong>HUMAN</strong><span>CANDIDATE REVIEW</span></div></div></div>
+      <div className="vfx-band-overlay vfx-wrap"><div className="vfx-photo-label"><span>VORLEN RECRUITMENT</span><strong>REAL PEOPLE.<br/>BETTER HIRES.</strong></div><div className="vfx-band-facts"><div><strong>UK</strong><span>WIDE SEARCH</span></div><div><strong>100%</strong><span>PERMANENT FOCUS</span></div><div><strong>HUMAN</strong><span>CANDIDATE REVIEW</span></div></div></div>
     </section>
     <section className="vfx-section vfx-services"><div className="vfx-wrap"><div className="vfx-heading-row"><div><p className="vfx-kicker">01 / WHAT WE DO</p><h2>How We Can<br/>Help You Hire.</h2></div><div className="vfx-controls"><button aria-label="Previous service" onClick={()=>setServiceIndex(i=>(i+services.length-1)%services.length)}><ChevronLeft/></button><button aria-label="Next service" onClick={()=>setServiceIndex(i=>(i+1)%services.length)}><ChevronRight/></button></div></div>
       <div className="vfx-services-grid">{[0,1,2].map((offset)=>{const s=showService(offset),Icon=s.icon;return <Link to={s.link} className="vfx-service-card" key={s.title}><span className="vfx-service-type">{s.type}</span><Icon size={58} strokeWidth={1.25}/><div><h3>{s.title}</h3><p>{s.copy}</p></div><ArrowUpRight className="vfx-card-arrow" size={22}/></Link>})}</div>
