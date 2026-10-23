@@ -285,3 +285,20 @@
  .vfx-vorix-contact .vfx-contact-picture{padding:24px 16px}
  .vfx-vorix-contact .vfx-contact-card{padding:26px 22px}
 }
+
+/* Editorial film sequence: plain photography and measured motion, no generated characters or artificial 3D. */
+.vfx-cinematic-banner{overflow:visible;isolation:isolate;background:#202b25;position:relative}
+.vfx-film-frames{position:absolute;inset:0;overflow:hidden;z-index:0}
+.vfx-film-frame{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:center 45%;filter:saturate(.82) contrast(1.04);opacity:0;will-change:opacity,transform}
+.vfx-film-frame-first{opacity:1;animation:vfx-film-one 21s linear infinite}
+.vfx-film-frame-second{animation:vfx-film-two 21s linear infinite}
+.vfx-film-frame-third{animation:vfx-film-three 21s linear infinite}
+.vfx-cinematic-banner:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,transparent 45%,rgba(8,22,16,.38) 100%)}
+.vfx-film-bottom{position:absolute;z-index:3;left:max(35px,calc((100vw - 1280px)/2));right:max(35px,calc((100vw - 1280px)/2));bottom:30px;display:flex;align-items:center;justify-content:space-between;gap:20px;font:600 10px/1.6 Unbounded,Arial,sans-serif;letter-spacing:.055em;color:#fff;text-shadow:0 1px 7px #0007}
+.vfx-cinematic-banner .vfx-band-overlay{z-index:4;box-shadow:none}
+@keyframes vfx-film-one{0%,30%{opacity:1;transform:scale(1)}34%,95%{opacity:0;transform:scale(1.055)}100%{opacity:1;transform:scale(1)}}
+@keyframes vfx-film-two{0%,29%{opacity:0;transform:scale(1.035)}34%,62%{opacity:1;transform:scale(1)}67%,100%{opacity:0;transform:scale(1.055)}}
+@keyframes vfx-film-three{0%,61%{opacity:0;transform:scale(1.03)}67%,96%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.03)}}
+@media(max-width:780px){.vfx-film-bottom{left:18px;right:18px;bottom:16px;font-size:8px}.vfx-film-bottom span:last-child{display:none}.vfx-film-frame{object-position:50% center}}
+@media(prefers-reduced-motion:reduce){.vfx-film-frame{animation:none!important;opacity:0!important;transform:none!important}.vfx-film-frame-first{opacity:1!important}}
+@media print{.vfx-film-frame{animation:none!important;opacity:0!important;transform:none!important}.vfx-film-frame-first{opacity:1!important}}
