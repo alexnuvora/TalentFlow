@@ -51,9 +51,8 @@ export default function Landing(){
    </div></header>
    <main id="content">
     <section className="vfx-hero vfx-wrap">
-      <div className="vfx-overline"><span className="vfx-sun"/> RECRUITMENT FOR BUSINESSES THAT ARE GOING PLACES</div>
-      <h1>People Make<br/><span>Business.</span></h1>
-      <div className="vfx-hero-bottom"><span className="vfx-asterisk" aria-hidden="true">✳</span><p>Good recruitment starts with finding the right people. We help UK businesses hire permanent staff who fit the role and the team.</p><Link className="vfx-circle-link" to="/contact" aria-label="Discuss a vacancy"><ArrowUpRight size={26}/></Link></div>
+      <h1><span className="vfx-hero-line">People First.</span><span className="vfx-hero-line vfx-hero-line-two">Recruitment. <span className="vfx-hero-intro">Vorlen helps UK businesses find permanent staff, with real people reviewing candidates and keeping you informed.</span></span></h1>
+      <div className="vfx-hero-foot"><span>VORLEN / UK RECRUITMENT</span><Link to="/contact">LET'S TALK ABOUT YOUR NEXT HIRE <ArrowUpRight size={17}/></Link></div>
     </section>
     <section className="vfx-photo-banner" aria-label="Recruitment for ambitious UK businesses">
       <img src={photography.team} alt="Colleagues discussing work around an office table" loading="eager"/>
