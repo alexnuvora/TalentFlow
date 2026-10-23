@@ -4,7 +4,6 @@ import {ArrowUpRight,ArrowRight,ChevronLeft,ChevronRight,Menu,X,Check,Users,Brie
 import VorlenBrand from '../components/VorlenBrand';
 import GooglePreferredSource from '../components/GooglePreferredSource';
 import {orgSchema,setSeo} from '../lib/seo';
-import './VorixInspiredLanding.css';
 
 const services=[
   {title:'Permanent Recruitment',type:'01 / RECRUITMENT',copy:'Looking to make a permanent hire? We find and introduce people who match what your business needs.',icon:BriefcaseBusiness,link:'/services/permanent-recruitment'},
