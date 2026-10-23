@@ -51,7 +51,7 @@ export default function Landing(){
    </div></header>
    <main id="content">
     <section className="vfx-hero vfx-wrap">
-      <h1><span className="vfx-hero-line">Permanent Recruitment</span><span className="vfx-hero-line vfx-hero-line-two">Agency <span className="vfx-hero-intro">Vorlen helps UK businesses find permanent staff, with real people reviewing candidates and keeping you informed.</span></span></h1>
+      <h1><span className="vfx-hero-line">People. Business.</span><span className="vfx-hero-line vfx-hero-line-two">Recruitment. <span className="vfx-hero-intro">Vorlen helps UK businesses find permanent staff, with real people reviewing candidates and keeping you informed.</span></span></h1>
       <div className="vfx-hero-foot"><span>VORLEN / UK RECRUITMENT</span><Link to="/contact">LET'S TALK ABOUT YOUR NEXT HIRE <ArrowUpRight size={17}/></Link></div>
     </section>
     <section className="vfx-photo-banner vfx-cinematic-banner" aria-label="People working together in professional teams">
