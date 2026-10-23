@@ -1,235 +1,79 @@
-import {useEffect} from 'react';
+import {useEffect,useState} from 'react';
 import {Link} from 'react-router-dom';
-import {ArrowRight,CheckCircle2,ChevronDown,ShieldCheck,Users,BriefcaseBusiness,Search,Handshake,Facebook,Linkedin} from 'lucide-react';
+import {ArrowUpRight,ArrowRight,ChevronLeft,ChevronRight,Menu,X,Check,Users,BriefcaseBusiness,Code2,Wrench,ChartNoAxesCombined,Calculator,Search,Facebook,Linkedin,Play} from 'lucide-react';
 import VorlenBrand from '../components/VorlenBrand';
-import GooglePreferredSource from '../components/GooglePreferredSource';
 import {orgSchema,setSeo} from '../lib/seo';
 import './VorixInspiredLanding.css';
 
-const faqs=[
-  ['What does Vorlen do?','We help UK businesses recruit permanent staff. Tell us about the vacancy and we will discuss the search, review suitable candidates and help arrange interviews.'],
-  ['How does Vorlen assess candidates?','A recruiter looks at each person’s relevant experience and suitability for the role before recommending them to an employer.'],
-  ['Where does Vorlen recruit?','Vorlen supports permanent recruitment for employers across the United Kingdom.'],
-  ['Can candidates apply directly?','Yes. Candidates can browse published opportunities through Vorlen Careers and apply securely online.'],
-  ['Does Vorlen work with recruitment partners?','Yes. Vorlen operates a selective partner network subject to formal terms, onboarding and approval.'],
-  ['What happens after I enquire?','We will read through the details, get in touch to understand what you need and explain how we could help.']
-];
-
 const services=[
-  {icon:Search,title:'Finding the right candidates',copy:'We look for people whose skills and experience match your vacancy, including candidates who may not be actively applying.'},
-  {icon:Users,title:'Candidates we have spoken to',copy:'We review suitability before putting anyone forward, so you spend less time sorting through unsuitable CVs.'},
-  {icon:Handshake,title:'Help through the hiring process',copy:'From arranging interviews to keeping everyone informed, we are here to help things run smoothly.'}
+  {title:'Permanent Recruitment',type:'01 / RECRUITMENT',copy:'Looking to make a permanent hire? We find and introduce people who match what your business needs.',icon:BriefcaseBusiness,link:'/services/permanent-recruitment'},
+  {title:'Technology & Software',type:'02 / TECHNOLOGY',copy:'From developers to infrastructure specialists, we help you search for people with relevant experience.',icon:Code2,link:'/sectors/technology'},
+  {title:'Engineering & Technical',type:'03 / ENGINEERING',copy:'Practical experience matters. We look beyond job titles to understand technical skills and the workplace.',icon:Wrench,link:'/sectors/engineering'},
+  {title:'Sales & Business Development',type:'04 / SALES',copy:'Find people who understand your customers, your market and what it takes to build business.',icon:ChartNoAxesCombined,link:'/sectors/sales-business-development'},
+  {title:'Finance & Accounting',type:'05 / FINANCE',copy:'We help businesses recruit finance professionals, from accounts support to management.',icon:Calculator,link:'/sectors/finance-accounting'},
+  {title:'Hiring for SMEs',type:'06 / SMALL BUSINESS',copy:'No in-house HR team? We can help you manage the search and introductions.',icon:Users,link:'/services/recruitment-for-smes'}
 ];
-
-const steps=[
-  ['01','Define the brief','We find out who you are hiring, what they will be doing and what matters most to your business.'],
-  ['02','Search the market','We advertise and search for suitable people, including those who are not actively looking.'],
-  ['03','Speak to candidates','We review their experience and discuss the role with them before making an introduction.'],
-  ['04','Arrange the next steps','We help with interviews, feedback and the steps leading up to an offer.']
+const work=[
+  {no:'01',title:'Tell us who you need',copy:'Start with the role, location, salary and what matters to your team.'},
+  {no:'02',title:'We look for the right people',copy:'We search the market and speak to candidates who may be a good fit.'},
+  {no:'03',title:'Meet your shortlist',copy:'We review relevant experience before putting people forward.'},
+  {no:'04',title:'Make your next hire',copy:'We help arrange interviews, gather feedback and keep everyone informed.'}
 ];
-
+const faqs=[
+  ['Do you work with small businesses?','Yes. We help UK small and growing businesses recruit permanent staff, including those without an in-house HR team.'],
+  ['Where do you recruit?','We are based in Greater Manchester and can support permanent recruitment across the UK.'],
+  ['Do real people review candidates?','Yes. Recruiters review candidate suitability before introductions to employers.'],
+  ['How much does recruitment cost?','Fees depend on the vacancy and agreed terms. We will explain the proposed fee and payment terms before you appoint us.']
+];
+const photography={
+ team:'https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=2000&q=85',
+ people:'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1500&q=85',
+ engineer:'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1500&q=85',
+ tech:'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1500&q=85',
+ finance:'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1500&q=85',
+ sales:'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1500&q=85',
+ conversation:'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1800&q=85',
+ office:'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1700&q=85'
+};
 export default function Landing(){
-  useEffect(()=>setSeo({
-    title:'Vorlen | UK Permanent Recruitment Agency',
-    description:'Vorlen helps UK businesses recruit permanent staff. We find suitable candidates, review their experience and help employers through the hiring process.',
-    path:'/',
-    jsonLd:[
-      orgSchema(),
-      {'@context':'https://schema.org','@type':'Service','@id':'https://www.vorlen.co.uk/#permanent-recruitment',name:'Permanent recruitment services',provider:{'@id':'https://www.vorlen.co.uk/#organization'},areaServed:{'@type':'Country',name:'United Kingdom'},serviceType:'Permanent recruitment',description:'Employer-led permanent recruitment covering vacancy briefing, candidate sourcing, assessment, introduction, interview coordination and placement support.'},
-      {'@context':'https://schema.org','@type':'FAQPage',mainEntity:faqs.map(([q,a])=>({'@type':'Question',name:q,acceptedAnswer:{'@type':'Answer',text:a}}))}
-    ]
-  }),[]);
-
-  return <div className="vp-site vorix-concept">
-    <a className="skip-link" href="#main">Skip to content</a>
-
-    <header className="vp-nav">
-      <VorlenBrand/>
-      <nav aria-label="Primary navigation">
-        <Link to="/employers">Employers</Link>
-        <Link to="/services/permanent-recruitment">Services</Link>
-        <Link to="/careers">Careers</Link>
-        <Link to="/partners">Partners</Link>
-      </nav>
-      <div className="vp-nav-actions">
-        <Link className="vp-signin" to="/login" style={{display:"inline-flex",alignItems:"center",whiteSpace:"nowrap"}}>Sign in</Link>
-        <Link className="vp-btn vp-btn-small" to="/contact">Discuss a vacancy</Link>
-      </div>
-    </header>
-    <nav className="vp-mobile-account" aria-label="Mobile account and candidate access"><Link to="/login">Client or recruiter sign in</Link><Link to="/careers">Find a job</Link></nav>
-
-    <main id="main">
-      <section className="vp-hero vorix-hero">
-        <div className="vp-hero-copy">
-          <p className="vp-kicker"><span className="vorix-dot"/> INDEPENDENT UK RECRUITMENT PARTNER</p>
-          <h1>Finding people.<br/><span>Building teams.</span><br/>Growing businesses.</h1>
-          <p className="vp-lead">Need someone new on your team? Tell us who you are looking for. We will help you find suitable people, arrange introductions and make hiring a little easier.</p>
-          <div className="vp-hero-actions">
-            <Link className="vp-btn" to="/contact">Discuss your vacancy <ArrowRight size={17}/></Link>
-            <Link className="vp-text-link" to="/careers">Looking for a role? View opportunities</Link>
-          </div>
-          <div className="vp-proof-row" aria-label="Vorlen service principles">
-            <span><CheckCircle2 size={16}/> Permanent recruitment</span>
-            <span><CheckCircle2 size={16}/> UK-wide search</span>
-            <span><CheckCircle2 size={16}/> Candidates we have spoken to</span>
-          </div>
-        </div>
-
-        <aside className="vp-hero-panel vorix-visual" aria-label="Vorlen recruitment services"><div className="vorix-art"><div className="vorix-art-orbit"/><div className="vorix-art-core"><span>V</span></div><span className="vorix-art-pill vorix-art-pill-one">People first</span><span className="vorix-art-pill vorix-art-pill-two">Recruitment that feels personal</span><span className="vorix-art-cross">✳</span></div><div className="vorix-visual-details">
-          <div className="vp-panel-label">WHAT YOU CAN EXPECT</div>
-          <div className="vp-panel-item">
-            <span>01</span>
-            <div><strong>Tell us what you need</strong><p>We will ask about the role, your team and what you are looking for.</p></div>
-          </div>
-          <div className="vp-panel-item">
-            <span>02</span>
-            <div><strong>We will start looking</strong><p>We search for people with the right experience for the job.</p></div>
-          </div>
-          <div className="vp-panel-item">
-            <span>03</span>
-            <div><strong>Meet suitable candidates</strong><p>We review candidates before introducing them to you.</p></div>
-          </div>
-          <div className="vp-panel-item">
-            <span>04</span>
-            <div><strong>Help until you've hired</strong><p>We will help organise interviews and keep you updated.</p></div>
-          </div>
-        </div></aside>
-      </section>
-
-      <div className="vorix-marquee" aria-label="Our recruitment specialisms"><div className="vorix-marquee-track" aria-hidden="true">{Array.from({length:3}).map((_,i)=><span key={i}>PERMANENT RECRUITMENT <b>✳</b> ENGINEERING <b>✳</b> TECHNOLOGY <b>✳</b> FINANCE <b>✳</b> SALES <b>✳</b> </span>)}</div></div>
-      <section className="vp-positioning">
-        <div>
-          <p className="vp-kicker">WHY VORLEN</p>
-          <h2>Recruitment shouldn't take over your working day.</h2>
-        </div>
-        <p>Hiring takes time, especially when you are running a business as well. We can take some of that work off your hands, from finding candidates to arranging interviews.</p>
-      </section>
-
-      <section className="vp-services">
-        <div className="vp-section-head">
-          <p className="vp-kicker">WHAT WE DO</p>
-          <h2>We help you hire permanent staff.</h2>
-          <Link to="/services/permanent-recruitment">Explore our recruitment service <ArrowRight size={15}/></Link>
-        </div>
-        <div className="vp-service-grid">
-          {services.map(({icon:Icon,title,copy})=><article key={title}>
-            <Icon size={22}/>
-            <h3>{title}</h3>
-            <p>{copy}</p>
-          </article>)}
-        </div>
-      </section>
-
-      <section className="vp-specialisms" aria-labelledby="vp-specialisms-title">
-        <div className="vp-section-head">
-          <p className="vp-kicker">RECRUITMENT SPECIALISMS</p>
-          <h2 id="vp-specialisms-title">Looking for someone with the right experience?</h2>
-          <p>Whether you need an engineer, an accountant or someone to keep the office running, tell us about the position and we will talk through your options.</p>
-        </div>
-        <div className="vp-specialisms-grid">
-          {[
-            ['Engineering & technical','Permanent roles requiring relevant technical knowledge, qualifications and practical experience.'],
-            ['Office & administration','Reliable administrative and operational support, from office staff to experienced coordinators.'],
-            ['Accounting & finance','Finance and accounts positions where accuracy, experience and attention to detail count.']
-          ].map(([title,copy])=><article key={title}><h3>{title}</h3><p>{copy}</p><Link to="/contact">Discuss a role <ArrowRight size={15}/></Link></article>)}
-        </div>
-        <p className="vp-section-note">Based in Greater Manchester, supporting permanent recruitment enquiries across the UK. Every assignment is reviewed individually.</p>
-      </section>
-
-      <section className="vp-employer-assurance" aria-labelledby="vp-assurance-title">
-        <div><p className="vp-kicker">FOR HIRING TEAMS</p><h2 id="vp-assurance-title">Get to know the person behind the CV.</h2></div>
-        <div><p>A CV only tells part of the story. We look at relevant experience and suitability before introducing someone, so you have more to go on when deciding who to interview.</p><Link className="vp-text-link" to="/employers">How we support employers <ArrowRight size={15}/></Link></div>
-      </section>
-
-      <section className="vp-process">
-        <div className="vp-process-intro">
-          <p className="vp-kicker vp-kicker-light">OUR APPROACH</p>
-          <h2>Here's how we work with you.</h2>
-          <p>You'll deal with people who understand your vacancy and can talk you through the next steps.</p>
-        </div>
-        <div className="vp-process-list">
-          {steps.map(([n,title,copy])=><article key={n}>
-            <span>{n}</span>
-            <div><h3>{title}</h3><p>{copy}</p></div>
-          </article>)}
-        </div>
-      </section>
-
-      <section className="vp-audiences">
-        <article className="vp-employer">
-          <BriefcaseBusiness size={24}/>
-          <p className="vp-kicker">FOR EMPLOYERS</p>
-          <h2>Hiring for a permanent role?</h2>
-          <p>Tell us about your vacancy and the kind of person you are hoping to find. We will discuss how we can help.</p>
-          <Link className="vp-btn" to="/contact">Discuss your vacancy <ArrowRight size={16}/></Link>
-        </article>
-        <article className="vp-candidate">
-          <Users size={24}/>
-          <p className="vp-kicker">FOR CANDIDATES</p>
-          <h2>Looking for your next move?</h2>
-          <p>Take a look at our latest vacancies. If one interests you, you can apply through Vorlen Careers.</p>
-          <Link className="vp-outline-link" to="/careers">View current opportunities <ArrowRight size={16}/></Link>
-        </article>
-      </section>
-
-      <section className="vp-confidence">
-        <div>
-          <ShieldCheck size={26}/>
-          <p className="vp-kicker">RECRUITMENT WITH ACCOUNTABILITY</p>
-          <h2>Real people, making recruitment decisions.</h2>
-        </div>
-        <div className="vp-confidence-copy">
-          <p className="vp-confidence-intro">We take care with every introduction. Our team reviews suitability and shares candidate information through the right channels.</p>
-          <div className="vp-assurance-list">
-            <article className="vp-assurance-item"><span className="vp-assurance-number" aria-hidden="true">01</span><div><h3>Assessed against your vacancy</h3><p>We look at the experience and skills you told us matter.</p></div></article>
-            <article className="vp-assurance-item"><span className="vp-assurance-number" aria-hidden="true">02</span><div><h3>Shared with permission</h3><p>We only share candidate details when we have the right permission.</p></div></article>
-            <article className="vp-assurance-item"><span className="vp-assurance-number" aria-hidden="true">03</span><div><h3>Decisions stay human</h3><p>Our team checks introductions. You decide who you'd like to meet.</p></div></article>
-          </div>
-        </div>
-      </section>
-
-      <section className="vp-discover" aria-labelledby="vp-discover-title">
-        <div className="vp-section-head">
-          <p className="vp-kicker">CURRENT OPPORTUNITIES</p>
-          <h2 id="vp-discover-title">See who's hiring.</h2>
-          <p>Browse our current vacancies and apply online. We will add new opportunities as they become available.</p>
-          <Link to="/careers">Browse live opportunities <ArrowRight size={16}/></Link>
-        </div>
-        <div className="vp-discover-cards">
-          <article><BriefcaseBusiness size={24}/><h3>Hiring for your team?</h3><p>Tell us the job title, where the role is based and what you are looking for. We will take it from there.</p><Link to="/contact">Start an employer enquiry <ArrowRight size={16}/></Link></article>
-          <article><Users size={24}/><h3>Considering your next role?</h3><p>See a role that sounds right for you? Read the details and apply through our careers page.</p><Link to="/careers">View opportunities <ArrowRight size={16}/></Link></article>
-        </div>
-      </section>
-
-      <section className="vp-faq">
-        <div className="vp-faq-head">
-          <p className="vp-kicker">COMMON QUESTIONS</p>
-          <h2>A few things you might want to know.</h2>
-        </div>
-        <div className="vp-faq-list">
-          {faqs.map(([q,a])=><details key={q}>
-            <summary><span>{q}</span><ChevronDown size={18}/></summary>
-            <p>{a}</p>
-          </details>)}
-        </div>
-      </section>
-
-      <section className="vp-final">
-        <div>
-          <p className="vp-kicker vp-kicker-light">HAVE A ROLE TO FILL?</p>
-          <h2>Let's talk about your vacancy.</h2>
-          <p>Tell us what you need and we will get back to you.</p>
-        </div>
-        <Link className="vp-final-btn" to="/contact">Discuss a vacancy <ArrowRight size={17}/></Link>
-      </section>
-    </main>
-
-    <footer className="vp-footer">
-      <div className="vp-footer-brand"><VorlenBrand/><p>Good recruitment starts with a conversation.</p><div className="vp-footer-socials" aria-label="Vorlen social media"><a href="https://www.facebook.com/share/19pqmJPH3v/" target="_blank" rel="noopener noreferrer" aria-label="Vorlen on Facebook"><Facebook size={18}/></a><a href="https://www.linkedin.com/company/vorlen/" target="_blank" rel="noopener noreferrer" aria-label="Vorlen on LinkedIn"><Linkedin size={18}/></a></div><div className="google-preferred-source"><GooglePreferredSource/></div></div>
-      <div><strong>Employers</strong><Link to="/employers">For employers</Link><Link to="/services/permanent-recruitment">Permanent recruitment</Link><Link to="/services/candidate-sourcing">Candidate sourcing</Link><Link to="/services/recruitment-for-smes">Recruitment for SMEs</Link></div>
-      <div><strong>Candidates</strong><Link to="/candidates">For candidates</Link><Link to="/careers">Open opportunities</Link><Link to="/candidate-terms">Candidate terms</Link><Link to="/privacy">Privacy policy</Link></div>
-      <div><strong>Vorlen</strong><Link to="/partners">Partner network</Link><Link to="/locations/manchester">Manchester</Link><Link to="/locations/greater-manchester">Greater Manchester</Link><Link to="/contact">Contact</Link><Link to="/accessibility">Accessibility</Link></div>
-      <div className="vp-footer-base"><span>© {new Date().getFullYear()} Vorlen</span><span>Vorlen Ltd · Company No. 17387520 · Registered in England and Wales · Registered office: Rochdale, OL16 2EP · ICO Ref: ZC275029</span></div>
-    </footer>
-  </div>
+ const [serviceIndex,setServiceIndex]=useState(0);
+ const [menuOpen,setMenuOpen]=useState(false);
+ useEffect(()=>{setSeo({title:'Vorlen | UK Permanent Recruitment Agency',description:'Vorlen helps UK businesses recruit permanent staff across technology, engineering, finance and sales. Based in Greater Manchester, supporting employers nationwide.',path:'/',jsonLd:[orgSchema(),{'@context':'https://schema.org','@type':'Service',name:'Permanent recruitment',provider:{'@id':'https://www.vorlen.co.uk/#organization'},areaServed:'United Kingdom'},{'@context':'https://schema.org','@type':'FAQPage',mainEntity:faqs.map(([q,a])=>({'@type':'Question',name:q,acceptedAnswer:{'@type':'Answer',text:a}}))}]})},[]);
+ useEffect(()=>{const t=window.setInterval(()=>setServiceIndex(i=>(i+1)%services.length),6500);return()=>window.clearInterval(t)},[]);
+ const showService=(offset:number)=>services[(serviceIndex+offset)%services.length];
+ return <div className="vfx-site">
+   <a className="vfx-skip" href="#content">Skip to content</a>
+   <header className="vfx-header"><div className="vfx-wrap vfx-nav">
+    <Link className="vfx-brand" to="/" aria-label="Vorlen home"><VorlenBrand/></Link>
+    <nav className={menuOpen?'vfx-menu open':'vfx-menu'} aria-label="Main navigation"><Link onClick={()=>setMenuOpen(false)} to="/">Home</Link><Link onClick={()=>setMenuOpen(false)} to="/employers">Employers</Link><Link onClick={()=>setMenuOpen(false)} to="/services/permanent-recruitment">Services</Link><Link onClick={()=>setMenuOpen(false)} to="/careers">Careers</Link><Link onClick={()=>setMenuOpen(false)} to="/partners">Partners</Link></nav>
+    <div className="vfx-nav-actions"><Link className="vfx-login" to="/login">Sign in</Link><Link className="vfx-pill" to="/contact">GET IN TOUCH <ArrowUpRight size={16}/></Link><button type="button" className="vfx-mobile-menu" aria-label={menuOpen?'Close menu':'Open menu'} aria-expanded={menuOpen} onClick={()=>setMenuOpen(v=>!v)}>{menuOpen?<X size={26}/>:<Menu size={26}/>}</button></div>
+   </div></header>
+   <main id="content">
+    <section className="vfx-hero vfx-wrap">
+      <div className="vfx-overline"><span className="vfx-sun"/> RECRUITMENT FOR BUSINESSES THAT ARE GOING PLACES</div>
+      <h1>People Make<br/><span>Business.</span></h1>
+      <div className="vfx-hero-bottom"><span className="vfx-asterisk" aria-hidden="true">✳</span><p>Good recruitment starts with finding the right people. We help UK businesses hire permanent staff who fit the role and the team.</p><Link className="vfx-circle-link" to="/contact" aria-label="Discuss a vacancy"><ArrowUpRight size={26}/></Link></div>
+    </section>
+    <section className="vfx-photo-banner" aria-label="Recruitment for ambitious UK businesses">
+      <img src={photography.team} alt="Colleagues discussing work around an office table" loading="eager"/>
+      <div className="vfx-band-overlay vfx-wrap"><div className="vfx-photo-label"><span>VORLEN</span><strong>People behind every placement.</strong></div><div className="vfx-band-facts"><div><strong>UK</strong><span>WIDE SEARCH</span></div><div><strong>100%</strong><span>PERMANENT FOCUS</span></div><div><strong>HUMAN</strong><span>CANDIDATE REVIEW</span></div></div></div>
+    </section>
+    <section className="vfx-section vfx-services"><div className="vfx-wrap"><div className="vfx-heading-row"><div><p className="vfx-kicker">01 / WHAT WE DO</p><h2>How We Can<br/>Help You Hire.</h2></div><div className="vfx-controls"><button aria-label="Previous service" onClick={()=>setServiceIndex(i=>(i+services.length-1)%services.length)}><ChevronLeft/></button><button aria-label="Next service" onClick={()=>setServiceIndex(i=>(i+1)%services.length)}><ChevronRight/></button></div></div>
+      <div className="vfx-services-grid">{[0,1,2].map((offset)=>{const s=showService(offset),Icon=s.icon;return <Link to={s.link} className="vfx-service-card" key={s.title}><span className="vfx-service-type">{s.type}</span><Icon size={58} strokeWidth={1.25}/><div><h3>{s.title}</h3><p>{s.copy}</p></div><ArrowUpRight className="vfx-card-arrow" size={22}/></Link>})}</div>
+      <div className="vfx-carousel-progress">{services.map((s,i)=><button type="button" key={s.title} aria-label={'Show '+s.title} aria-current={i===serviceIndex?'true':undefined} className={i===serviceIndex?'active':''} onClick={()=>setServiceIndex(i)}/>)}</div>
+    </div></section>
+    <section className="vfx-section vfx-about vfx-wrap"><div className="vfx-about-photo vfx-reveal"><img src={photography.people} alt="Recruitment and business colleagues working together" loading="lazy"/><div className="vfx-photo-sticker"><strong>GOOD PEOPLE.</strong><span>GOOD BUSINESS.</span></div></div><div className="vfx-about-copy"><p className="vfx-kicker">02 / ABOUT VORLEN</p><h2>Recruitment<br/>Without The<br/><em>Runaround.</em></h2><p>Hiring takes time. We make it simpler by getting to know your business, understanding the role and looking for people who could genuinely fit.</p><ul><li><Check/> A proper conversation about what you need</li><li><Check/> Candidates reviewed by real recruiters</li><li><Check/> Straightforward updates and support</li></ul><Link className="vfx-pill vfx-pill-dark" to="/employers">MORE ABOUT VORLEN <ArrowUpRight size={16}/></Link></div></section>
+    <section className="vfx-trust vfx-wrap"><span>RECRUITMENT THAT FITS YOUR BUSINESS</span><div><strong>ENGINEERING</strong><strong>TECHNOLOGY</strong><strong>FINANCE</strong><strong>SALES</strong></div></section>
+    <section className="vfx-section vfx-work"><div className="vfx-wrap"><div className="vfx-heading-row"><div><p className="vfx-kicker">03 / RECRUITMENT SPECIALISMS</p><h2>Different Roles.<br/>Same Attention<br/>To Detail.</h2></div><Link className="vfx-text-link" to="/services/permanent-recruitment">EXPLORE ALL SERVICES <ArrowUpRight/></Link></div><div className="vfx-work-grid">
+      {[{name:'Engineering & Technical',image:photography.engineer,path:'/sectors/engineering'},{name:'Software & Technology',image:photography.tech,path:'/sectors/technology'},{name:'Finance & Accounting',image:photography.finance,path:'/sectors/finance-accounting'},{name:'Sales & Business Development',image:photography.sales,path:'/sectors/sales-business-development'}].map((item,i)=><Link className="vfx-work-card" to={item.path} key={item.name}><img src={item.image} alt={item.name+' recruitment'} loading="lazy"/><div className="vfx-work-overlay"><span>0{i+1} / RECRUITMENT</span><h3>{item.name}</h3><span className="vfx-work-arrow"><ArrowUpRight/></span></div></Link>)}
+    </div></div></section>
+    <section className="vfx-section vfx-process vfx-wrap"><div className="vfx-process-intro"><p className="vfx-kicker">04 / OUR PROCESS</p><h2>Let's Make<br/>Your Next Hire<br/><em>A Great One.</em></h2><p>We keep things clear from the first conversation to the final decision. Here's what working together looks like.</p><Link className="vfx-pill vfx-pill-dark" to="/contact">TALK TO US <ArrowUpRight size={16}/></Link></div><div className="vfx-steps">{work.map(step=><div className="vfx-step" key={step.no}><span>{step.no}</span><div><h3>{step.title}</h3><p>{step.copy}</p></div><ArrowUpRight size={20}/></div>)}</div></section>
+    <section className="vfx-image-break"><img src={photography.conversation} alt="Two professionals having a conversation" loading="lazy"/><div className="vfx-image-break-overlay"><span>LET'S TALK ABOUT YOUR TEAM</span><Link to="/contact" className="vfx-play-link" aria-label="Talk to Vorlen"><ArrowUpRight size={32}/></Link></div></section>
+    <section className="vfx-section vfx-difference vfx-wrap"><p className="vfx-kicker">05 / WHY WORK WITH US</p><h2>What Matters<br/>When You Hire.</h2><div className="vfx-difference-lines">{[{name:'We listen first',copy:'Your business and your vacancy come before any shortlist.'},{name:'People, not just CVs',copy:'Relevant experience and suitability are reviewed before introduction.'},{name:'No unnecessary fuss',copy:'Clear communication, sensible next steps and room for your feedback.'},{name:'Support for growing teams',copy:'An extra pair of hands when you need to recruit without a dedicated HR team.'}].map((v,i)=><article key={v.name}><span>0{i+1}</span><h3>{v.name}</h3><p>{v.copy}</p><ArrowUpRight/></article>)}</div></section>
+    <section className="vfx-contact-split"><div className="vfx-questions"><p className="vfx-kicker">06 / COMMON QUESTIONS</p><h2>Good Questions.<br/>Straight Answers.</h2><div className="vfx-faqs">{faqs.map(([q,a])=><details key={q}><summary>{q}<span>+</span></summary><p>{a}</p></details>)}</div><Link className="vfx-text-link" to="/guides/ai-recruitment-questions">MORE HIRING ADVICE <ArrowUpRight size={19}/></Link></div><div className="vfx-contact-picture" style={{backgroundImage:'url('+photography.office+')'}}><div className="vfx-contact-card"><p className="vfx-kicker">START A CONVERSATION</p><h3>Who Do You<br/>Need To Hire?</h3><p>Tell us a little about the role. We'll be happy to talk through how we could help.</p><Link className="vfx-pill" to="/contact">DISCUSS A VACANCY <ArrowUpRight size={16}/></Link></div></div></section>
+    <section className="vfx-section vfx-insights vfx-wrap"><div className="vfx-heading-row"><div><p className="vfx-kicker">07 / INSIGHTS</p><h2>A Little Help<br/>With Hiring.</h2></div><Link className="vfx-text-link" to="/guides/employer-recruitment-questions">ALL HIRING GUIDES <ArrowUpRight/></Link></div><div className="vfx-insight-grid">{[{k:'FOR EMPLOYERS',h:'Questions to ask before choosing a recruitment agency',link:'/guides/employer-recruitment-questions',img:photography.people},{k:'FOR SMALL BUSINESSES',h:'How to hire when you do not have an HR team',link:'/services/recruitment-for-smes',img:photography.office},{k:'RECRUITMENT ADVICE',h:'What employers should know about recruitment fees',link:'/guides/ai-recruitment-questions',img:photography.finance}].map(item=><Link className="vfx-insight" to={item.link} key={item.h}><img src={item.img} alt="" loading="lazy"/><p>{item.k}</p><h3>{item.h}</h3><span>READ MORE <ArrowUpRight size={18}/></span></Link>)}</div></section>
+    <section className="vfx-cta"><div className="vfx-wrap"><div><p>READY TO BUILD YOUR TEAM?</p><h2>Let's Work<br/>Together.</h2></div><Link className="vfx-pill vfx-cta-button" to="/contact">CONTACT VORLEN <ArrowUpRight size={19}/></Link></div></section>
+   </main>
+   <footer className="vfx-footer"><div className="vfx-wrap"><div className="vfx-footer-grid"><div><VorlenBrand/><p>Helping businesses find good people. Based in Greater Manchester, working across the UK.</p><div className="vfx-social"><a href="https://www.facebook.com/share/19pqmJPH3v/" aria-label="Facebook" target="_blank" rel="noopener noreferrer"><Facebook/></a><a href="https://www.linkedin.com/company/vorlen/" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><Linkedin/></a></div></div><div><h4>EMPLOYERS</h4><Link to="/employers">For employers</Link><Link to="/services/permanent-recruitment">Permanent recruitment</Link><Link to="/services/recruitment-for-smes">Small businesses</Link><Link to="/contact">Contact</Link></div><div><h4>EXPLORE</h4><Link to="/careers">Current opportunities</Link><Link to="/candidates">Candidates</Link><Link to="/partners">Partners</Link><Link to="/locations/manchester">Manchester</Link></div><div><h4>GET IN TOUCH</h4><p>Have a vacancy to fill? Start with a quick conversation.</p><Link className="vfx-pill vfx-pill-dark" to="/contact">SAY HELLO <ArrowUpRight size={16}/></Link></div></div><div className="vfx-footer-base"><span>© {new Date().getFullYear()} Vorlen Ltd · Company No. 17387520 · Registered in England and Wales · ICO ZC275029</span><div><Link to="/privacy">Privacy</Link><Link to="/accessibility">Accessibility</Link><Link to="/candidate-terms">Candidate terms</Link></div></div></div></footer>
+ </div>;
 }
