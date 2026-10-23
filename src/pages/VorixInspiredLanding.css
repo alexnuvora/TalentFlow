@@ -109,3 +109,37 @@
  .vfx-reveal,.vfx-reveal.vfx-visible{opacity:1!important;transform:none!important;transition:none!important}
  .vfx-photo-banner img,.vfx-work-card img{transition:none!important}
 }
+
+/* Fidelity correction: rebuild hero around Vorix's exact editorial rhythm rather than the old stacked slogan */
+.vfx-site .vfx-hero{padding-top:78px;padding-bottom:85px}
+.vfx-site .vfx-hero h1{font-size:clamp(58px,8.2vw,120px);line-height:1.39;letter-spacing:-.032em;font-weight:700;max-width:none;margin:0}
+.vfx-hero-line{display:block;white-space:nowrap;color:#171b17!important}
+.vfx-hero-line-two{display:flex;align-items:center;gap:clamp(24px,4vw,65px);letter-spacing:-.045em}
+.vfx-hero-line-two .vfx-hero-intro{display:block;max-width:335px;font:500 clamp(13px,1.15vw,17px)/1.8 Unbounded,Arial,sans-serif;letter-spacing:0;color:#30362e;white-space:normal;flex:1;margin-top:26px}
+.vfx-hero-foot{display:flex;justify-content:space-between;align-items:center;margin-top:13px;font-size:11px;font-weight:600;letter-spacing:.08em}
+.vfx-hero-foot a{display:flex;align-items:center;gap:12px;border-bottom:1px solid #192017;padding-bottom:9px;transition:gap .3s}
+.vfx-hero-foot a:hover{gap:22px}
+.vfx-band-overlay{bottom:-96px}
+.vfx-photo-label{max-width:290px}
+.vfx-photo-label strong{font-size:21px}
+.vfx-services{padding-top:210px}
+@media(max-width:1100px){
+ .vfx-site .vfx-hero h1{font-size:clamp(61px,8.15vw,94px);line-height:1.28}
+ .vfx-hero-line-two .vfx-hero-intro{max-width:275px;font-size:12px;margin-top:10px}
+}
+@media(max-width:780px){
+ .vfx-site .vfx-hero{padding-top:72px;padding-bottom:70px}
+ .vfx-site .vfx-hero h1{font-size:clamp(46px,9.1vw,75px);line-height:1.22}
+ .vfx-hero-line-two{display:block}
+ .vfx-hero-line-two .vfx-hero-intro{margin-top:20px;max-width:490px;font:400 16px/1.7 Poppins,Arial,sans-serif}
+ .vfx-hero-foot{margin-top:28px}
+}
+@media(max-width:520px){
+ .vfx-site .vfx-hero{padding-top:56px;padding-bottom:56px}
+ .vfx-site .vfx-hero h1{font-size:clamp(36px,9.3vw,52px);line-height:1.22;letter-spacing:-.055em}
+ .vfx-hero-line-two .vfx-hero-intro{font-size:14px;line-height:1.65;margin-top:21px}
+ .vfx-hero-foot{align-items:start;gap:25px;font-size:9px}
+ .vfx-hero-foot a{max-width:155px}
+ .vfx-band-overlay{bottom:-105px}
+ .vfx-services{padding-top:175px}
+}
