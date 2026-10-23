@@ -51,7 +51,7 @@ export default function Landing(){
    </div></header>
    <main id="content">
     <section className="vfx-hero vfx-wrap">
-      <h1><span className="vfx-hero-line">Permanent Hiring</span><span className="vfx-hero-line vfx-hero-line-two">Made Human. <span className="vfx-hero-intro">Vorlen helps UK businesses find permanent staff, with real people reviewing candidates and keeping you informed.</span></span></h1>
+      <h1><span className="vfx-hero-line">Permanent Recruitment</span><span className="vfx-hero-line vfx-hero-line-two">Agency <span className="vfx-hero-intro">Vorlen helps UK businesses find permanent staff, with real people reviewing candidates and keeping you informed.</span></span></h1>
       <div className="vfx-hero-foot"><span>VORLEN / UK RECRUITMENT</span><Link to="/contact">LET'S TALK ABOUT YOUR NEXT HIRE <ArrowUpRight size={17}/></Link></div>
     </section>
     <section className="vfx-photo-banner" aria-label="Recruitment for ambitious UK businesses">
@@ -69,8 +69,25 @@ export default function Landing(){
     </div></div></section>
     <section className="vfx-section vfx-process vfx-wrap"><div className="vfx-process-intro"><p className="vfx-kicker">04 / OUR PROCESS</p><h2>Let's Make<br/>Your Next Hire<br/><em>A Great One.</em></h2><p>We keep things clear from the first conversation to the final decision. Here's what working together looks like.</p><Link className="vfx-pill vfx-pill-dark" to="/contact">TALK TO US <ArrowUpRight size={16}/></Link></div><div className="vfx-steps">{work.map(step=><div className="vfx-step" key={step.no}><span>{step.no}</span><div><h3>{step.title}</h3><p>{step.copy}</p></div><ArrowUpRight size={20}/></div>)}</div></section>
     <section className="vfx-image-break"><img src={photography.conversation} alt="Two professionals having a conversation" loading="eager"/><div className="vfx-image-break-overlay"><span>LET'S TALK ABOUT YOUR TEAM</span><Link to="/contact" className="vfx-play-link" aria-label="Talk to Vorlen"><ArrowUpRight size={32}/></Link></div></section>
-    <section className="vfx-section vfx-difference vfx-wrap"><p className="vfx-kicker">05 / WHY WORK WITH US</p><h2>What Matters<br/>When You Hire.</h2><div className="vfx-difference-lines">{[{name:'We listen first',copy:'Your business and your vacancy come before any shortlist.'},{name:'People, not just CVs',copy:'Relevant experience and suitability are reviewed before introduction.'},{name:'No unnecessary fuss',copy:'Clear communication, sensible next steps and room for your feedback.'},{name:'Support for growing teams',copy:'An extra pair of hands when you need to recruit without a dedicated HR team.'}].map((v,i)=><article key={v.name}><span>0{i+1}</span><h3>{v.name}</h3><p>{v.copy}</p><ArrowUpRight/></article>)}</div></section>
-    <section className="vfx-contact-split"><div className="vfx-questions"><p className="vfx-kicker">06 / COMMON QUESTIONS</p><h2>Good Questions.<br/>Straight Answers.</h2><div className="vfx-faqs">{faqs.map(([q,a])=><details key={q}><summary>{q}<span>+</span></summary><p>{a}</p></details>)}</div><Link className="vfx-text-link" to="/guides/ai-recruitment-questions">MORE HIRING ADVICE <ArrowUpRight size={19}/></Link></div><div className="vfx-contact-picture"><img className="vfx-contact-photo" src={photography.office} alt="Contemporary business meeting space" loading="eager"/><div className="vfx-contact-card"><p className="vfx-kicker">START A CONVERSATION</p><h3>Who Do You<br/>Need To Hire?</h3><p>Tell us a little about the role. We'll be happy to talk through how we could help.</p><Link className="vfx-pill" to="/contact">DISCUSS A VACANCY <ArrowUpRight size={16}/></Link></div></div></section>
+    <section className="vfx-section vfx-values vfx-wrap">
+      <h2>Why Employers<br/>Choose Vorlen</h2>
+      <div className="vfx-value-cards">
+        {[{title:'Recruiters who listen',copy:'We start with your vacancy, your business and the person you need.',image:photography.people},{title:'People reviewed by people',copy:'A considered introduction matters more than another stack of CVs.',image:photography.conversation},{title:'Clear communication',copy:'We keep you informed and explain the next steps.',image:photography.office},{title:'Support for small businesses',copy:'Practical hiring support when there is no in-house HR team.',image:photography.team}].map((v,i)=><article key={v.title} className="vfx-value-card"><div><h3>{v.title}</h3><p>{v.copy}</p></div><img src={v.image} alt="" loading="eager"/><b>0{i+1}</b></article>)}
+      </div>
+    </section>
+    <section className="vfx-contact-split vfx-vorix-contact">
+      <div className="vfx-questions"><h2>Working With<br/>Vorlen</h2><div className="vfx-quote-symbol">”</div><p className="vfx-quote-copy">A successful hire starts with listening. Tell us about your team and we will talk through the best way forward.</p><p className="vfx-quote-source">VORLEN / UK PERMANENT RECRUITMENT</p></div>
+      <div className="vfx-contact-picture"><img className="vfx-contact-photo" src={photography.office} alt="Bright modern meeting space" loading="eager"/>
+        <div className="vfx-contact-card"><h3>Get in Touch</h3><p>Tell us a little about the role and we can take it from there.</p>
+          <form onSubmit={event=>{event.preventDefault();const data=new FormData(event.currentTarget);const query=new URLSearchParams({name:String(data.get('name')||''),email:String(data.get('email')||''),message:String(data.get('message')||'')});window.location.assign('/contact?'+query.toString())}}>
+            <input name="name" type="text" required aria-label="Your name" placeholder="Your Name"/>
+            <input name="email" type="email" required aria-label="Email address" placeholder="Email Address"/>
+            <textarea name="message" required aria-label="Message" placeholder="Message" rows={4}/>
+            <button type="submit" className="vfx-pill">CONTINUE ENQUIRY <ArrowUpRight size={16}/></button>
+          </form>
+        </div>
+      </div>
+    </section>
     <section className="vfx-section vfx-insights vfx-wrap"><div className="vfx-heading-row"><div><p className="vfx-kicker">07 / INSIGHTS</p><h2>A Little Help<br/>With Hiring.</h2></div><Link className="vfx-text-link" to="/guides/employer-recruitment-questions">ALL HIRING GUIDES <ArrowUpRight/></Link></div><div className="vfx-insight-grid">{[{k:'FOR EMPLOYERS',h:'Questions to ask before choosing a recruitment agency',link:'/guides/employer-recruitment-questions',img:photography.people},{k:'FOR SMALL BUSINESSES',h:'How to hire when you do not have an HR team',link:'/services/recruitment-for-smes',img:photography.office},{k:'RECRUITMENT ADVICE',h:'What employers should know about recruitment fees',link:'/guides/ai-recruitment-questions',img:photography.finance}].map(item=><Link className="vfx-insight" to={item.link} key={item.h}><img src={item.img} alt="" loading="eager"/><p>{item.k}</p><h3>{item.h}</h3><span>READ MORE <ArrowUpRight size={18}/></span></Link>)}</div></section>
     <section className="vfx-cta"><div className="vfx-wrap"><div><p>READY TO BUILD YOUR TEAM?</p><h2>Let's Work<br/>Together.</h2></div><Link className="vfx-pill vfx-cta-button" to="/contact">CONTACT VORLEN <ArrowUpRight size={19}/></Link></div></section>
    </main>
