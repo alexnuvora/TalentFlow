@@ -1,6 +1,6 @@
 import {useEffect,useState} from 'react';
 import {Link,useSearchParams} from 'react-router-dom';
-import {Search,FileText,BriefcaseBusiness,MapPin,ArrowUpRight,RefreshCw} from 'lucide-react';
+import {Search,BriefcaseBusiness,MapPin,ArrowUpRight,RefreshCw} from 'lucide-react';
 import {supabase} from '../lib/supabase';
 import {Card,Button,Badge} from '../components/Ui';
 import {CandidateCvActions} from '../components/CandidateCvActions';
