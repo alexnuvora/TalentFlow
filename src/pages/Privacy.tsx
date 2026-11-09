@@ -17,7 +17,7 @@ export default function Privacy(){
    <p className="legal-lead">This notice explains how Vorlen Ltd, uses personal information when providing permanent recruitment services, operating its partner and client workspaces, developing business relationships and responding to enquiries.</p>
 
    <section><h2>Who is responsible for your information</h2>
-    <p><strong>Vorlen Ltd</strong>, company number <strong>17387520</strong>, registered in England and Wales with registered office at <strong>Rochdale, OL16 2EP</strong>, trading as <strong>Vorlen</strong>, is the controller for the personal information described in this notice unless another organisation is clearly identified as the controller for a particular activity.</p>
+    <p><strong>Vorlen Ltd</strong>, company number <strong>17387520</strong>, registered in England and Wales with registered office at <strong>Piccadilly Business Centre, Unit C Aldow Enterprise Park, Blackett Street, Manchester, M12 6AE</strong>, trading as <strong>Vorlen</strong>, is the controller for the personal information described in this notice unless another organisation is clearly identified as the controller for a particular activity.</p>
     <p>Privacy enquiries can be sent to <a href="mailto:privacy@vorlen.co.uk">privacy@vorlen.co.uk</a>.</p>
    </section>
 
