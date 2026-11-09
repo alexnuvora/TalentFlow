@@ -1,4 +1,6 @@
-# Vorlen — Performance Recruitment OS 
+# Vorlen — Performance Recruitment OS
+
+_Last maintenance update: 9 November 2026._ 
   
 Multi-client recruitment infrastructure for candidate acquisition, qualification, scheduling, placement fees and measurable campaign ROI.
     
