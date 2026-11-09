@@ -45,7 +45,7 @@ DRAFT COMMERCIAL TERMS FOR CLIENT ACCEPTANCE
 Agency: ${company.legal_name||company.name} (trading as Vorlen)
 Company number: ${company.company_registration_number}
 Registered office: ${company.legal_address||'Confirm registered office address before issue'}
-Registered locality: Rochdale, OL16 2EP
+Registered office: Piccadilly Business Centre, Unit C Aldow Enterprise Park, Blackett Street, Manchester, M12 6AE
 Registered in: England and Wales
 Client: ${c.company_name}
 Nature of business: ${c.business_nature||'Not recorded'}
