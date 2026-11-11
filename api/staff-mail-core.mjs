@@ -27,7 +27,7 @@ async function smtpSend({to,cc,subject,body,attachments=[],inReplyTo=null,refere
  s.setTimeout(30000,()=>s.destroy(new Error('SMTP connection timed out to '+SMTP_HOST+':'+SMTP_PORT)));
  try{
   await new Promise((resolve,reject)=>{const ok=()=>{clean();resolve()};const fail=e=>{clean();reject(e)};const clean=()=>{s.off('secureConnect',ok);s.off('error',fail)};s.once('secureConnect',ok);s.once('error',fail)});
-  const cmd=async c=>{s.write(c+'\\r\\n');return await readLine(s)};
+  const cmd=async c=>{s.write(c+'\r\n');return await readLine(s)};
   await readLine(s);
   await cmd('EHLO vorlen.co.uk');
   await cmd('AUTH LOGIN');
@@ -38,10 +38,10 @@ async function smtpSend({to,cc,subject,body,attachments=[],inReplyTo=null,refere
   await cmd('DATA');
   const boundary='vorlen_'+Date.now();
   const messageId='<vorlen-'+Date.now()+'-'+Math.random().toString(36).slice(2)+'@vorlen.co.uk>';
-  let mime=`From: Vorlen <${USER}>\\r\\nTo: ${to.join(', ')}\\r\\n${cc.length?'Cc: '+cc.join(', ')+'\\r\\n':''}Subject: ${subject}\\r\\nMessage-ID: ${messageId}\\r\\n${inReplyTo?'In-Reply-To: '+inReplyTo+'\\r\\n':''}${references?'References: '+references+'\\r\\n':''}Date: ${new Date().toUTCString()}\\r\\nMIME-Version: 1.0\\r\\nContent-Type: multipart/mixed; boundary="${boundary}"\\r\\n\\r\\n--${boundary}\\r\\nContent-Type: text/plain; charset=utf-8\\r\\nContent-Transfer-Encoding: 8bit\\r\\n\\r\\n${body}\\r\\n`;
-  for(const a of attachments){mime+=`--${boundary}\\r\\nContent-Type: ${a.type||'application/octet-stream'}; name="${a.name.replace(/"/g,'')}"\\r\\nContent-Disposition: attachment; filename="${a.name.replace(/"/g,'')}"\\r\\nContent-Transfer-Encoding: base64\\r\\n\\r\\n${String(a.data||'').replace(/(.{76})/g,'$1\\r\\n')}\\r\\n`}
-  mime+=`--${boundary}--\\r\\n`;
-  s.write(mime.replace(/^\\./gm,'..')+'\\r\\n.\\r\\n');
+  let mime=`From: Vorlen <${USER}>\r\nTo: ${to.join(', ')}\r\n${cc.length?'Cc: '+cc.join(', ')+'\r\n':''}Subject: ${subject}\r\nMessage-ID: ${messageId}\r\n${inReplyTo?'In-Reply-To: '+inReplyTo+'\r\n':''}${references?'References: '+references+'\r\n':''}Date: ${new Date().toUTCString()}\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary="${boundary}"\r\n\r\n--${boundary}\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n${body}\r\n`;
+  for(const a of attachments){mime+=`--${boundary}\r\nContent-Type: ${a.type||'application/octet-stream'}; name="${a.name.replace(/"/g,'')}"\r\nContent-Disposition: attachment; filename="${a.name.replace(/"/g,'')}"\r\nContent-Transfer-Encoding: base64\r\n\r\n${String(a.data||'').replace(/(.{76})/g,'$1\r\n')}\r\n`}
+  mime+=`--${boundary}--\r\n`;
+  s.write(mime.replace(/^\./gm,'..')+'\r\n.\r\n');
   await readLine(s);
   await cmd('QUIT');
   return messageId;
