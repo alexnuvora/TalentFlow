@@ -5,16 +5,20 @@ do $migration$
 declare
   v_definition text;
   v_function_oid oid;
-  v_old_party text := 'These terms are between Ivy and Pearls Ltd trading as Vorlen, company number 17387520, registered in England and Wales with registered office at 10 South Street, Rochdale, United Kingdom, OL16 2EP ("Vorlen")';
-  v_new_party text := 'These terms are between VORLEN LTD trading as Vorlen, company number 17387520, registered in England and Wales with registered office at Piccadilly Business Centre, Unit C Aldow Enterprise Park, Blackett Street, Manchester, M12 6AE ("Vorlen")';
+  v_old_party_prefix text := 'These terms are between Ivy and Pearls Ltd trading as Vorlen, company number 17387520, registered in England and Wales with registered office at ';
+  v_new_party_prefix text := 'These terms are between VORLEN LTD trading as Vorlen, company number 17387520, registered in England and Wales with registered office at ';
+  v_current_office text := 'Piccadilly Business Centre, Unit C Aldow Enterprise Park, Blackett Street, Manchester, M12 6AE';
   v_old_version text := 'partner-2026-09-26-split-v2';
   v_new_version text := 'partner-2026-11-14-split-v3';
 begin
   v_definition := pg_get_functiondef('private.partner_agreement_terms()'::regprocedure);
-  if position(v_old_party in v_definition) = 0 then
+  if position(v_old_party_prefix in v_definition) = 0 then
     raise exception 'Expected previous partner legal identity was not found; refusing to rewrite partner terms';
   end if;
-  v_definition := replace(v_definition, v_old_party, v_new_party);
+  if position(v_current_office in v_definition) = 0 then
+    raise exception 'Expected current Manchester registered office was not found in partner terms; refusing to rewrite partner terms';
+  end if;
+  v_definition := replace(v_definition, v_old_party_prefix, v_new_party_prefix);
   v_definition := replace(v_definition, v_old_version, v_new_version);
   execute v_definition;
 
