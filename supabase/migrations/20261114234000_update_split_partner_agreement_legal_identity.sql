@@ -8,7 +8,8 @@ declare
   v_signatures regprocedure[] := array[
     'public.issue_partner_commission_terms(uuid)'::regprocedure,
     'private.accept_partner_agreement_impl(uuid,text,text)'::regprocedure,
-    'private.initialise_partner_onboarding_impl(uuid,uuid,text)'::regprocedure
+    'private.initialise_partner_onboarding_impl(uuid,uuid,text)'::regprocedure,
+    'private.attribute_partner_entity_impl(uuid,text,uuid,text)'::regprocedure
   ];
   v_old_party text := 'These terms are between Ivy and Pearls Ltd trading as Vorlen, company number 17387520, registered in England and Wales with registered office at 10 South Street, Rochdale, United Kingdom, OL16 2EP ("Vorlen")';
   v_new_party text := 'These terms are between VORLEN LTD trading as Vorlen, company number 17387520, registered in England and Wales with registered office at Piccadilly Business Centre, Unit C Aldow Enterprise Park, Blackett Street, Manchester, M12 6AE ("Vorlen")';
