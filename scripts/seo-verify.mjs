@@ -4,7 +4,7 @@ import {join} from 'node:path';
 
 const root = new URL('../dist/', import.meta.url);
 const base = 'https://www.vorlen.co.uk';
-const publicRoutes = ['/', '/guides/employer-recruitment-questions', '/guides/ai-recruitment-questions', '/employers', '/contact', '/careers', '/services/permanent-recruitment',
+const publicRoutes = ['/', '/guides/employer-recruitment-questions', '/guides/choosing-a-recruitment-agency', '/employers', '/contact', '/careers', '/services/permanent-recruitment',
   '/services/candidate-sourcing', '/services/recruitment-for-smes', '/sectors/technology',
   '/sectors/engineering', '/sectors/finance-accounting', '/sectors/sales-business-development',
   '/locations/manchester', '/locations/greater-manchester'];
@@ -17,6 +17,12 @@ for (const privateRoute of privateRoutes) {
   assert.ok(!xml.includes('<loc>' + base + privateRoute), 'Private route included in sitemap: ' + privateRoute);
 }
 const urls = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map(match=>match[1]);
+const vercel = JSON.parse(await readFile(new URL('../vercel.json', import.meta.url), 'utf8'));
+const legacyGuideRedirect = (vercel.redirects || []).find(item => item.source === '/guides/ai-recruitment-questions');
+assert.ok(legacyGuideRedirect, 'Missing legacy guide redirect');
+assert.equal(legacyGuideRedirect.destination, '/guides/choosing-a-recruitment-agency', 'Legacy guide must redirect to the renamed guide');
+assert.equal(legacyGuideRedirect.permanent, true, 'Legacy guide redirect must be permanent');
+assert.ok(!urls.includes(base + '/guides/ai-recruitment-questions'), 'Legacy guide URL must not appear in the sitemap');
 assert.equal(urls.length, new Set(urls).size, 'Duplicate sitemap URL');
 for (const route of publicRoutes) {
   const canonical = base + route;
