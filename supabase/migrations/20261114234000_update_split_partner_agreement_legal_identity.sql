@@ -4,13 +4,7 @@
 do $migration$
 declare
   v_definition text;
-  v_signature regprocedure;
-  v_signatures regprocedure[] := array[
-    'public.issue_partner_commission_terms(uuid)'::regprocedure,
-    'private.accept_partner_agreement_impl(uuid,text,text)'::regprocedure,
-    'private.initialise_partner_onboarding_impl(uuid,uuid,text)'::regprocedure,
-    'private.attribute_partner_entity_impl(uuid,text,uuid,text)'::regprocedure
-  ];
+  v_function_oid oid;
   v_old_party text := 'These terms are between Ivy and Pearls Ltd trading as Vorlen, company number 17387520, registered in England and Wales with registered office at 10 South Street, Rochdale, United Kingdom, OL16 2EP ("Vorlen")';
   v_new_party text := 'These terms are between VORLEN LTD trading as Vorlen, company number 17387520, registered in England and Wales with registered office at Piccadilly Business Centre, Unit C Aldow Enterprise Park, Blackett Street, Manchester, M12 6AE ("Vorlen")';
   v_old_version text := 'partner-2026-09-26-split-v2';
@@ -24,11 +18,17 @@ begin
   v_definition := replace(v_definition, v_old_version, v_new_version);
   execute v_definition;
 
-  foreach v_signature in array v_signatures loop
-    v_definition := pg_get_functiondef(v_signature);
-    if position(v_old_version in v_definition) = 0 then
-      raise exception 'Expected previous partner agreement version was not found in %', v_signature;
-    end if;
+  -- Update every public/private function that enforces or issues the old version,
+  -- including commission attribution and placement-finalisation gates.
+  for v_function_oid in
+    select p.oid
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname in ('public', 'private')
+      and p.prokind = 'f'
+      and pg_get_functiondef(p.oid) like '%' || v_old_version || '%'
+  loop
+    v_definition := pg_get_functiondef(v_function_oid);
     v_definition := replace(v_definition, v_old_version, v_new_version);
     execute v_definition;
   end loop;
