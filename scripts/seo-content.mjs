@@ -99,5 +99,5 @@ export const homeMeta={
   title:'Vorlen | UK Permanent Recruitment Agency for Employers',
   description:'Vorlen is a UK permanent recruitment agency. We take your brief, source the market, screen every candidate ourselves, and introduce the people worth your time. Fees agreed in writing upfront.',
   orgDescription:'UK permanent recruitment agency. Brief-led searches, human-reviewed introductions, written fee terms.',
-  legalName:'VORLEN T/A IVY AND PEARLS LTD'
+  legalName:'VORLEN LTD'
 };
