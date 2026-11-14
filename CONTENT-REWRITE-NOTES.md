@@ -10,7 +10,7 @@ Branch: content/de-ai-public-pages
 - Update App.tsx route and llms.txt link for the renamed guide.
 
 ## What does NOT change
-- No database schema/table changes or ATS route changes. One additive Supabase migration updates partner agreement generation plus every public/private commission-attribution and placement-finalisation function that enforces the old v2 terms. It supersedes only pending v2 agreements and issues v3 to eligible partners; accepted v2 agreements remain immutable. Apply this migration before issuing or accepting new partner terms.
+- No database schema/table changes or ATS route changes. One additive Supabase migration verifies the current Manchester registered office, updates partner agreement generation, and advances every public/private function that enforces the old v2 terms (including commission attribution and placement finalisation) to v3. It supersedes only pending v2 agreements and issues v3 to eligible partners; accepted v2 agreements remain immutable. Apply this migration before issuing or accepting new partner terms.
 - The manager Partner Management screen now gates commission attribution on accepted v3 terms. Candidate application flow and partner-facing portal remain unchanged.
 - The password-recovery Edge Function email footer is updated and must be deployed when merged.
 - Static build pipeline structure remains the same; the SEO verifier is updated to validate the renamed canonical guide and its permanent redirect.
