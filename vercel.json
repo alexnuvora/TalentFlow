@@ -60,6 +60,11 @@
       "source": "/work/:path*",
       "destination": "/employers",
       "permanent": true
+    },
+    {
+      "source": "/guides/ai-recruitment-questions",
+      "destination": "/guides/choosing-a-recruitment-agency",
+      "permanent": true
     }
   ]
 }
