@@ -84,8 +84,6 @@ for (const url of urls.filter(x=>x.includes('/careers/'))) {
     assert.match(jobHtml, /"hiringOrganization"/, 'JobPosting must identify the hiring organization: ' + url);
     assert.match(jobHtml, /"datePosted"/, 'JobPosting must include its publication date: ' + url);
     assert.match(jobHtml, /"directApply":true/, 'JobPosting must expose the direct application route: ' + url);
-    assert.match(jobHtml, /"hiringOrganization":\\{"@type":"Organization","name":"Confidential client"\\}/, 'JobPosting must keep the client confidential: ' + url);
-    assert.doesNotMatch(jobHtml, /"hiringOrganization"[^}]*"name":"VORLEN LTD"/, 'Vorlen must not be presented as the employer: ' + url);
     assert.match(jobHtml, /"hiringOrganization":\{"@type":"Organization","name":"Confidential client"\}/, 'JobPosting must keep the client confidential: ' + url);
     assert.doesNotMatch(jobHtml, /"hiringOrganization"[^}]*"name":"VORLEN LTD"/, 'Vorlen must not be presented as the employer: ' + url);
   } else {
