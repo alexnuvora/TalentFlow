@@ -41,7 +41,7 @@ function crawlBody(title,description,canonical){
     "Fees are agreed in writing before any search starts. Every shortlist comes with the recruiter's reasoning, not just CVs."
   ];
   const links=crawlLinks.map(([href,label])=>`<a href="${href}">${esc(label)}</a>`).join(' · ');
-  return `<main><h1>${esc(title.replace(/\s*\|\s*Vorlen.*$/i,''))}</h1><p>${esc(description)}</p><h2>Permanent recruitment support</h2><p>${esc(details[0])}</p><p>${esc(details[1])}</p>${path===guideSlug?`<section aria-label="Employer questions and answers"><h2>Choosing an agency: honest answers</h2>${details.slice(2).map((x)=>`<p>${esc(x)}</p>`).join('')}</section>`:''}<h2>More from Vorlen</h2><nav aria-label="Recruitment services">${links}</nav></main>`;
+  return `<main><h1>${esc(title.replace(/\s*\|\s*Vorlen.*$/i,''))}</h1><p>${esc(description)}</p><h2>Permanent recruitment support</h2><p>${esc(details[0])}</p><p>${esc(details[1])}</p>${path===guideSlug?`<section aria-label="Employer questions and answers"><h2>Choosing an agency: honest answers</h2>${details.slice(2).map((x)=>`<p>${esc(x)}</p>`).join('')}</section>`:path==='/our-approach'?`<section aria-label="Candidate assessment safeguards"><h2>How candidate assessment works</h2>${details.slice(2).map((x)=>`<p>${esc(x)}</p>`).join('')}</section>`:''}<h2>More from Vorlen</h2><nav aria-label="Recruitment services">${links}</nav></main>`;
 }
 function inject(html,{title,description,canonical,jsonLd}){
   const image=`${base}/vorlen-logo.svg`;
