@@ -40,10 +40,10 @@ for (const route of publicRoutes) {
   assert.ok(socialImage, 'Missing Open Graph image: ' + route);
   assert.ok(socialImage.startsWith(base + '/social/'), 'Expected a route-specific social card: ' + route);
   assert.ok(html.includes('name="twitter:image" content="' + socialImage + '"'), 'Twitter image must match Open Graph image: ' + route);
-  await stat(new URL('../' + socialImage.replace(base + '/', ''), import.meta.url));
-  assert.equal((html.match(/<h1\\b/g) || []).length, 1, 'Expected exactly one H1: ' + route);
+  await stat(new URL(socialImage.replace(base + '/', ''), root));
+  assert.equal((html.match(/<h1\b/g) || []).length, 1, 'Expected exactly one H1: ' + route);
   if (route.startsWith('/sectors/')) {
-    const words=(html.match(/<main>[\\s\\S]*?<\\/main>/)?.[0]||'').replace(/<[^>]+>/g,' ').split(/\\s+/).filter(Boolean).length;
+    const words=(html.match(/<main>[\s\S]*?<\/main>/)?.[0]||'').replace(/<[^>]+>/g,' ').split(/\s+/).filter(Boolean).length;
     assert.ok(words >= 220, 'Sector page needs substantive crawlable copy (' + words + ' words): ' + route);
   }
   assert.equal((html.match(/name="twitter:title"/g) || []).length, 1, 'Expected exactly one Twitter title: ' + route);
@@ -62,7 +62,7 @@ for (const url of urls) {
   const socialImage=html.match(/property="og:image" content="([^"]+)"/)?.[1];
   assert.ok(socialImage, 'Missing social image on sitemap URL: ' + url);
   socialAssets.add(socialImage);
-  await stat(new URL('../' + socialImage.replace(base + '/', ''), import.meta.url));
+  await stat(new URL(socialImage.replace(base + '/', ''), root));
 }
 assert.ok(urls.includes(base + '/our-approach'), 'Missing methodology page in sitemap');
 const homeHtml = await read('index.html');
