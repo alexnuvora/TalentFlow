@@ -82,7 +82,10 @@ for (const [route,label] of [
   assert.ok(homeHtml.includes('href="'+route+'">'+label+'</a>'), 'Homepage must link directly to '+route);
 }
 const serviceHtml = await read('services/permanent-recruitment/index.html');
-const articleHtml = await read('guides/choosing-a-recruitment-agency/index.html');\nconst employerGuideHtml=await read('guides/employer-recruitment-questions/index.html');\nassert.match(employerGuideHtml,/<h3>How much does a recruitment agency charge in the UK\\?<\\/h3>/,'Employer guide must expose specific fee FAQs in crawlable HTML');\nassert.match(employerGuideHtml,/<h3>What should I include in a recruitment brief\\?<\\/h3>/,'Employer guide must expose vacancy-brief FAQs');
+const articleHtml = await read('guides/choosing-a-recruitment-agency/index.html');
+const employerGuideHtml=await read('guides/employer-recruitment-questions/index.html');
+assert.match(employerGuideHtml,/<h3>How much does a recruitment agency charge in the UK\?<\/h3>/,'Employer guide must expose specific fee FAQs in crawlable HTML');
+assert.match(employerGuideHtml,/<h3>What should I include in a recruitment brief\?<\/h3>/,'Employer guide must expose vacancy-brief FAQs');
 assert.match(homeHtml, /"@type":\["Organization","EmploymentAgency"\]/, 'Homepage must describe the agency entity');
 assert.match(serviceHtml, /"@type":"Service"/, 'Permanent recruitment page must expose Service schema');
 assert.match(articleHtml, /"@type":"Article"/, 'Recruitment guide must expose Article schema');
