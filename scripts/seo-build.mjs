@@ -49,7 +49,7 @@ function makeSocialPng(title){
   const draw=(text,x,y,scale,color,maxWidth=1050)=>{let cx=x;for(const ch of String(text).toUpperCase()){if(ch===' '){cx+=scale*4;continue}const rows=(FONT[ch]||FONT['-']).split('/');if(cx+scale*6>x+maxWidth)break;for(let ry=0;ry<7;ry++)for(let rx=0;rx<5;rx++)if(rows[ry][rx]==='1')rect(cx+rx*scale,y+ry*scale,scale,scale,color);cx+=scale*6}};
   // restrained decorative geometry and a clear branded hierarchy
   rect(76,96,76,5,[199,216,183]);draw('VORLEN',76,126,5,[199,216,183]);draw('UK PERMANENT RECRUITMENT',76,205,3,[219,229,221]);
-  const words=String(title).replace(/\\s*\\|\\s*Vorlen.*$/i,'').toUpperCase().split(/\\s+/),lines=[];let line='';
+  const words=String(title).replace(/\s*\|\s*Vorlen.*$/i,'').toUpperCase().split(/\s+/),lines=[];let line='';
   for(const word of words){if((line+' '+word).trim().length>25&&line){lines.push(line);line=word}else line=(line+' '+word).trim()}if(line)lines.push(line);
   lines.slice(0,3).forEach((value,i)=>draw(value,76,278+i*68,7,[248,247,242],1040));
   rect(76,505,1048,2,[130,161,143]);draw('HUMAN REVIEWED RECRUITMENT  /  CLEAR BRIEFS  /  WRITTEN TERMS',76,535,2,[227,235,229],1040);
@@ -58,7 +58,7 @@ function makeSocialPng(title){
   return Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),pngChunk('IHDR',ihdr),pngChunk('IDAT',deflateSync(raw)),pngChunk('IEND',Buffer.alloc(0))]);
 }
 async function writeSocialCard(route,title){
-  const slug=(route==='/'?'home':route.replace(/^\\//,'').replace(/[^a-z0-9]+/gi,'-').replace(/-$/,'')).slice(0,90);
+  const slug=(route==='/'?'home':route.replace(/^\//,'').replace(/[^a-z0-9]+/gi,'-').replace(/-$/,'')).slice(0,90);
   const dir=path.join(dist,'social');await fs.mkdir(dir,{recursive:true});
   await fs.writeFile(path.join(dir,`${slug}.png`),makeSocialPng(title));
   return `/social/${slug}.png`;
