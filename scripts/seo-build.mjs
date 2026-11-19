@@ -49,7 +49,10 @@ function inject(html,{title,description,canonical,jsonLd}){
   return html
     .replace(/<title>.*?<\/title>/s,`<title>${esc(title)}</title>`)
     .replace(/<meta name="description"[^>]*>/g,'')
+    .replace(/<meta (?:name|property)="(?:robots|googlebot|bingbot|og:[^"]+|twitter:[^"]+)"[^>]*>/g,'')
     .replace(/<link rel="canonical"[^>]*>/g,'')
+    .replace(/<link rel="alternate" hreflang="(?:en-GB|x-default)"[^>]*>/g,'')
+    .replace(/<script type="application\\/ld\\+json">[\\s\\S]*?<\\/script>/g,'')
     .replace('</head>',`${tags}</head>`)
     .replace('<div id="root"></div>',`<div id="root">${crawlBody(title,description,canonical)}</div>`);
 }
