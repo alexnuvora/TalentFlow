@@ -118,23 +118,28 @@ const staticPages=[
   {route:'/accessibility',title:'Accessibility | Vorlen',description:'Vorlen accessibility information for candidates, clients and recruitment workspace users.',lastmod:''}
 ];
 
-const homeHtml=inject(template,{title:homePage.title,description:homePage.description,canonical:`${base}/`,jsonLd:homePage.jsonLd});
+const homeImage=await writeSocialCard('/',homePage.title);
+const homeHtml=inject(template,{title:homePage.title,description:homePage.description,canonical:`${base}/`,jsonLd:homePage.jsonLd,image:homeImage});
 await fs.writeFile(path.join(dist,'index.html'),homeHtml);
 
 for(const page of staticPages){
-  await writeRoute(page.route,inject(template,{title:page.title,description:page.description,canonical:`${base}${page.route}`,jsonLd:page.jsonLd}));
+  const image=await writeSocialCard(page.route,page.title);
+  await writeRoute(page.route,inject(template,{title:page.title,description:page.description,canonical:`${base}${page.route}`,jsonLd:page.jsonLd,image}));
 }
 
 for(const j of rows){
   const description=strip(j.description||`Apply for ${j.title}${j.location?` in ${j.location}`:''}.`).slice(0,155);
   const canonical=`${base}/careers/${encodeURIComponent(j.slug)}`;
+  const pageTitle=`${j.title} | Vorlen Careers`;
   const schema=j.application_mode==='register_interest'
     ?{'@context':'https://schema.org','@type':'WebPage',name:j.title,description:strip(j.description||j.title),url:canonical}
     :{'@context':'https://schema.org','@type':'JobPosting',title:j.title,description:strip(j.description||j.title),datePosted:j.created_at,employmentType:({permanent:'FULL_TIME',full_time:'FULL_TIME',part_time:'PART_TIME',contract:'CONTRACTOR',temporary:'TEMPORARY',internship:'INTERN'}[String(j.employment_type||'').toLowerCase()]||'FULL_TIME'),url:canonical,directApply:true,identifier:{'@type':'PropertyValue',name:'Vorlen vacancy reference',value:j.slug},hiringOrganization:{'@type':'Organization','@id':`${base}/#organization`,name:'VORLEN LTD',sameAs:'https://www.linkedin.com/company/vorlen/'},jobLocation:j.location?{'@type':'Place',address:{'@type':'PostalAddress',addressLocality:j.location,addressCountry:'GB'}}:undefined};
   if(j.application_mode!=='register_interest'&&(j.salary_min||j.salary_max)){
     schema.baseSalary={'@type':'MonetaryAmount',currency:'GBP',value:{'@type':'QuantitativeValue',minValue:j.salary_min||undefined,maxValue:j.salary_max||undefined,unitText:'YEAR'}};
   }
-  await writeRoute(`/careers/${j.slug}`,inject(template,{title:`${j.title} | Vorlen Careers`,description,canonical,jsonLd:schema}));
+  const image=await writeSocialCard(`/careers/${j.slug}`,pageTitle);
+  const bodyDetails=strip(j.description||'').split(/\n{2,}|(?<=[.!?])\s+(?=[A-Z])/).filter(Boolean);
+  await writeRoute(`/careers/${j.slug}`,inject(template,{title:pageTitle,description,canonical,jsonLd:schema,image,bodyDetails}));
 }
 
 const urls=[
