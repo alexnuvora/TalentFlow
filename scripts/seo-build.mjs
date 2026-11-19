@@ -64,7 +64,16 @@ async function writeSocialCard(route,title){
   await fs.writeFile(path.join(dir,`${slug}.png`),makeSocialPng(title));
   return `/social/${slug}.png`;
 }
-function metaDescription(value,max=155){\n  const text=strip(value).replace(/\\s+/g,' ').trim();\n  if(text.length<=max)return text;\n  const candidate=text.slice(0,max+1);\n  const boundary=candidate.lastIndexOf(' ');\n  const cut=(boundary>=110?candidate.slice(0,boundary):candidate.slice(0,max)).replace(/[,:;—-]+$/,'').trim();\n  return /[.!?]$/.test(cut)?cut:cut+'…';\n}\n\nfunction crawlBody(title,description,canonical,bodyDetails,job){
+function metaDescription(value,max=155){
+  const text=strip(value).replace(/\s+/g,' ').trim();
+  if(text.length<=max)return text;
+  const candidate=text.slice(0,max+1);
+  const boundary=candidate.lastIndexOf(' ');
+  const cut=(boundary>=110?candidate.slice(0,boundary):candidate.slice(0,max)).replace(/[,:;—-]+$/,'').trim();
+  return /[.!?]$/.test(cut)?cut:cut+'…';
+}
+
+function crawlBody(title,description,canonical,bodyDetails,job){
   const route=new URL(canonical).pathname.replace(/\/$/,'')||'/';
   const details=bodyDetails?.length?bodyDetails:(crawlDetails[route]||[]);
   const safeDetails=details.length?details:[
@@ -84,11 +93,22 @@ function metaDescription(value,max=155){\n  const text=strip(value).replace(/\\s
   const links=related.map(([href,label])=>`<a href="${href}">${esc(label)}</a>`).join(' · ');
   const heading=route.startsWith('/sectors/')?'How we approach this specialism':route.startsWith('/services/')?'What the service includes':route.startsWith('/locations/')?'Recruitment in this area':route.startsWith('/careers/')?'Role information':route===guideSlug?'Choosing a recruitment agency':route==='/our-approach'?'How candidate assessment works':'How Vorlen works';
   const paragraphs=safeDetails.map(x=>`<p>${esc(x)}</p>`).join('');
-  return `<main><h1>${esc(title.replace(/\s*\|\s*Vorlen.*$/i,''))}</h1><p>${esc(description)}</p><section><h2>${esc(heading)}</h2>${paragraphs}</section>${route.startsWith('/careers/')?'<p><strong>Application status:</strong> Check the live opportunity page for whether this is an open role or a register-interest opportunity.</p>':''}<h2>Explore more from Vorlen</h2><nav aria-label="Recruitment services">${links}</nav></main>`;
+  const vacancy=route.startsWith('/careers/');
+  const requirements=Array.isArray(job?.requirements)?job.requirements.filter(Boolean):[];
+  const vacancySections=vacancy?[
+    job?.duties?`<section><h2>Responsibilities</h2><p>${esc(job.duties)}</p></section>`:'',
+    requirements.length?`<section><h2>Candidate requirements</h2><ul>${requirements.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></section>`:'',
+    job?.work_days_hours?`<section><h2>Working pattern</h2><p>${esc(job.work_days_hours)}</p></section>`:'',
+    job?.required_qualifications?`<section><h2>Qualifications</h2><p>${esc(job.required_qualifications)}</p></section>`:'',
+    job?.minimum_remuneration_text?`<section><h2>Pay and benefits</h2><p>${esc(job.minimum_remuneration_text)}</p></section>`:''
+  ].filter(Boolean).join(''):'';
+  const faq=(crawlFaqs[route]||[]).map(({q,a})=>`<section><h3>${esc(q)}</h3><p>${esc(a)}</p></section>`).join('');
+  const status=vacancy?(job?.application_mode==='register_interest'?'This is a register-interest opportunity. Submit your details to express interest.':'Applications are being accepted for this published vacancy. Use the application form below.'):'';
+  return `<main><h1>${esc(title.replace(/\s*\|\s*Vorlen.*$/i,''))}</h1><p>${esc(metaDescription(description))}</p><section><h2>${esc(heading)}</h2>${paragraphs}</section>${vacancySections}${status?`<p><strong>${esc(status)}</strong></p>`:''}${faq?'<section><h2>Employer questions</h2>'+faq+'</section>':''}<h2>Explore more from Vorlen</h2><nav aria-label="Related recruitment pages">${links}</nav></main>`;
 }
 function inject(html,{title,description,canonical,jsonLd,image,bodyDetails,job}){
   const socialImage=`${base}${image||'/social/home.svg'}`;
-  const tags=`<meta name="description" content="${esc(metaDescription(description))}"/><meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"/><link rel="canonical" href="${esc(canonical)}"/><link rel="alternate" hreflang="en-GB" href="${esc(canonical)}"/><link rel="alternate" hreflang="x-default" href="${esc(canonical)}"/><meta property="og:type" content="website"/><meta property="og:site_name" content="Vorlen"/><meta property="og:locale" content="en_GB"/><meta property="og:title" content="${esc(title)}"/><meta property="og:description" content="${esc(description)}"/><meta property="og:url" content="${esc(canonical)}"/><meta property="og:image" content="${esc(socialImage)}"/><meta property="og:image:type" content="image/png"/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:image:alt" content="${esc(title)} — Vorlen UK recruitment"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="${esc(title)}"/><meta name="twitter:description" content="${esc(description)}"/><meta name="twitter:image" content="${esc(socialImage)}"/>${jsonLd?`<script id="seo-jsonld" type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g,'\\u003c')}</script>`:''}`;
+  const tags=`<meta name="description" content="${esc(metaDescription(description))}"/><meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"/><link rel="canonical" href="${esc(canonical)}"/><link rel="alternate" hreflang="en-GB" href="${esc(canonical)}"/><link rel="alternate" hreflang="x-default" href="${esc(canonical)}"/><meta property="og:type" content="website"/><meta property="og:site_name" content="Vorlen"/><meta property="og:locale" content="en_GB"/><meta property="og:title" content="${esc(title)}"/><meta property="og:description" content="${esc(metaDescription(description))}"/><meta property="og:url" content="${esc(canonical)}"/><meta property="og:image" content="${esc(socialImage)}"/><meta property="og:image:type" content="image/png"/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:image:alt" content="${esc(title)} — Vorlen UK recruitment"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="${esc(title)}"/><meta name="twitter:description" content="${esc(description)}"/><meta name="twitter:image" content="${esc(socialImage)}"/>${jsonLd?`<script id="seo-jsonld" type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g,'\\u003c')}</script>`:''}`;
   return html
     .replace(/<title>.*?<\/title>/s,`<title>${esc(title)}</title>`)
     .replace(/<meta name="description"[^>]*>/g,'')
@@ -125,7 +145,7 @@ const guideJsonLd={'@context':'https://schema.org','@graph':[{'@type':'Article',
 
 const staticPages=[
   {route:'/our-approach',title:'How Vorlen Assesses Candidates | Recruitment Methodology',description:'How Vorlen defines a vacancy, sources candidates, reviews job-related evidence, records recruiter judgement and shares candidate information with permission.',lastmod:RELEASE_LASTMOD,jsonLd:{'@context':'https://schema.org','@type':'WebPage',name:'Vorlen candidate assessment methodology',url:`${base}/our-approach`,about:organization}},
-  {route:'/careers',title:'Open recruitment opportunities | Vorlen Careers',description:'Browse current permanent recruitment opportunities and apply securely through Vorlen Careers.',lastmod:RELEASE_LASTMOD,jsonLd:{'@context':'https://schema.org','@type':'CollectionPage',name:'Vorlen Careers',url:`${base}/careers`,description:'Current permanent recruitment opportunities published through Vorlen.',isPartOf:{'@id':`${base}/#website`},mainEntity:{'@type':'ItemList',itemListElement:rows.slice(0,50).map((j,i)=>({'@type':'ListItem',position:i+1,url:`${base}/careers/${encodeURIComponent(j.slug)}`,name:j.title}))}}},
+  {route:'/careers',title:'Open recruitment opportunities | Vorlen Careers',description:'Browse current permanent recruitment opportunities and apply securely through Vorlen Careers.',lastmod:RELEASE_LASTMOD,jsonLd:{'@context':'https://schema.org','@type':'CollectionPage',name:'Vorlen Careers',url:`${base}/careers`,description:'Current permanent recruitment opportunities published through Vorlen.',isPartOf:{'@id':`${base}/#website`},mainEntity:{'@type':'ItemList',itemListElement:rows.slice(0,50).map((j,i)=>({'@type':'ListItem',position:i+1,url:`${base}/careers/${encodeURIComponent(publicJobSlug(j))}`,name:j.title}))}}},
   {route:guideSlug,title:'Choosing a Recruitment Agency: Fees, Shortlists and Questions to Ask | Vorlen',description:'A practical guide to choosing a UK recruitment agency: what fees should look like, what to ask about shortlists, screening and replacement terms, and the answers that separate good agencies from the rest.',lastmod:RELEASE_LASTMOD,jsonLd:guideJsonLd},
   {route:'/guides/employer-recruitment-questions',title:'Recruitment Agency Fees and Hiring FAQs UK | Vorlen',description:'Plain-English answers for UK employers about recruitment agency fees, hiring timelines, vacancy briefs and choosing a permanent recruitment partner.',lastmod:RELEASE_LASTMOD,jsonLd:{'@context':'https://schema.org','@type':'WebPage',name:'UK employer recruitment questions',url:`${base}/guides/employer-recruitment-questions`,about:organization}},
   {route:'/contact',title:'Contact Vorlen | UK Permanent Recruitment',description:'Talk to Vorlen about a permanent vacancy, candidate query or recruitment partnership.',lastmod:RELEASE_LASTMOD,jsonLd:{'@context':'https://schema.org','@type':'ContactPage',name:'Contact Vorlen',url:`${base}/contact`,about:organization}},
@@ -156,18 +176,23 @@ for(const page of staticPages){
 }
 
 for(const j of rows){
-  const description=strip(j.description||`Apply for ${j.title}${j.location?` in ${j.location}`:''}.`).slice(0,155);
-  const canonical=`${base}/careers/${encodeURIComponent(j.slug)}`;
+  const publicSlug=publicJobSlug(j);
+  const description=metaDescription(j.description||`Apply for ${j.title}${j.location?` in ${j.location}`:''}.`);
+  const canonical=`${base}/careers/${encodeURIComponent(publicSlug)}`;
   const pageTitle=`${j.title} | Vorlen Careers`;
   const schema=j.application_mode==='register_interest'
     ?{'@context':'https://schema.org','@type':'WebPage',name:j.title,description:strip(j.description||j.title),url:canonical}
-    :{'@context':'https://schema.org','@type':'JobPosting',title:j.title,description:strip(j.description||j.title),datePosted:j.created_at,employmentType:({permanent:'FULL_TIME',full_time:'FULL_TIME',part_time:'PART_TIME',contract:'CONTRACTOR',temporary:'TEMPORARY',internship:'INTERN'}[String(j.employment_type||'').toLowerCase()]||'FULL_TIME'),url:canonical,directApply:true,identifier:{'@type':'PropertyValue',name:'Vorlen vacancy reference',value:publicSlug},hiringOrganization:{'@type':'Organization',name:'confidential'},jobLocation:j.location?{'@type':'Place',address:{'@type':'PostalAddress',addressLocality:j.location,addressCountry:'GB'}}:undefined};
+    :{'@context':'https://schema.org','@type':'JobPosting',title:j.title,description:strip(j.description||j.title),datePosted:j.created_at,url:canonical,directApply:true,identifier:{'@type':'PropertyValue',name:'Vorlen vacancy reference',value:publicSlug},hiringOrganization:{'@type':'Organization',name:'confidential'},employmentType:({permanent:'FULL_TIME',full_time:'FULL_TIME',part_time:'PART_TIME',contract:'CONTRACTOR',temporary:'TEMPORARY',internship:'INTERN'}[String(j.employment_type||'').toLowerCase()]||'FULL_TIME'),jobLocation:j.location?{'@type':'Place',address:{'@type':'PostalAddress',addressLocality:j.location,addressCountry:'GB'}}:undefined};
   if(j.application_mode!=='register_interest'&&(j.salary_min||j.salary_max)){
     schema.baseSalary={'@type':'MonetaryAmount',currency:'GBP',value:{'@type':'QuantitativeValue',minValue:j.salary_min||undefined,maxValue:j.salary_max||undefined,unitText:'YEAR'}};
   }
   const image=await writeSocialCard(`/careers/${publicSlug}`,pageTitle);
   const bodyDetails=strip(j.description||'').split(/\n{2,}|(?<=[.!?])\s+(?=[A-Z])/).filter(Boolean);
-  await writeRoute(`/careers/${publicSlug}`,inject(template,{title:pageTitle,description,canonical,jsonLd:schema,image,bodyDetails,job:j}));\n  if(j.slug&&j.slug!==publicSlug){const legacy=`<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="robots" content="noindex,follow"><link rel="canonical" href="${esc(canonical)}"><meta http-equiv="refresh" content="0;url=${esc(canonical)}"><title>Vacancy moved | Vorlen Careers</title></head><body><p>This vacancy has a new address. <a href="${esc(canonical)}">Continue to the anonymised vacancy page</a>.</p></body></html>`;await writeRoute(`/careers/${j.slug}`,legacy);}
+  await writeRoute(`/careers/${publicSlug}`,inject(template,{title:pageTitle,description,canonical,jsonLd:schema,image,bodyDetails,job:j}));
+  if(j.slug&&j.slug!==publicSlug){
+    const legacy=`<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="robots" content="noindex,follow"><link rel="canonical" href="${esc(canonical)}"><meta http-equiv="refresh" content="0;url=${esc(canonical)}"><title>Vacancy moved | Vorlen Careers</title></head><body><p>This vacancy has a new address. <a href="${esc(canonical)}">Continue to the anonymised vacancy page</a>.</p></body></html>`;
+    await writeRoute(`/careers/${j.slug}`,legacy);
+  }
 }
 
 const urls=[
