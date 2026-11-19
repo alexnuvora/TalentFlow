@@ -30,6 +30,10 @@ for (const route of publicRoutes) {
   const html = await read(route === '/' ? 'index.html' : route.slice(1) + '/index.html');
   assert.ok(html.includes('<link rel="canonical" href="' + canonical + '"'), 'Missing canonical: ' + route);
   assert.match(html, /<h1[^>]*>[^<]+<\/h1>/, 'Missing crawlable H1: ' + route);
+  assert.equal((html.match(/property="og:url"/g) || []).length, 1, 'Expected exactly one Open Graph URL: ' + route);
+  assert.ok(html.includes('property="og:url" content="' + canonical + '"'), 'Incorrect Open Graph URL: ' + route);
+  assert.equal((html.match(/name="twitter:title"/g) || []).length, 1, 'Expected exactly one Twitter title: ' + route);
+  assert.ok(html.includes('<title>' + (route === '/' ? 'Vorlen | UK Permanent Recruitment Agency for Employers' : html.match(/<title>(.*?)<\/title>/)?.[1]) + '</title>'), 'Missing route title: ' + route);
   assert.match(html, /<main>/, 'Missing crawlable main: ' + route);
   assert.ok(html.includes('application/ld+json'), 'Missing structured data: '+route);
   assert.ok(!/<meta name="robots" content="noindex/i.test(html), 'Public route noindexed: ' + route);
