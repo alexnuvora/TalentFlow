@@ -4,13 +4,17 @@ import {join} from 'node:path';
 
 const root = new URL('../dist/', import.meta.url);
 const base = 'https://www.vorlen.co.uk';
-const publicRoutes = ['/', '/guides/employer-recruitment-questions', '/guides/choosing-a-recruitment-agency', '/employers', '/contact', '/careers', '/services/permanent-recruitment',
+const publicRoutes = ['/', '/our-approach', '/guides/employer-recruitment-questions', '/guides/choosing-a-recruitment-agency', '/employers', '/contact', '/careers', '/services/permanent-recruitment',
   '/services/candidate-sourcing', '/services/recruitment-for-smes', '/sectors/technology',
   '/sectors/engineering', '/sectors/finance-accounting', '/sectors/sales-business-development',
   '/locations/manchester', '/locations/greater-manchester'];
 const privateRoutes = ['/dashboard', '/login', '/client', '/review'];
 const read = path => readFile(new URL(path, root), 'utf8');
 const xml = await read('sitemap.xml');
+const llms = await read('llms.txt');
+assert.match(llms,/Candidate assessment methodology/);
+assert.match(llms,/17387520/);
+assert.match(llms,/linkedin.com\/company\/vorlen/);
 const robots = await read('robots.txt');
 assert.match(robots, /Sitemap:\s*https:\/\/www\.vorlen\.co\.uk\/sitemap\.xml/);
 for (const privateRoute of privateRoutes) {
@@ -44,4 +48,6 @@ for (const url of urls) {
   const file = path === '/' ? 'index.html' : path.slice(1) + '/index.html';
   await stat(new URL(file, root));
 }
+assert.ok(urls.includes(base + '/our-approach'), 'Missing methodology page in sitemap');
+await stat(new URL('llms.txt', root));
 console.log('SEO production safety checks passed for ' + publicRoutes.length + ' critical routes and ' + urls.length + ' sitemap URLs');
