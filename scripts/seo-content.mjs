@@ -207,3 +207,45 @@ Object.assign(crawlDetails, {
     "Accessibility is an ongoing responsibility. New pages and changes to forms should be checked for keyboard access, visible focus, appropriate labels, heading order, contrast and layouts that work on small screens."
   ]
 });
+
+
+// Additional high-intent landing-page copy so the pre-rendered HTML contains
+// useful answers before client-side application code loads.
+Object.assign(crawlDetails, {
+  '/': [
+    "Vorlen is a UK permanent recruitment agency for employers who need help filling a defined vacancy. We work from the requirements of the job, not a generic database search, and agree the commercial terms before sourcing begins.",
+    "The process starts with a conversation about the role, workplace, salary, working pattern, essential experience and the outcomes expected from the new hire. We help separate requirements that are genuinely necessary from preferences that can unnecessarily narrow the search.",
+    "Once the brief and terms are agreed, the recruiter researches the market, reviews relevant applications and speaks with suitable candidates. An introduction should explain the person's relevant experience, the evidence reviewed and any questions the employer should explore at interview.",
+    "Vorlen supports permanent recruitment across the UK, with a Manchester base and searches shaped around the actual workplace and commute. We can discuss engineering, technology, finance, sales, administration and other permanent vacancies where the requirements can be clearly defined.",
+    "Employers retain the final hiring decision. Candidate information is handled through the recruitment process and shared with clients only where there is an appropriate basis and candidate authority. We do not publish invented placement figures, client endorsements or testimonials.",
+    "If you are considering an external recruiter, start with one vacancy. Tell us the job title, location, salary range and the experience that matters most. We will discuss whether Vorlen can help and confirm any fee and terms in writing before work starts."
+  ],
+  '/guides/employer-recruitment-questions': [
+    "Choosing a recruitment agency is a commercial decision. Before agreeing to a search, ask who will manage the vacancy, how candidates will be sourced, who reviews the evidence and what information will accompany each introduction. Clear answers make it easier to compare agencies on delivery rather than sales language.",
+    "A useful vacancy brief identifies the job's purpose, essential outcomes, salary range, location, working pattern, reporting line and interview process. Add qualifications, licences, systems or technical requirements only where they are genuinely needed to perform the role.",
+    "Recruitment fees vary. Some agencies charge a percentage of first-year salary and others agree a fixed fee or another structure. Ask whether VAT applies, when payment becomes due, whether the search is exclusive and what rebate or replacement provisions apply if a placement does not work out. Get the complete terms in writing.",
+    "Hiring timelines depend on the availability of suitable candidates, the clarity of the brief, salary competitiveness and how quickly the employer can interview and provide feedback. An agency can organise sourcing and screening, but should not guarantee a hire by a date before those factors are understood.",
+    "A shortlist should be small enough to review properly and each introduction should include a reason for the recommendation. Ask what the recruiter has verified, what remains unconfirmed and which questions the hiring manager should explore. The employer remains responsible for the final selection and employment checks.",
+    "For SMEs without an internal HR team, agree who owns interview scheduling, candidate updates, feedback and offer communication. A named contact and a simple decision process help candidates stay informed and reduce avoidable delays."
+  ],
+  '/partners': [
+    "Vorlen's recruitment partner network is intended for experienced recruiters and business developers who can contribute to permanent recruitment assignments or introduce suitable employer relationships. A partner's role and permissions are agreed before any client or candidate activity begins.",
+    "Client development and candidate delivery are different responsibilities. A partner may be approved to research an employer, qualify a hiring requirement, source candidates or support a combined assignment, but access is controlled by the approval and role permissions recorded in Vorlen.",
+    "Before work begins, the relevant commercial terms, fee-sharing arrangement, payment trigger and responsibilities must be documented. Partner commission is tied to the applicable Vorlen fee and is payable only in accordance with the agreed terms and receipt of the corresponding client payment.",
+    "Partners must follow the agreed vacancy status, client confidentiality, candidate authority and data-handling processes. Research-only opportunities must not be treated as approval to submit CVs or contact candidates on behalf of a client.",
+    "People interested in the network can contact Vorlen with a short summary of their recruitment or business-development experience. An enquiry is not an automatic approval to access client records or work on an assignment."
+  ],
+  '/candidates': [
+    "Vorlen supports people exploring permanent roles with clear vacancy information and a recruiter-led application process. Read the job description carefully, check the location and working arrangements, and make sure the role matches the experience you can evidence.",
+    "A CV should explain the work you personally completed, the systems or equipment you used, the level of responsibility you held and the outcomes you contributed to. Where a qualification, licence or professional membership is required, include accurate details so the recruiter can clarify them.",
+    "Applications are reviewed in relation to the requirements of the vacancy. A recruiter may contact you to clarify experience, availability, location or other job-related information. Applying does not guarantee an interview or offer; the employer makes the final hiring decision.",
+    "Your personal information is handled under the Vorlen privacy notice. Candidate details are shared with a prospective employer only through an appropriate recruitment process and where the necessary lawful basis and authority are in place.",
+    "You can browse published opportunities without creating an account. Some listings may be register-interest opportunities rather than confirmed live vacancies; the page should identify the difference before you submit your details."
+  ],
+  '/contact': [
+    "Employers can contact Vorlen to discuss a permanent vacancy, recruitment requirement or the suitability of an external search. Include the job title, workplace location, salary range and the experience that matters most if those details are available.",
+    "Candidates can use the contact route for questions about an application, a published opportunity, their personal information or accessibility support. Please avoid sending sensitive identity documents unless a recruiter has requested them through an appropriate secure process.",
+    "Recruitment partners can enquire about the partner network and outline their relevant experience. An enquiry does not grant access to client or candidate records; onboarding and assignment permissions are handled separately.",
+    "Email: contact@vorlen.co.uk. Vorlen reviews enquiries and responds according to the nature of the request."
+  ]
+});
