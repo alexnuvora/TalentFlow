@@ -34,18 +34,33 @@ async function jobs(){
 
 crawlDetails[guideSlug]=[...guideIntro,...guideQuestions.map(({q,a})=>`${q} ${a}`),...guideChecklist];
 
-function crawlBody(title,description,canonical){
-  const path=new URL(canonical).pathname.replace(/\/$/,'')||'/';
-  const details=crawlDetails[path]||[
-    'Vorlen is a UK permanent recruitment agency. We take the brief, source the candidates, screen them, and stand behind every introduction.',
-    "Fees are agreed in writing before any search starts. Every shortlist comes with the recruiter's reasoning, not just CVs."
+async function writeSocialCard(route,title){
+  const slug=(route==='/'?'home':route.replace(/^\//,'').replace(/[^a-z0-9]+/gi,'-').replace(/-$/,'')).slice(0,90);
+  const words=String(title).replace(/\s*\|\s*Vorlen.*$/i,'').split(/\s+/);
+  const lines=[];let line='';
+  for(const word of words){if((line+' '+word).trim().length>24&&line){lines.push(line);line=word}else line=(line+' '+word).trim()}
+  if(line)lines.push(line);
+  const titleSvg=lines.slice(0,3).map((x,i)=>`<text x="76" y="${292+i*66}" font-family="Arial,Helvetica,sans-serif" font-size="52" font-weight="700" fill="#f8f7f2">${esc(x)}</text>`).join('');
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="${esc(title)}"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#102820"/><stop offset="1" stop-color="#244c3e"/></linearGradient></defs><rect width="1200" height="630" fill="url(#g)"/><circle cx="1050" cy="100" r="260" fill="#d7e5c7" opacity=".08"/><circle cx="1100" cy="540" r="300" fill="#d7e5c7" opacity=".06"/><path d="M76 104h70" stroke="#c7d8b7" stroke-width="6"/><text x="76" y="158" font-family="Arial,Helvetica,sans-serif" font-size="26" font-weight="700" letter-spacing="5" fill="#c7d8b7">VORLEN</text><text x="76" y="214" font-family="Arial,Helvetica,sans-serif" font-size="19" letter-spacing="3" fill="#dbe5dd">UK PERMANENT RECRUITMENT</text>${titleSvg}<rect x="76" y="500" width="1048" height="1" fill="#c7d8b7" opacity=".45"/><text x="76" y="548" font-family="Arial,Helvetica,sans-serif" font-size="21" fill="#e3ebe5">Human-reviewed recruitment. Clear briefs. Written terms.</text><text x="1124" y="585" text-anchor="end" font-family="Arial,Helvetica,sans-serif" font-size="17" fill="#c7d8b7">vorlen.co.uk</text></svg>`;
+  const dir=path.join(dist,'social');await fs.mkdir(dir,{recursive:true});
+  await fs.writeFile(path.join(dir,`${slug}.svg`),svg);
+  return `/social/${slug}.svg`;
+}
+function crawlBody(title,description,canonical,bodyDetails){
+  const route=new URL(canonical).pathname.replace(/\/$/,'')||'/';
+  const details=bodyDetails?.length?bodyDetails:(crawlDetails[route]||[]);
+  const safeDetails=details.length?details:[
+    'Vorlen is a UK permanent recruitment agency. We take a clear vacancy brief, source candidates and review relevant evidence before making introductions.',
+    'Commercial terms are agreed in writing before a search begins. Employers retain responsibility for the final hiring decision.'
   ];
   const links=crawlLinks.map(([href,label])=>`<a href="${href}">${esc(label)}</a>`).join(' · ');
-  return `<main><h1>${esc(title.replace(/\s*\|\s*Vorlen.*$/i,''))}</h1><p>${esc(description)}</p><h2>Permanent recruitment support</h2><p>${esc(details[0])}</p><p>${esc(details[1])}</p>${path===guideSlug?`<section aria-label="Employer questions and answers"><h2>Choosing an agency: honest answers</h2>${details.slice(2).map((x)=>`<p>${esc(x)}</p>`).join('')}</section>`:path==='/our-approach'?`<section aria-label="Candidate assessment safeguards"><h2>How candidate assessment works</h2>${details.slice(2).map((x)=>`<p>${esc(x)}</p>`).join('')}</section>`:''}<h2>More from Vorlen</h2><nav aria-label="Recruitment services">${links}</nav></main>`;
+  const heading=route.startsWith('/sectors/')?'How we approach this specialism':route.startsWith('/services/')?'What the service includes':route.startsWith('/locations/')?'Recruitment in this area':route.startsWith('/careers/')?'Role information':route===guideSlug?'Choosing a recruitment agency':route==='/our-approach'?'How candidate assessment works':'How Vorlen works';
+  const paragraphs=safeDetails.map(x=>`<p>${esc(x)}</p>`).join('');
+  return `<main><h1>${esc(title.replace(/\s*\|\s*Vorlen.*$/i,''))}</h1><p>${esc(description)}</p><section><h2>${esc(heading)}</h2>${paragraphs}</section>${route.startsWith('/careers/')?'<p><strong>Application status:</strong> Check the live opportunity page for whether this is an open role or a register-interest opportunity.</p>':''}<h2>Explore more from Vorlen</h2><nav aria-label="Recruitment services">${links}</nav></main>`;
 }
-function inject(html,{title,description,canonical,jsonLd}){
-  const image=`${base}/vorlen-logo.svg`;
-  const tags=`<meta name="description" content="${esc(description)}"/><meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"/><link rel="canonical" href="${esc(canonical)}"/><link rel="alternate" hreflang="en-GB" href="${esc(canonical)}"/><link rel="alternate" hreflang="x-default" href="${esc(canonical)}"/><meta property="og:type" content="website"/><meta property="og:site_name" content="Vorlen"/><meta property="og:locale" content="en_GB"/><meta property="og:title" content="${esc(title)}"/><meta property="og:description" content="${esc(description)}"/><meta property="og:url" content="${esc(canonical)}"/><meta property="og:image" content="${esc(image)}"/><meta property="og:image:alt" content="Vorlen — UK permanent recruitment agency"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="${esc(title)}"/><meta name="twitter:description" content="${esc(description)}"/><meta name="twitter:image" content="${esc(image)}"/>${jsonLd?`<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g,'\\u003c')}</script>`:''}`;
+function inject(html,{title,description,canonical,jsonLd,image,bodyDetails}){
+  const socialImage=`${base}${image||'/social/home.svg'}`;
+  const tags=`<meta name="description" content="${esc(description)}"/><meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"/><link rel="canonical" href="${esc(canonical)}"/><link rel="alternate" hreflang="en-GB" href="${esc(canonical)}"/><link rel="alternate" hreflang="x-default" href="${esc(canonical)}"/><meta property="og:type" content="website"/><meta property="og:site_name" content="Vorlen"/><meta property="og:locale" content="en_GB"/><meta property="og:title" content="${esc(title)}"/><meta property="og:description" content="${esc(description)}"/><meta property="og:url" content="${esc(canonical)}"/><meta property="og:image" content="${esc(socialImage)}"/><meta property="og:image:type" content="image/svg+xml"/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:image:alt" content="${esc(title)} — Vorlen UK recruitment"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="${esc(title)}"/><meta name="twitter:description" content="${esc(description)}"/><meta name="twitter:image" content="${esc(socialImage)}"/>${jsonLd?`<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g,'\\u003c')}</script>`:''}`;
   return html
     .replace(/<title>.*?<\/title>/s,`<title>${esc(title)}</title>`)
     .replace(/<meta name="description"[^>]*>/g,'')
@@ -54,7 +69,7 @@ function inject(html,{title,description,canonical,jsonLd}){
     .replace(/<link rel="alternate" hreflang="(?:en-GB|x-default)"[^>]*>/g,'')
     .replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g,'')
     .replace('</head>',`${tags}</head>`)
-    .replace('<div id="root"></div>',`<div id="root">${crawlBody(title,description,canonical)}</div>`);
+    .replace('<div id="root"></div>',`<div id="root">${crawlBody(title,description,canonical,bodyDetails)}</div>`);
 }
 
 async function writeRoute(route,html){
