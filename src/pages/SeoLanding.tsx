@@ -222,7 +222,7 @@ export default function SeoLanding(){
       <div><strong>Employers</strong><Link to="/employers">Employer recruitment</Link><Link to="/services/permanent-recruitment">How we recruit</Link><Link to="/our-approach">Assessment methodology</Link><Link to="/services/candidate-sourcing">Candidate sourcing</Link><Link to="/services/recruitment-for-smes">Recruitment for SMEs</Link><Link to="/guides/choosing-a-recruitment-agency">Choosing an agency</Link></div>
       <div><strong>Candidates & partners</strong><Link to="/candidates">For candidates</Link><Link to="/careers">Open opportunities</Link><Link to="/partners">Partner network</Link></div>
       <div><strong>Locations</strong><Link to="/locations/manchester">Manchester</Link><Link to="/locations/greater-manchester">Greater Manchester</Link><Link to="/contact">Contact Vorlen</Link></div>
-      <div className="vorlen-footer-bottom"><span>© {new Date().getFullYear()} Vorlen</span><span>Vorlen Ltd · Company No. 17387520 · Registered in England and Wales · Registered office: Rochdale, OL16 2EP</span></div>
+      <div className="vorlen-footer-bottom"><span>© {new Date().getFullYear()} Vorlen</span><span>Vorlen Ltd · Company No. 17387520 · Registered in England and Wales · Registered office: Piccadilly Business Centre, Unit C Aldow Enterprise Park, Blackett Street, Manchester, M12 6AE</span></div>
     </footer>
   </div>
 }
