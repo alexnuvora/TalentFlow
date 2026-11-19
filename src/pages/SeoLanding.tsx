@@ -138,7 +138,7 @@ const pages:Record<string,PageConfig>={
     sections:[{title:'Greater Manchester is not one hiring market',copy:'Travel patterns, sector clusters and candidate availability vary across the region. The brief should reflect the actual workplace and role rather than treating the whole area as interchangeable.'},{title:'Local centre, wider reach',copy:'A Greater Manchester vacancy can still benefit from a broader UK search when relocation, hybrid working or specialist experience makes that appropriate.'}],
     faq:[['Which Greater Manchester areas can Vorlen support?','Employers across Greater Manchester, with the search shaped by workplace location and vacancy requirements.'],['Can sourcing extend outside Greater Manchester?','Yes. Search geography widens where the employer brief and role make that useful.'],['Is Vorlen a temporary staffing agency?','No. Vorlen is positioned around permanent recruitment rather than temporary-worker supply.']],
     ctaTitle:'Recruiting across Greater Manchester?',ctaCopy:'Tell us the workplace, role and hiring context so we can shape the search.',ctaLabel:'Discuss your vacancy',ctaTo:'/contact',serviceType:'Permanent recruitment in Greater Manchester',area:'Greater Manchester, United Kingdom'
-  }
+  },
   '/our-approach':{
     eyebrow:'OUR ASSESSMENT METHOD',title:'Evidence first. Human judgement',accent:'always.',
     intro:'Vorlen assesses candidates against the requirements of a specific permanent vacancy. We define the criteria with the employer, review relevant evidence, speak with candidates and keep a recruiter accountable for every recommendation.',
