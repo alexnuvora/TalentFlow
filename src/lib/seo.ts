@@ -3,12 +3,13 @@ const CANONICAL='https://www.vorlen.co.uk';
 const base=()=>CANONICAL;
 function meta(name:string,content:string,property=false){if(!content)return;const attr=property?'property':'name';let el=document.head.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement|null;if(!el){el=document.createElement('meta');el.setAttribute(attr,name);document.head.appendChild(el)}el.content=content}
 function link(rel:string,href:string,hreflang?:string){let selector=`link[rel="${rel}"]`;if(hreflang)selector+=`[hreflang="${hreflang}"]`;let el=document.head.querySelector(selector) as HTMLLinkElement|null;if(!el){el=document.createElement('link');el.rel=rel;if(hreflang)el.hreflang=hreflang;document.head.appendChild(el)}el.href=href}
-export function setSeo({title,description,path=location.pathname,robots='index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1',jsonLd,image='/vorlen-logo.svg'}:Seo){
+export function setSeo({title,description,path=location.pathname,robots='index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1',jsonLd,image}:Seo){
   const canonical=`${base()}${path}`;
-  const social=image.startsWith('http')?image:`${base()}${image}`;
+  const socialPath=image||`/social/${(path==='/'?'home':path.replace(/^\\//,'').replace(/[^a-z0-9]+/gi,'-').replace(/-$/,'')).slice(0,90)}.svg`;
+  const social=socialPath.startsWith('http')?socialPath:`${base()}${socialPath}`;
   document.title=title;
   meta('description',description);meta('robots',robots);meta('googlebot',robots);meta('bingbot',robots);
-  meta('og:title',title,true);meta('og:description',description,true);meta('og:type','website',true);meta('og:site_name','Vorlen',true);meta('og:locale','en_GB',true);meta('og:url',canonical,true);meta('og:image',social,true);meta('og:image:alt','Vorlen — UK permanent recruitment',true);
+  meta('og:title',title,true);meta('og:description',description,true);meta('og:type','website',true);meta('og:site_name','Vorlen',true);meta('og:locale','en_GB',true);meta('og:url',canonical,true);meta('og:image',social,true);meta('og:image:type','image/svg+xml',true);meta('og:image:width','1200',true);meta('og:image:height','630',true);meta('og:image:alt',title+' — Vorlen UK recruitment',true);
   meta('twitter:card','summary_large_image');meta('twitter:title',title);meta('twitter:description',description);meta('twitter:image',social);
   meta('google-site-verification',String(import.meta.env.VITE_GOOGLE_SITE_VERIFICATION||''));meta('msvalidate.01',String(import.meta.env.VITE_BING_SITE_VERIFICATION||''));
   link('canonical',canonical);link('alternate',canonical,'en-GB');link('alternate',canonical,'x-default');
