@@ -49,5 +49,22 @@ for (const url of urls) {
   await stat(new URL(file, root));
 }
 assert.ok(urls.includes(base + '/our-approach'), 'Missing methodology page in sitemap');
+const homeHtml = await read('index.html');
+const serviceHtml = await read('services/permanent-recruitment/index.html');
+const articleHtml = await read('guides/choosing-a-recruitment-agency/index.html');
+assert.match(homeHtml, /"@type":\["Organization","EmploymentAgency"\]/, 'Homepage must describe the agency entity');
+assert.match(serviceHtml, /"@type":"Service"/, 'Permanent recruitment page must expose Service schema');
+assert.match(articleHtml, /"@type":"Article"/, 'Recruitment guide must expose Article schema');
+for (const url of urls.filter(x=>x.includes('/careers/'))) {
+  const jobHtml = await read(new URL(url).pathname.slice(1) + '/index.html');
+  if (jobHtml.includes('"@type":"JobPosting"')) {
+    assert.match(jobHtml, /"hiringOrganization"/, 'JobPosting must identify the hiring organization: ' + url);
+    assert.match(jobHtml, /"datePosted"/, 'JobPosting must include its publication date: ' + url);
+    assert.match(jobHtml, /"directApply":true/, 'JobPosting must expose the direct application route: ' + url);
+  } else {
+    assert.match(jobHtml, /"@type":"WebPage"/, 'Register-interest pages must not be labelled as live JobPosting: ' + url);
+  }
+}
+
 await stat(new URL('llms.txt', root));
 console.log('SEO production safety checks passed for ' + publicRoutes.length + ' critical routes and ' + urls.length + ' sitemap URLs');
