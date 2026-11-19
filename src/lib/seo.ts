@@ -13,7 +13,8 @@ export function setSeo({title,description,path=location.pathname,robots='index,f
   meta('twitter:card','summary_large_image');meta('twitter:title',title);meta('twitter:description',description);meta('twitter:image',social);
   meta('google-site-verification',String(import.meta.env.VITE_GOOGLE_SITE_VERIFICATION||''));meta('msvalidate.01',String(import.meta.env.VITE_BING_SITE_VERIFICATION||''));
   link('canonical',canonical);link('alternate',canonical,'en-GB');link('alternate',canonical,'x-default');
-  if(jsonLd){document.getElementById('seo-jsonld')?.remove();document.getElementById('page-jsonld')?.remove();const s=document.createElement('script');s.id='page-jsonld';s.type='application/ld+json';s.text=JSON.stringify(jsonLd);document.head.appendChild(s)}
+  document.getElementById('page-jsonld')?.remove();
+  if(jsonLd){document.getElementById('seo-jsonld')?.remove();const s=document.createElement('script');s.id='page-jsonld';s.type='application/ld+json';s.text=JSON.stringify(jsonLd);document.head.appendChild(s)}
 }
 export const noIndex='noindex,nofollow,noarchive,nosnippet';
 export function orgSchema(){
