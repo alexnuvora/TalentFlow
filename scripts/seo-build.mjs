@@ -69,7 +69,7 @@ function metaDescription(value,max=155){
   if(text.length<=max)return text;
   const candidate=text.slice(0,max+1);
   const boundary=candidate.lastIndexOf(' ');
-  const cut=(boundary>=110?candidate.slice(0,boundary):candidate.slice(0,max)).replace(/[,:;—-]+$/,'').trim();
+  const cut=(boundary>=110?candidate.slice(0,boundary):candidate.slice(0,max-1)).replace(/[,:;—-]+$/,'').trim();
   return /[.!?]$/.test(cut)?cut:cut+'…';
 }
 
@@ -108,7 +108,7 @@ function crawlBody(title,description,canonical,bodyDetails,job){
 }
 function inject(html,{title,description,canonical,jsonLd,image,bodyDetails,job}){
   const socialImage=`${base}${image||'/social/home.svg'}`;
-  const tags=`<meta name="description" content="${esc(metaDescription(description))}"/><meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"/><link rel="canonical" href="${esc(canonical)}"/><link rel="alternate" hreflang="en-GB" href="${esc(canonical)}"/><link rel="alternate" hreflang="x-default" href="${esc(canonical)}"/><meta property="og:type" content="website"/><meta property="og:site_name" content="Vorlen"/><meta property="og:locale" content="en_GB"/><meta property="og:title" content="${esc(title)}"/><meta property="og:description" content="${esc(metaDescription(description))}"/><meta property="og:url" content="${esc(canonical)}"/><meta property="og:image" content="${esc(socialImage)}"/><meta property="og:image:type" content="image/png"/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:image:alt" content="${esc(title)} — Vorlen UK recruitment"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="${esc(title)}"/><meta name="twitter:description" content="${esc(description)}"/><meta name="twitter:image" content="${esc(socialImage)}"/>${jsonLd?`<script id="seo-jsonld" type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g,'\\u003c')}</script>`:''}`;
+  const tags=`<meta name="description" content="${esc(metaDescription(description))}"/><meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"/><link rel="canonical" href="${esc(canonical)}"/><link rel="alternate" hreflang="en-GB" href="${esc(canonical)}"/><link rel="alternate" hreflang="x-default" href="${esc(canonical)}"/><meta property="og:type" content="website"/><meta property="og:site_name" content="Vorlen"/><meta property="og:locale" content="en_GB"/><meta property="og:title" content="${esc(title)}"/><meta property="og:description" content="${esc(metaDescription(description))}"/><meta property="og:url" content="${esc(canonical)}"/><meta property="og:image" content="${esc(socialImage)}"/><meta property="og:image:type" content="image/png"/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:image:alt" content="${esc(title)} — Vorlen UK recruitment"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="${esc(title)}"/><meta name="twitter:description" content="${esc(metaDescription(description))}"/><meta name="twitter:image" content="${esc(socialImage)}"/>${jsonLd?`<script id="seo-jsonld" type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g,'\\u003c')}</script>`:''}`;
   return html
     .replace(/<title>.*?<\/title>/s,`<title>${esc(title)}</title>`)
     .replace(/<meta name="description"[^>]*>/g,'')
