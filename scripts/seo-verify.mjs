@@ -55,6 +55,10 @@ const articleHtml = await read('guides/choosing-a-recruitment-agency/index.html'
 assert.match(homeHtml, /"@type":\["Organization","EmploymentAgency"\]/, 'Homepage must describe the agency entity');
 assert.match(serviceHtml, /"@type":"Service"/, 'Permanent recruitment page must expose Service schema');
 assert.match(articleHtml, /"@type":"Article"/, 'Recruitment guide must expose Article schema');
+const methodologyHtml = await read('our-approach/index.html');
+assert.match(methodologyHtml, /automated score/, 'Methodology page must explain human decision-making');
+assert.match(methodologyHtml, /protected characteristics/, 'Methodology page must explain fair, job-related assessment');
+assert.match(methodologyHtml, /lawful basis/, 'Methodology page must explain candidate information sharing');
 for (const url of urls.filter(x=>x.includes('/careers/'))) {
   const jobHtml = await read(new URL(url).pathname.slice(1) + '/index.html');
   if (jobHtml.includes('"@type":"JobPosting"')) {
