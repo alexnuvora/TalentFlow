@@ -40,6 +40,9 @@ for (const route of publicRoutes) {
   const meta=html.match(/<meta name="description" content="([^"]*)"/);
   assert.ok(meta&&meta[1].length<=155,'Meta description must be <=155 characters: '+route);
   assert.doesNotMatch(html,/<img(?![^>]*\balt=)[^>]*>/i,'Every content image must have alt text: '+route);
+  const meta=html.match(/<meta name="description" content="([^"]*)"/);
+  assert.ok(meta&&meta[1].length<=155,'Meta description must be <=155 characters: '+route);
+  assert.doesNotMatch(html,/<img(?![^>]*\balt=)[^>]*>/i,'Every content image must have alt text: '+route);
   const socialImage=html.match(/property="og:image" content="([^"]+)"/)?.[1];
   assert.ok(socialImage, 'Missing Open Graph image: ' + route);
   assert.ok(socialImage.startsWith(base + '/social/'), 'Expected a route-specific social card: ' + route);
@@ -102,7 +105,8 @@ for (const url of urls.filter(x=>x.includes('/careers/'))) {
     assert.match(jobHtml, /"hiringOrganization"/, 'JobPosting must identify the hiring organization: ' + url);
     assert.match(jobHtml, /"datePosted"/, 'JobPosting must include its publication date: ' + url);
     assert.match(jobHtml, /"directApply":true/, 'JobPosting must expose the direct application route: ' + url);
-    assert.match(jobHtml, /"hiringOrganization":\{"@type":"Organization","name":"Confidential client"\}/, 'JobPosting must keep the client confidential: ' + url);
+    assert.match(jobHtml, /"hiringOrganization":\{"@type":"Organization","name":"confidential"\}/, 'JobPosting must use the documented confidential employer value: ' + url);
+    assert.doesNotMatch(url,/(alliant|buzz-media|ame-services)/i,'Public vacancy URL must not disclose client names: '+url);
     assert.doesNotMatch(jobHtml, /"hiringOrganization"[^}]*"name":"VORLEN LTD"/, 'Vorlen must not be presented as the employer: ' + url);
   } else {
     assert.match(jobHtml, /"@type":"WebPage"/, 'Register-interest pages must not be labelled as live JobPosting: ' + url);
