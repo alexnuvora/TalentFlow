@@ -52,7 +52,7 @@ function inject(html,{title,description,canonical,jsonLd}){
     .replace(/<meta (?:name|property)="(?:robots|googlebot|bingbot|og:[^"]+|twitter:[^"]+)"[^>]*>/g,'')
     .replace(/<link rel="canonical"[^>]*>/g,'')
     .replace(/<link rel="alternate" hreflang="(?:en-GB|x-default)"[^>]*>/g,'')
-    .replace(/<script type="application\\/ld\\+json">[\\s\\S]*?<\\/script>/g,'')
+    .replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g,'')
     .replace('</head>',`${tags}</head>`)
     .replace('<div id="root"></div>',`<div id="root">${crawlBody(title,description,canonical)}</div>`);
 }
