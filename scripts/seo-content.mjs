@@ -2,14 +2,23 @@
 // Consumed by scripts/seo-build.mjs (crawl HTML + JSON-LD are generated from this data).
 
 export const crawlLinks=[
-  ['/services/permanent-recruitment','How we recruit'],
-  ['/our-approach','Candidate assessment methodology'],
-  ['/guides/choosing-a-recruitment-agency','Choosing an agency'],
+  ['/services/permanent-recruitment','Permanent recruitment'],
+  ['/services/candidate-sourcing','Candidate sourcing'],
   ['/services/recruitment-for-smes','Recruitment for SMEs'],
-  ['/employers','For employers'],
+  ['/employers','Recruitment for employers'],
+  ['/guides/choosing-a-recruitment-agency','Choosing a recruitment agency'],
+  ['/guides/employer-recruitment-questions','Recruitment fees and employer FAQs'],
+  ['/sectors/engineering','Engineering recruitment'],
+  ['/sectors/technology','Technology recruitment'],
+  ['/sectors/finance-accounting','Finance and accounting recruitment'],
+  ['/sectors/sales-business-development','Sales recruitment'],
+  ['/locations/manchester','Recruitment in Manchester'],
+  ['/locations/greater-manchester','Recruitment across Greater Manchester'],
+  ['/our-approach','Candidate assessment methodology'],
   ['/candidates','For candidates'],
-  ['/careers','Careers'],
-  ['/contact','Contact']
+  ['/careers','Current careers and vacancies'],
+  ['/partners','Recruitment partners'],
+  ['/contact','Contact Vorlen']
 ];
 
 export const guideSlug='/guides/choosing-a-recruitment-agency';
