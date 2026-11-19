@@ -2,7 +2,7 @@
 export function publicJobSlug(job) {
   const slugPart = (value, fallback, limit) => String(value || fallback)
     .normalize('NFKD')
-    .replace(/[\\u0300-\\u036f]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
