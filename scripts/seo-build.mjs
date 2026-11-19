@@ -8,7 +8,7 @@ const dist=path.resolve('dist');
 const base='https://www.vorlen.co.uk';
 const sb=env.VITE_SUPABASE_URL;
 const key=env.VITE_SUPABASE_ANON_KEY;
-const RELEASE_LASTMOD='2026-11-14';
+const RELEASE_LASTMOD='2026-11-19';
 
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const xml=s=>esc(s);
@@ -41,7 +41,7 @@ function crawlBody(title,description,canonical){
     "Fees are agreed in writing before any search starts. Every shortlist comes with the recruiter's reasoning, not just CVs."
   ];
   const links=crawlLinks.map(([href,label])=>`<a href="${href}">${esc(label)}</a>`).join(' · ');
-  return `<main><h1>${esc(title.replace(/\s*\|\s*Vorlen.*$/i,''))}</h1><p>${esc(description)}</p><h2>Permanent recruitment support</h2><p>${esc(details[0])}</p><p>${esc(details[1])}</p>${path===guideSlug?`<section aria-label="Employer questions and answers"><h2>Choosing an agency: honest answers</h2>${details.slice(2).map((x)=>`<p>${esc(x)}</p>`).join('')}</section>`:''}<h2>More from Vorlen</h2><nav aria-label="Recruitment services">${links}</nav></main>`;
+  return `<main><h1>${esc(title.replace(/\s*\|\s*Vorlen.*$/i,''))}</h1><p>${esc(description)}</p><h2>Permanent recruitment support</h2><p>${esc(details[0])}</p><p>${esc(details[1])}</p>${path===guideSlug?`<section aria-label="Employer questions and answers"><h2>Choosing an agency: honest answers</h2>${details.slice(2).map((x)=>`<p>${esc(x)}</p>`).join('')}</section>`:path==='/our-approach'?`<section aria-label="Candidate assessment safeguards"><h2>How candidate assessment works</h2>${details.slice(2).map((x)=>`<p>${esc(x)}</p>`).join('')}</section>`:''}<h2>More from Vorlen</h2><nav aria-label="Recruitment services">${links}</nav></main>`;
 }
 function inject(html,{title,description,canonical,jsonLd}){
   const image=`${base}/vorlen-logo.svg`;
@@ -49,7 +49,10 @@ function inject(html,{title,description,canonical,jsonLd}){
   return html
     .replace(/<title>.*?<\/title>/s,`<title>${esc(title)}</title>`)
     .replace(/<meta name="description"[^>]*>/g,'')
+    .replace(/<meta (?:name|property)="(?:robots|googlebot|bingbot|og:[^"]+|twitter:[^"]+)"[^>]*>/g,'')
     .replace(/<link rel="canonical"[^>]*>/g,'')
+    .replace(/<link rel="alternate" hreflang="(?:en-GB|x-default)"[^>]*>/g,'')
+    .replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g,'')
     .replace('</head>',`${tags}</head>`)
     .replace('<div id="root"></div>',`<div id="root">${crawlBody(title,description,canonical)}</div>`);
 }
@@ -73,11 +76,12 @@ const service=(name,route,description,area='United Kingdom')=>({
   areaServed:{'@type':'AdministrativeArea',name:area},url:`${base}${route}`,description
 });
 
-const homePage={title:homeMeta.title,description:homeMeta.description,jsonLd:[{'@context':'https://schema.org','@type':['Organization','EmploymentAgency'],'@id':`${base}/#organization`,name:'Vorlen',legalName:homeMeta.legalName,url:`${base}/`,logo:`${base}/vorlen-logo.svg`,email:'contact@vorlen.co.uk',areaServed:{'@type':'Country',name:'United Kingdom'},identifier:{'@type':'PropertyValue',propertyID:'UK Company Number',value:'17387520'},description:homeMeta.orgDescription},{'@context':'https://schema.org','@type':'WebSite','@id':`${base}/#website`,name:'Vorlen',url:`${base}/`,publisher:{'@id':`${base}/#organization`}}]};
+const homePage={title:homeMeta.title,description:homeMeta.description,jsonLd:[{'@context':'https://schema.org','@type':['Organization','EmploymentAgency'],'@id':`${base}/#organization`,name:'Vorlen',legalName:homeMeta.legalName,url:`${base}/`,logo:`${base}/vorlen-logo.svg`,email:'contact@vorlen.co.uk',areaServed:{'@type':'Country',name:'United Kingdom'},identifier:{'@type':'PropertyValue',propertyID:'UK Company Number',value:'17387520'},address:{'@type':'PostalAddress',streetAddress:'Piccadilly Business Centre, Unit C Aldow Enterprise Park, Blackett Street',addressLocality:'Manchester',postalCode:'M12 6AE',addressCountry:'GB'},sameAs:['https://www.linkedin.com/company/vorlen/','https://find-and-update.company-information.service.gov.uk/company/17387520'],description:homeMeta.orgDescription},{'@context':'https://schema.org','@type':'WebSite','@id':`${base}/#website`,name:'Vorlen',url:`${base}/`,publisher:{'@id':`${base}/#organization`}}]};
 
-const guideJsonLd={'@context':'https://schema.org','@type':'FAQPage',mainEntity:guideQuestions.map(({q,a})=>({"@type":"Question","name":q,"acceptedAnswer":{"@type":"Answer","text":a}}))};
+const guideJsonLd={'@context':'https://schema.org','@graph':[{'@type':'Article','@id':`${base}${guideSlug}#article`,headline:'Choosing a Recruitment Agency: Fees, Shortlists and Questions to Ask',description:'A practical guide to choosing a UK recruitment agency, comparing fees, candidate assessment, shortlists and replacement terms.',mainEntityOfPage:`${base}${guideSlug}`,publisher:organization,author:{'@id':`${base}/#organization`}},{'@type':'FAQPage',mainEntity:guideQuestions.map(({q,a})=>({'@type':'Question',name:q,acceptedAnswer:{'@type':'Answer',text:a}}))}]};
 
 const staticPages=[
+  {route:'/our-approach',title:'How Vorlen Assesses Candidates | Recruitment Methodology',description:'How Vorlen defines a vacancy, sources candidates, reviews job-related evidence, records recruiter judgement and shares candidate information with permission.',lastmod:RELEASE_LASTMOD,jsonLd:{'@context':'https://schema.org','@type':'WebPage',name:'Vorlen candidate assessment methodology',url:`${base}/our-approach`,about:organization}},
   {route:'/careers',title:'Open recruitment opportunities | Vorlen Careers',description:'Browse current permanent recruitment opportunities and apply securely through Vorlen Careers.',lastmod:RELEASE_LASTMOD,jsonLd:{'@context':'https://schema.org','@type':'CollectionPage',name:'Vorlen Careers',url:`${base}/careers`,description:'Current permanent recruitment opportunities published through Vorlen.',isPartOf:{'@id':`${base}/#website`},mainEntity:{'@type':'ItemList',itemListElement:rows.slice(0,50).map((j,i)=>({'@type':'ListItem',position:i+1,url:`${base}/careers/${encodeURIComponent(j.slug)}`,name:j.title}))}}},
   {route:guideSlug,title:'Choosing a Recruitment Agency: Fees, Shortlists and Questions to Ask | Vorlen',description:'A practical guide to choosing a UK recruitment agency: what fees should look like, what to ask about shortlists, screening and replacement terms, and the answers that separate good agencies from the rest.',lastmod:RELEASE_LASTMOD,jsonLd:guideJsonLd},
   {route:'/guides/employer-recruitment-questions',title:'Recruitment Agency Fees and Hiring FAQs UK | Vorlen',description:'Plain-English answers for UK employers about recruitment agency fees, hiring timelines, vacancy briefs and choosing a permanent recruitment partner.',lastmod:RELEASE_LASTMOD,jsonLd:{'@context':'https://schema.org','@type':'WebPage',name:'UK employer recruitment questions',url:`${base}/guides/employer-recruitment-questions`,about:organization}},
@@ -111,7 +115,7 @@ for(const j of rows){
   const canonical=`${base}/careers/${encodeURIComponent(j.slug)}`;
   const schema=j.application_mode==='register_interest'
     ?{'@context':'https://schema.org','@type':'WebPage',name:j.title,description:strip(j.description||j.title),url:canonical}
-    :{'@context':'https://schema.org','@type':'JobPosting',title:j.title,description:strip(j.description||j.title),datePosted:j.created_at,dateModified:j.created_at,employmentType:j.employment_type,url:canonical,directApply:true,jobLocation:j.location?{'@type':'Place',address:{'@type':'PostalAddress',addressLocality:j.location,addressCountry:'GB'}}:undefined};
+    :{'@context':'https://schema.org','@type':'JobPosting',title:j.title,description:strip(j.description||j.title),datePosted:j.created_at,employmentType:({permanent:'FULL_TIME',full_time:'FULL_TIME',part_time:'PART_TIME',contract:'CONTRACTOR',temporary:'TEMPORARY',internship:'INTERN'}[String(j.employment_type||'').toLowerCase()]||'FULL_TIME'),url:canonical,directApply:true,identifier:{'@type':'PropertyValue',name:'Vorlen vacancy reference',value:j.slug},hiringOrganization:{'@type':'Organization','@id':`${base}/#organization`,name:'VORLEN LTD',sameAs:'https://www.linkedin.com/company/vorlen/'},jobLocation:j.location?{'@type':'Place',address:{'@type':'PostalAddress',addressLocality:j.location,addressCountry:'GB'}}:undefined};
   if(j.application_mode!=='register_interest'&&(j.salary_min||j.salary_max)){
     schema.baseSalary={'@type':'MonetaryAmount',currency:'GBP',value:{'@type':'QuantitativeValue',minValue:j.salary_min||undefined,maxValue:j.salary_max||undefined,unitText:'YEAR'}};
   }
@@ -125,5 +129,44 @@ const urls=[
 ];
 const sitemap=`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(([u,d])=>`  <url><loc>${xml(base+u)}</loc>${d?`<lastmod>${xml(new Date(d).toISOString())}</lastmod>`:''}</url>`).join('\n')}\n</urlset>\n`;
 await fs.writeFile(path.join(dist,'sitemap.xml'),sitemap);
+await fs.writeFile(path.join(dist,'llms.txt'),`# Vorlen
+
+> Vorlen is a UK permanent recruitment agency operated by VORLEN LTD (Company No. 17387520). It supports employers with permanent hiring through vacancy briefing, focused candidate sourcing, human-reviewed assessment, candidate introductions and interview coordination.
+
+## Official company information
+- Website: ${base}/
+- Legal name: VORLEN LTD
+- Company number: 17387520
+- Registered office: Piccadilly Business Centre, Unit C Aldow Enterprise Park, Blackett Street, Manchester, M12 6AE, United Kingdom
+- Contact: mailto:contact@vorlen.co.uk
+- LinkedIn: https://www.linkedin.com/company/vorlen/\n- Companies House: https://find-and-update.company-information.service.gov.uk/company/17387520
+
+## Important pages
+- [For employers](${base}/employers): permanent recruitment support and employer enquiries.
+- [Permanent recruitment](${base}/services/permanent-recruitment): brief-to-placement service.
+- [Candidate sourcing](${base}/services/candidate-sourcing): proactive sourcing and recruiter-led review.
+- [Candidate assessment methodology](${base}/our-approach): how vacancy criteria, evidence review and human decisions work.
+- [Recruitment for SMEs](${base}/services/recruitment-for-smes): permanent hiring support for small and medium-sized businesses.
+- [Technology recruitment](${base}/sectors/technology): permanent technology roles.
+- [Engineering recruitment](${base}/sectors/engineering): permanent engineering roles.
+- [Finance and accounting recruitment](${base}/sectors/finance-accounting): permanent finance roles.
+- [Sales and business development recruitment](${base}/sectors/sales-business-development): permanent commercial roles.
+- [Manchester](${base}/locations/manchester): recruitment support in Manchester.
+- [Greater Manchester](${base}/locations/greater-manchester): regional recruitment support.
+- [Careers](${base}/careers): published opportunities and applications.
+- [Choosing a recruitment agency](${base}/guides/choosing-a-recruitment-agency): employer guide to agency selection and terms.
+- [Contact](${base}/contact): contact Vorlen.
+- [Privacy](${base}/privacy): privacy information.
+
+## Vacancy data
+Current public vacancies are listed on the Careers page and published as individual pages. Machine-readable JobPosting data is generated only for published vacancies; talent-pool or register-interest pages are not represented as live jobs.
+
+## Editorial and evidence policy
+Vorlen does not publish invented recruiter credentials, client results, candidate outcomes, testimonials, ratings or third-party endorsements. Named recruiter biographies and professional credentials are published only after identity, role and claims are verified. Candidate decisions remain human-led; technology may support organisation of evidence but does not make final recruitment decisions.
+
+## Site discovery
+- Sitemap: ${base}/sitemap.xml
+- Robots: ${base}/robots.txt
+`);
 await fs.writeFile(path.join(dist,'robots.txt'),`User-agent: *\nAllow: /\nDisallow: /dashboard/\nDisallow: /login\nDisallow: /client\nDisallow: /candidate?\nDisallow: /review/\nDisallow: /terms/accept\nSitemap: ${base}/sitemap.xml\n`);
 console.log(`SEO build: generated ${rows.length} job pages and ${urls.length} sitemap URLs`);

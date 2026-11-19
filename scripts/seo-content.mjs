@@ -3,6 +3,7 @@
 
 export const crawlLinks=[
   ['/services/permanent-recruitment','How we recruit'],
+  ['/our-approach','Candidate assessment methodology'],
   ['/guides/choosing-a-recruitment-agency','Choosing an agency'],
   ['/services/recruitment-for-smes','Recruitment for SMEs'],
   ['/employers','For employers'],
@@ -88,6 +89,12 @@ export const crawlDetails={
   '/careers':[
     'Vorlen Careers lists our current permanent opportunities with role detail and a secure application route.',
     "Some pages are for registering interest rather than a live client vacancy. Those are labelled as such, so you always know which kind you're looking at."
+  ],
+  '/our-approach':[
+    'Vorlen assesses candidates against the requirements of a specific permanent vacancy. The employer and recruiter clarify essential and preferred skills, relevant experience, qualifications or licences where genuinely required, location, working pattern and the outcomes expected from the role before sourcing begins.',
+    'A recruiter reviews job-related evidence against those agreed criteria, identifies gaps or points to explore, and where appropriate speaks with the candidate about experience, motivation and understanding of the opportunity. The recommendation records why the person may fit and what the employer should explore at interview.',
+    'Assessment is vacancy-specific and should be proportionate and consistently applied. Vorlen does not treat keyword overlap as proof of suitability, infer protected characteristics or let an automated score make a final hiring or rejection decision. Technology may help organise information; a person remains accountable for progression and introductions.',
+    'Candidate information is handled under the Vorlen privacy notice and applicable data-protection requirements. Information is shared with a client only where there is an appropriate lawful basis and the required candidate authority. Candidates can contact Vorlen to query information or raise a concern.'
   ],
   '/contact':[
     "Tell us the role, location, hiring context and must-have experience. That's enough to start a conversation about whether we can help.",
