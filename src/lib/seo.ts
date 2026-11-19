@@ -5,7 +5,7 @@ function meta(name:string,content:string,property=false){if(!content)return;cons
 function link(rel:string,href:string,hreflang?:string){let selector=`link[rel="${rel}"]`;if(hreflang)selector+=`[hreflang="${hreflang}"]`;let el=document.head.querySelector(selector) as HTMLLinkElement|null;if(!el){el=document.createElement('link');el.rel=rel;if(hreflang)el.hreflang=hreflang;document.head.appendChild(el)}el.href=href}
 export function setSeo({title,description,path=location.pathname,robots='index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1',jsonLd,image}:Seo){
   const canonical=`${base()}${path}`;
-  const socialPath=image||`/social/${(path==='/'?'home':path.replace(/^\\//,'').replace(/[^a-z0-9]+/gi,'-').replace(/-$/,'')).slice(0,90)}.svg`;
+  const socialPath=image||`/social/${(path==='/'?'home':path.replace(/^\//,'').replace(/[^a-z0-9]+/gi,'-').replace(/-$/,'')).slice(0,90)}.png`;
   const social=socialPath.startsWith('http')?socialPath:`${base()}${socialPath}`;
   document.title=title;
   meta('description',description);meta('robots',robots);meta('googlebot',robots);meta('bingbot',robots);
