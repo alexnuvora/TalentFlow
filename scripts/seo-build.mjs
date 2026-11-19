@@ -76,7 +76,7 @@ const service=(name,route,description,area='United Kingdom')=>({
   areaServed:{'@type':'AdministrativeArea',name:area},url:`${base}${route}`,description
 });
 
-const homePage={title:homeMeta.title,description:homeMeta.description,jsonLd:[{'@context':'https://schema.org','@type':['Organization','EmploymentAgency'],'@id':`${base}/#organization`,name:'Vorlen',legalName:homeMeta.legalName,url:`${base}/`,logo:`${base}/vorlen-logo.svg`,email:'contact@vorlen.co.uk',areaServed:{'@type':'Country',name:'United Kingdom'},identifier:{'@type':'PropertyValue',propertyID:'UK Company Number',value:'17387520'},address:{'@type':'PostalAddress',streetAddress:'Piccadilly Business Centre, Unit C Aldow Enterprise Park, Blackett Street',addressLocality:'Manchester',postalCode:'M12 6AE',addressCountry:'GB'},sameAs:['https://www.linkedin.com/company/vorlen/'],description:homeMeta.orgDescription},{'@context':'https://schema.org','@type':'WebSite','@id':`${base}/#website`,name:'Vorlen',url:`${base}/`,publisher:{'@id':`${base}/#organization`}}]};
+const homePage={title:homeMeta.title,description:homeMeta.description,jsonLd:[{'@context':'https://schema.org','@type':['Organization','EmploymentAgency'],'@id':`${base}/#organization`,name:'Vorlen',legalName:homeMeta.legalName,url:`${base}/`,logo:`${base}/vorlen-logo.svg`,email:'contact@vorlen.co.uk',areaServed:{'@type':'Country',name:'United Kingdom'},identifier:{'@type':'PropertyValue',propertyID:'UK Company Number',value:'17387520'},address:{'@type':'PostalAddress',addressLocality:'Rochdale',postalCode:'OL16 2EP',addressCountry:'GB'},sameAs:['https://www.linkedin.com/company/vorlen/','https://find-and-update.company-information.service.gov.uk/company/17387520'],description:homeMeta.orgDescription},{'@context':'https://schema.org','@type':'WebSite','@id':`${base}/#website`,name:'Vorlen',url:`${base}/`,publisher:{'@id':`${base}/#organization`}}]};
 
 const guideJsonLd={'@context':'https://schema.org','@graph':[{'@type':'Article','@id':`${base}${guideSlug}#article`,headline:'Choosing a Recruitment Agency: Fees, Shortlists and Questions to Ask',description:'A practical guide to choosing a UK recruitment agency, comparing fees, candidate assessment, shortlists and replacement terms.',mainEntityOfPage:`${base}${guideSlug}`,publisher:organization,author:{'@id':`${base}/#organization`}},{'@type':'FAQPage',mainEntity:guideQuestions.map(({q,a})=>({'@type':'Question',name:q,acceptedAnswer:{'@type':'Answer',text:a}}))}]};
 
@@ -115,7 +115,7 @@ for(const j of rows){
   const canonical=`${base}/careers/${encodeURIComponent(j.slug)}`;
   const schema=j.application_mode==='register_interest'
     ?{'@context':'https://schema.org','@type':'WebPage',name:j.title,description:strip(j.description||j.title),url:canonical}
-    :{'@context':'https://schema.org','@type':'JobPosting',title:j.title,description:strip(j.description||j.title),datePosted:j.created_at,dateModified:j.updated_at||j.created_at,validThrough:j.valid_through||undefined,employmentType:({full_time:'FULL_TIME',part_time:'PART_TIME',contract:'CONTRACTOR',temporary:'TEMPORARY',internship:'INTERN'}[String(j.employment_type||'').toLowerCase()]||j.employment_type),url:canonical,directApply:true,identifier:{'@type':'PropertyValue',name:'Vorlen vacancy reference',value:j.slug},hiringOrganization:{'@type':'Organization','@id':`${base}/#organization`,name:'VORLEN LTD',sameAs:'https://www.linkedin.com/company/vorlen/'},jobLocation:j.location?{'@type':'Place',address:{'@type':'PostalAddress',addressLocality:j.location,addressCountry:'GB'}}:undefined};
+    :{'@context':'https://schema.org','@type':'JobPosting',title:j.title,description:strip(j.description||j.title),datePosted:j.created_at,employmentType:({permanent:'FULL_TIME',full_time:'FULL_TIME',part_time:'PART_TIME',contract:'CONTRACTOR',temporary:'TEMPORARY',internship:'INTERN'}[String(j.employment_type||'').toLowerCase()]||'FULL_TIME'),url:canonical,directApply:true,identifier:{'@type':'PropertyValue',name:'Vorlen vacancy reference',value:j.slug},hiringOrganization:{'@type':'Organization','@id':`${base}/#organization`,name:'VORLEN LTD',sameAs:'https://www.linkedin.com/company/vorlen/'},jobLocation:j.location?{'@type':'Place',address:{'@type':'PostalAddress',addressLocality:j.location,addressCountry:'GB'}}:undefined};
   if(j.application_mode!=='register_interest'&&(j.salary_min||j.salary_max)){
     schema.baseSalary={'@type':'MonetaryAmount',currency:'GBP',value:{'@type':'QuantitativeValue',minValue:j.salary_min||undefined,maxValue:j.salary_max||undefined,unitText:'YEAR'}};
   }
@@ -137,9 +137,9 @@ await fs.writeFile(path.join(dist,'llms.txt'),`# Vorlen
 - Website: ${base}/
 - Legal name: VORLEN LTD
 - Company number: 17387520
-- Registered office: Piccadilly Business Centre, Unit C Aldow Enterprise Park, Blackett Street, Manchester, M12 6AE, United Kingdom
+- Registered office: Rochdale, OL16 2EP, United Kingdom
 - Contact: mailto:contact@vorlen.co.uk
-- LinkedIn: https://www.linkedin.com/company/vorlen/
+- LinkedIn: https://www.linkedin.com/company/vorlen/\n- Companies House: https://find-and-update.company-information.service.gov.uk/company/17387520
 
 ## Important pages
 - [For employers](${base}/employers): permanent recruitment support and employer enquiries.
