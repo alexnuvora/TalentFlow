@@ -38,7 +38,10 @@ for (const route of publicRoutes) {
   assert.ok(html.includes('property="og:url" content="' + canonical + '"'), 'Incorrect Open Graph URL: ' + route);
   const socialImage=html.match(/property="og:image" content="([^"]+)"/)?.[1];
   assert.ok(socialImage, 'Missing Open Graph image: ' + route);
-  assert.ok(socialImage.startsWith(base + '/social/'), 'Expected a route-specific social card: ' + route);\n  assert.ok(socialImage.endsWith('.png'), 'Social cards must use crawler-compatible PNG: ' + route);\n  assert.ok(html.includes('property=\"og:image:type\" content=\"image/png\"'), 'Open Graph image MIME type must be PNG: ' + route);\n  assert.equal((html.match(/id=\"seo-jsonld\"/g)||[]).length,1,'Expected one pre-rendered JSON-LD block: '+route);
+  assert.ok(socialImage.startsWith(base + '/social/'), 'Expected a route-specific social card: ' + route);
+  assert.ok(socialImage.endsWith('.png'), 'Social cards must use crawler-compatible PNG: ' + route);
+  assert.ok(html.includes('property=\"og:image:type\" content=\"image/png\"'), 'Open Graph image MIME type must be PNG: ' + route);
+  assert.equal((html.match(/id=\"seo-jsonld\"/g)||[]).length,1,'Expected one pre-rendered JSON-LD block: '+route);
   assert.ok(html.includes('name="twitter:image" content="' + socialImage + '"'), 'Twitter image must match Open Graph image: ' + route);
   await stat(new URL(socialImage.replace(base + '/', ''), root));
   assert.equal((html.match(/<h1\b/g) || []).length, 1, 'Expected exactly one H1: ' + route);
@@ -91,4 +94,5 @@ for (const url of urls.filter(x=>x.includes('/careers/'))) {
 }
 
 await stat(new URL('llms.txt', root));
-assert.equal(socialAssets.size, urls.length, 'Every sitemap page must have its own social card');\nconsole.log('SEO production safety checks passed for ' + publicRoutes.length + ' critical routes, ' + urls.length + ' sitemap URLs and ' + socialAssets.size + ' unique social cards');
+assert.equal(socialAssets.size, urls.length, 'Every sitemap page must have its own social card'); 
+console.log('SEO production safety checks passed for ' + publicRoutes.length + ' critical routes, ' + urls.length + ' sitemap URLs and ' + socialAssets.size + ' unique social cards');
