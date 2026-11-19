@@ -9,7 +9,7 @@ export function setSeo({title,description,path=location.pathname,robots='index,f
   const social=socialPath.startsWith('http')?socialPath:`${base()}${socialPath}`;
   document.title=title;
   meta('description',description);meta('robots',robots);meta('googlebot',robots);meta('bingbot',robots);
-  meta('og:title',title,true);meta('og:description',description,true);meta('og:type','website',true);meta('og:site_name','Vorlen',true);meta('og:locale','en_GB',true);meta('og:url',canonical,true);meta('og:image',social,true);meta('og:image:type','image/svg+xml',true);meta('og:image:width','1200',true);meta('og:image:height','630',true);meta('og:image:alt',title+' — Vorlen UK recruitment',true);
+  meta('og:title',title,true);meta('og:description',description,true);meta('og:type','website',true);meta('og:site_name','Vorlen',true);meta('og:locale','en_GB',true);meta('og:url',canonical,true);meta('og:image',social,true);meta('og:image:type','image/png',true);meta('og:image:width','1200',true);meta('og:image:height','630',true);meta('og:image:alt',title+' — Vorlen UK recruitment',true);
   meta('twitter:card','summary_large_image');meta('twitter:title',title);meta('twitter:description',description);meta('twitter:image',social);
   meta('google-site-verification',String(import.meta.env.VITE_GOOGLE_SITE_VERIFICATION||''));meta('msvalidate.01',String(import.meta.env.VITE_BING_SITE_VERIFICATION||''));
   link('canonical',canonical);link('alternate',canonical,'en-GB');link('alternate',canonical,'x-default');
