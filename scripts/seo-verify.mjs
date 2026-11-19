@@ -7,7 +7,7 @@ const base = 'https://www.vorlen.co.uk';
 const publicRoutes = ['/', '/our-approach', '/guides/employer-recruitment-questions', '/guides/choosing-a-recruitment-agency', '/employers', '/contact', '/careers', '/services/permanent-recruitment',
   '/services/candidate-sourcing', '/services/recruitment-for-smes', '/sectors/technology',
   '/sectors/engineering', '/sectors/finance-accounting', '/sectors/sales-business-development',
-  '/locations/manchester', '/locations/greater-manchester'];
+  '/locations/manchester', '/locations/greater-manchester', '/partners', '/candidates', '/privacy', '/candidate-terms', '/accessibility'];
 const privateRoutes = ['/dashboard', '/login', '/client', '/review'];
 const read = path => readFile(new URL(path, root), 'utf8');
 const xml = await read('sitemap.xml');
@@ -36,17 +36,36 @@ for (const route of publicRoutes) {
   assert.match(html, /<h1[^>]*>[^<]+<\/h1>/, 'Missing crawlable H1: ' + route);
   assert.equal((html.match(/property="og:url"/g) || []).length, 1, 'Expected exactly one Open Graph URL: ' + route);
   assert.ok(html.includes('property="og:url" content="' + canonical + '"'), 'Incorrect Open Graph URL: ' + route);
+  const socialImage=html.match(/property="og:image" content="([^"]+)"/)?.[1];
+  assert.ok(socialImage, 'Missing Open Graph image: ' + route);
+  assert.ok(socialImage.startsWith(base + '/social/'), 'Expected a route-specific social card: ' + route);
+  assert.ok(socialImage.endsWith('.png'), 'Social cards must use crawler-compatible PNG: ' + route);
+  assert.ok(html.includes('property=\"og:image:type\" content=\"image/png\"'), 'Open Graph image MIME type must be PNG: ' + route);
+  assert.equal((html.match(/id=\"seo-jsonld\"/g)||[]).length,1,'Expected one pre-rendered JSON-LD block: '+route);
+  assert.ok(html.includes('name="twitter:image" content="' + socialImage + '"'), 'Twitter image must match Open Graph image: ' + route);
+  await stat(new URL(socialImage.replace(base + '/', ''), root));
+  assert.equal((html.match(/<h1\b/g) || []).length, 1, 'Expected exactly one H1: ' + route);
+  if (route.startsWith('/sectors/')) {
+    const words=(html.match(/<main>[\s\S]*?<\/main>/)?.[0]||'').replace(/<[^>]+>/g,' ').split(/\s+/).filter(Boolean).length;
+    assert.ok(words >= 220, 'Sector page needs substantive crawlable copy (' + words + ' words): ' + route);
+  }
   assert.equal((html.match(/name="twitter:title"/g) || []).length, 1, 'Expected exactly one Twitter title: ' + route);
   assert.ok(html.includes('<title>' + (route === '/' ? 'Vorlen | UK Permanent Recruitment Agency for Employers' : html.match(/<title>(.*?)<\/title>/)?.[1]) + '</title>'), 'Missing route title: ' + route);
   assert.match(html, /<main>/, 'Missing crawlable main: ' + route);
   assert.ok(html.includes('application/ld+json'), 'Missing structured data: '+route);
   assert.ok(!/<meta name="robots" content="noindex/i.test(html), 'Public route noindexed: ' + route);
 }
+const socialAssets=new Set();
 for (const url of urls) {
   assert.ok(url.startsWith(base + '/'), 'External URL in sitemap: ' + url);
-  const path = new URL(url).pathname;
-  const file = path === '/' ? 'index.html' : path.slice(1) + '/index.html';
+  const routePath = new URL(url).pathname;
+  const file = routePath === '/' ? 'index.html' : routePath.slice(1) + '/index.html';
   await stat(new URL(file, root));
+  const html=await read(file);
+  const socialImage=html.match(/property="og:image" content="([^"]+)"/)?.[1];
+  assert.ok(socialImage, 'Missing social image on sitemap URL: ' + url);
+  socialAssets.add(socialImage);
+  await stat(new URL(socialImage.replace(base + '/', ''), root));
 }
 assert.ok(urls.includes(base + '/our-approach'), 'Missing methodology page in sitemap');
 const homeHtml = await read('index.html');
@@ -65,10 +84,13 @@ for (const url of urls.filter(x=>x.includes('/careers/'))) {
     assert.match(jobHtml, /"hiringOrganization"/, 'JobPosting must identify the hiring organization: ' + url);
     assert.match(jobHtml, /"datePosted"/, 'JobPosting must include its publication date: ' + url);
     assert.match(jobHtml, /"directApply":true/, 'JobPosting must expose the direct application route: ' + url);
+    assert.match(jobHtml, /"hiringOrganization":\{"@type":"Organization","name":"Confidential client"\}/, 'JobPosting must keep the client confidential: ' + url);
+    assert.doesNotMatch(jobHtml, /"hiringOrganization"[^}]*"name":"VORLEN LTD"/, 'Vorlen must not be presented as the employer: ' + url);
   } else {
     assert.match(jobHtml, /"@type":"WebPage"/, 'Register-interest pages must not be labelled as live JobPosting: ' + url);
   }
 }
 
 await stat(new URL('llms.txt', root));
-console.log('SEO production safety checks passed for ' + publicRoutes.length + ' critical routes and ' + urls.length + ' sitemap URLs');
+assert.equal(socialAssets.size, urls.length, 'Every sitemap page must have its own social card'); 
+console.log('SEO production safety checks passed for ' + publicRoutes.length + ' critical routes, ' + urls.length + ' sitemap URLs and ' + socialAssets.size + ' unique social cards');

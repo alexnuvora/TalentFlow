@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import {deflateSync} from 'node:zlib';
 import {loadEnv} from 'vite';
 import {crawlLinks,crawlDetails,guideSlug,guideIntro,guideQuestions,guideChecklist,homeMeta} from './seo-content.mjs';
 
@@ -34,18 +35,49 @@ async function jobs(){
 
 crawlDetails[guideSlug]=[...guideIntro,...guideQuestions.map(({q,a})=>`${q} ${a}`),...guideChecklist];
 
-function crawlBody(title,description,canonical){
-  const path=new URL(canonical).pathname.replace(/\/$/,'')||'/';
-  const details=crawlDetails[path]||[
-    'Vorlen is a UK permanent recruitment agency. We take the brief, source the candidates, screen them, and stand behind every introduction.',
-    "Fees are agreed in writing before any search starts. Every shortlist comes with the recruiter's reasoning, not just CVs."
+const FONT={
+A:'01110/10001/10001/11111/10001/10001/10001',B:'11110/10001/10001/11110/10001/10001/11110',C:'01111/10000/10000/10000/10000/10000/01111',D:'11110/10001/10001/10001/10001/10001/11110',E:'11111/10000/10000/11110/10000/10000/11111',F:'11111/10000/10000/11110/10000/10000/10000',G:'01111/10000/10000/10111/10001/10001/01111',H:'10001/10001/10001/11111/10001/10001/10001',I:'11111/00100/00100/00100/00100/00100/11111',J:'00111/00010/00010/00010/10010/10010/01100',K:'10001/10010/10100/11000/10100/10010/10001',L:'10000/10000/10000/10000/10000/10000/11111',M:'10001/11011/10101/10101/10001/10001/10001',N:'10001/11001/10101/10011/10001/10001/10001',O:'01110/10001/10001/10001/10001/10001/01110',P:'11110/10001/10001/11110/10000/10000/10000',Q:'01110/10001/10001/10001/10101/10010/01101',R:'11110/10001/10001/11110/10100/10010/10001',S:'01111/10000/10000/01110/00001/00001/11110',T:'11111/00100/00100/00100/00100/00100/00100',U:'10001/10001/10001/10001/10001/10001/01110',V:'10001/10001/10001/10001/10001/01010/00100',W:'10001/10001/10001/10101/10101/10101/01010',X:'10001/10001/01010/00100/01010/10001/10001',Y:'10001/10001/01010/00100/00100/00100/00100',Z:'11111/00001/00010/00100/01000/10000/11111',
+'0':'01110/10001/10011/10101/11001/10001/01110','1':'00100/01100/00100/00100/00100/00100/01110','2':'01110/10001/00001/00010/00100/01000/11111','3':'11110/00001/00001/01110/00001/00001/11110','4':'00010/00110/01010/10010/11111/00010/00010','5':'11111/10000/10000/11110/00001/00001/11110','6':'01110/10000/10000/11110/10001/10001/01110','7':'11111/00001/00010/00100/01000/01000/01000','8':'01110/10001/10001/01110/10001/10001/01110','9':'01110/10001/10001/01111/00001/00001/01110',
+'&':'01010/10101/10100/01000/10101/10010/01101','-':'00000/00000/00000/11111/00000/00000/00000','/':'00001/00010/00010/00100/01000/01000/10000',':':'00000/00100/00100/00000/00100/00100/00000','.':'00000/00000/00000/00000/00000/00100/00100'
+};
+function crc32(buf){let c=0xffffffff;for(const b of buf){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0)}return(c^0xffffffff)>>>0}
+function pngChunk(type,data){const name=Buffer.from(type),len=Buffer.alloc(4),crc=Buffer.alloc(4);len.writeUInt32BE(data.length);crc.writeUInt32BE(crc32(Buffer.concat([name,data])));return Buffer.concat([len,name,data,crc])}
+function makeSocialPng(title){
+  const w=1200,h=630,pixels=Buffer.alloc(w*h*4);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const t=(x/w*.55+y/h*.45),i=(y*w+x)*4;pixels[i]=Math.round(16+20*t);pixels[i+1]=Math.round(40+38*t);pixels[i+2]=Math.round(32+27*t);pixels[i+3]=255}
+  const rect=(x,y,rw,rh,color)=>{for(let yy=Math.max(0,y);yy<Math.min(h,y+rh);yy++)for(let xx=Math.max(0,x);xx<Math.min(w,x+rw);xx++){const i=(yy*w+xx)*4;pixels[i]=color[0];pixels[i+1]=color[1];pixels[i+2]=color[2];pixels[i+3]=255}};
+  const draw=(text,x,y,scale,color,maxWidth=1050)=>{let cx=x;for(const ch of String(text).toUpperCase()){if(ch===' '){cx+=scale*4;continue}const rows=(FONT[ch]||FONT['-']).split('/');if(cx+scale*6>x+maxWidth)break;for(let ry=0;ry<7;ry++)for(let rx=0;rx<5;rx++)if(rows[ry][rx]==='1')rect(cx+rx*scale,y+ry*scale,scale,scale,color);cx+=scale*6}};
+  // restrained decorative geometry and a clear branded hierarchy
+  rect(76,96,76,5,[199,216,183]);draw('VORLEN',76,126,5,[199,216,183]);draw('UK PERMANENT RECRUITMENT',76,205,3,[219,229,221]);
+  const words=String(title).replace(/\s*\|\s*Vorlen.*$/i,'').toUpperCase().split(/\s+/),lines=[];let line='';
+  for(const word of words){if((line+' '+word).trim().length>25&&line){lines.push(line);line=word}else line=(line+' '+word).trim()}if(line)lines.push(line);
+  lines.slice(0,3).forEach((value,i)=>draw(value,76,278+i*68,7,[248,247,242],1040));
+  rect(76,505,1048,2,[130,161,143]);draw('HUMAN REVIEWED RECRUITMENT  /  CLEAR BRIEFS  /  WRITTEN TERMS',76,535,2,[227,235,229],1040);
+  const raw=Buffer.alloc((w*4+1)*h);for(let y=0;y<h;y++){const row=y*(w*4+1);raw[row]=0;pixels.copy(raw,row+1,y*w*4,(y+1)*w*4)}
+  const ihdr=Buffer.alloc(13);ihdr.writeUInt32BE(w,0);ihdr.writeUInt32BE(h,4);ihdr[8]=8;ihdr[9]=6;
+  return Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),pngChunk('IHDR',ihdr),pngChunk('IDAT',deflateSync(raw)),pngChunk('IEND',Buffer.alloc(0))]);
+}
+async function writeSocialCard(route,title){
+  const slug=(route==='/'?'home':route.replace(/^\//,'').replace(/[^a-z0-9]+/gi,'-').replace(/-$/,'')).slice(0,90);
+  const dir=path.join(dist,'social');await fs.mkdir(dir,{recursive:true});
+  await fs.writeFile(path.join(dir,`${slug}.png`),makeSocialPng(title));
+  return `/social/${slug}.png`;
+}
+function crawlBody(title,description,canonical,bodyDetails){
+  const route=new URL(canonical).pathname.replace(/\/$/,'')||'/';
+  const details=bodyDetails?.length?bodyDetails:(crawlDetails[route]||[]);
+  const safeDetails=details.length?details:[
+    'Vorlen is a UK permanent recruitment agency. We take a clear vacancy brief, source candidates and review relevant evidence before making introductions.',
+    'Commercial terms are agreed in writing before a search begins. Employers retain responsibility for the final hiring decision.'
   ];
   const links=crawlLinks.map(([href,label])=>`<a href="${href}">${esc(label)}</a>`).join(' · ');
-  return `<main><h1>${esc(title.replace(/\s*\|\s*Vorlen.*$/i,''))}</h1><p>${esc(description)}</p><h2>Permanent recruitment support</h2><p>${esc(details[0])}</p><p>${esc(details[1])}</p>${path===guideSlug?`<section aria-label="Employer questions and answers"><h2>Choosing an agency: honest answers</h2>${details.slice(2).map((x)=>`<p>${esc(x)}</p>`).join('')}</section>`:path==='/our-approach'?`<section aria-label="Candidate assessment safeguards"><h2>How candidate assessment works</h2>${details.slice(2).map((x)=>`<p>${esc(x)}</p>`).join('')}</section>`:''}<h2>More from Vorlen</h2><nav aria-label="Recruitment services">${links}</nav></main>`;
+  const heading=route.startsWith('/sectors/')?'How we approach this specialism':route.startsWith('/services/')?'What the service includes':route.startsWith('/locations/')?'Recruitment in this area':route.startsWith('/careers/')?'Role information':route===guideSlug?'Choosing a recruitment agency':route==='/our-approach'?'How candidate assessment works':'How Vorlen works';
+  const paragraphs=safeDetails.map(x=>`<p>${esc(x)}</p>`).join('');
+  return `<main><h1>${esc(title.replace(/\s*\|\s*Vorlen.*$/i,''))}</h1><p>${esc(description)}</p><section><h2>${esc(heading)}</h2>${paragraphs}</section>${route.startsWith('/careers/')?'<p><strong>Application status:</strong> Check the live opportunity page for whether this is an open role or a register-interest opportunity.</p>':''}<h2>Explore more from Vorlen</h2><nav aria-label="Recruitment services">${links}</nav></main>`;
 }
-function inject(html,{title,description,canonical,jsonLd}){
-  const image=`${base}/vorlen-logo.svg`;
-  const tags=`<meta name="description" content="${esc(description)}"/><meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"/><link rel="canonical" href="${esc(canonical)}"/><link rel="alternate" hreflang="en-GB" href="${esc(canonical)}"/><link rel="alternate" hreflang="x-default" href="${esc(canonical)}"/><meta property="og:type" content="website"/><meta property="og:site_name" content="Vorlen"/><meta property="og:locale" content="en_GB"/><meta property="og:title" content="${esc(title)}"/><meta property="og:description" content="${esc(description)}"/><meta property="og:url" content="${esc(canonical)}"/><meta property="og:image" content="${esc(image)}"/><meta property="og:image:alt" content="Vorlen — UK permanent recruitment agency"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="${esc(title)}"/><meta name="twitter:description" content="${esc(description)}"/><meta name="twitter:image" content="${esc(image)}"/>${jsonLd?`<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g,'\\u003c')}</script>`:''}`;
+function inject(html,{title,description,canonical,jsonLd,image,bodyDetails}){
+  const socialImage=`${base}${image||'/social/home.svg'}`;
+  const tags=`<meta name="description" content="${esc(description)}"/><meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"/><link rel="canonical" href="${esc(canonical)}"/><link rel="alternate" hreflang="en-GB" href="${esc(canonical)}"/><link rel="alternate" hreflang="x-default" href="${esc(canonical)}"/><meta property="og:type" content="website"/><meta property="og:site_name" content="Vorlen"/><meta property="og:locale" content="en_GB"/><meta property="og:title" content="${esc(title)}"/><meta property="og:description" content="${esc(description)}"/><meta property="og:url" content="${esc(canonical)}"/><meta property="og:image" content="${esc(socialImage)}"/><meta property="og:image:type" content="image/png"/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:image:alt" content="${esc(title)} — Vorlen UK recruitment"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="${esc(title)}"/><meta name="twitter:description" content="${esc(description)}"/><meta name="twitter:image" content="${esc(socialImage)}"/>${jsonLd?`<script id="seo-jsonld" type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g,'\\u003c')}</script>`:''}`;
   return html
     .replace(/<title>.*?<\/title>/s,`<title>${esc(title)}</title>`)
     .replace(/<meta name="description"[^>]*>/g,'')
@@ -54,7 +86,7 @@ function inject(html,{title,description,canonical,jsonLd}){
     .replace(/<link rel="alternate" hreflang="(?:en-GB|x-default)"[^>]*>/g,'')
     .replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g,'')
     .replace('</head>',`${tags}</head>`)
-    .replace('<div id="root"></div>',`<div id="root">${crawlBody(title,description,canonical)}</div>`);
+    .replace('<div id="root"></div>',`<div id="root">${crawlBody(title,description,canonical,bodyDetails)}</div>`);
 }
 
 async function writeRoute(route,html){
@@ -98,28 +130,33 @@ const staticPages=[
   {route:'/partners',title:'Vorlen Recruitment Partner Network',description:'Vorlen runs a selective partner network for experienced recruiters and business developers. Formal terms, onboarding and approval before anyone works a client.',lastmod:RELEASE_LASTMOD,jsonLd:service('Recruitment partner network','/partners','Selective recruitment partner network for experienced recruitment and business-development professionals.')},
   {route:'/locations/manchester',title:'Permanent Recruitment Agency Manchester | Vorlen',description:'Manchester-based recruitment agency for permanent vacancies: local market knowledge, honest advice on when to widen the search, human-reviewed shortlists.',lastmod:RELEASE_LASTMOD,jsonLd:service('Permanent recruitment in Manchester','/locations/manchester','Permanent recruitment support for employers hiring in Manchester.','Manchester, United Kingdom')},
   {route:'/locations/greater-manchester',title:'Recruitment Agency Greater Manchester | Vorlen',description:'Permanent recruitment across Greater Manchester, shaped around workplace location and commute rather than the borough on the envelope.',lastmod:RELEASE_LASTMOD,jsonLd:service('Permanent recruitment in Greater Manchester','/locations/greater-manchester','Permanent recruitment support for employers across Greater Manchester.','Greater Manchester, United Kingdom')},
-  {route:'/privacy',title:'Privacy notice | Vorlen',description:'How Vorlen handles personal information across recruitment, client and partner activity.',lastmod:''},
-  {route:'/candidate-terms',title:'Work-seeker terms | Vorlen',description:'Terms on which Vorlen provides permanent recruitment work-finding services to candidates.',lastmod:''},
-  {route:'/accessibility',title:'Accessibility | Vorlen',description:'Vorlen accessibility information for candidates, clients and recruitment workspace users.',lastmod:''}
+  {route:'/privacy',title:'Privacy notice | Vorlen',description:'How Vorlen handles personal information across recruitment, client and partner activity.',lastmod:'',jsonLd:{'@context':'https://schema.org','@type':'WebPage',name:'Vorlen privacy notice',url:`${base}/privacy`,about:organization}},
+  {route:'/candidate-terms',title:'Work-seeker terms | Vorlen',description:'Terms on which Vorlen provides permanent recruitment work-finding services to candidates.',lastmod:'',jsonLd:{'@context':'https://schema.org','@type':'WebPage',name:'Vorlen work-seeker terms',url:`${base}/candidate-terms`,about:organization}},
+  {route:'/accessibility',title:'Accessibility | Vorlen',description:'Vorlen accessibility information for candidates, clients and recruitment workspace users.',lastmod:'',jsonLd:{'@context':'https://schema.org','@type':'WebPage',name:'Vorlen accessibility information',url:`${base}/accessibility`,about:organization}}
 ];
 
-const homeHtml=inject(template,{title:homePage.title,description:homePage.description,canonical:`${base}/`,jsonLd:homePage.jsonLd});
+const homeImage=await writeSocialCard('/',homePage.title);
+const homeHtml=inject(template,{title:homePage.title,description:homePage.description,canonical:`${base}/`,jsonLd:homePage.jsonLd,image:homeImage});
 await fs.writeFile(path.join(dist,'index.html'),homeHtml);
 
 for(const page of staticPages){
-  await writeRoute(page.route,inject(template,{title:page.title,description:page.description,canonical:`${base}${page.route}`,jsonLd:page.jsonLd}));
+  const image=await writeSocialCard(page.route,page.title);
+  await writeRoute(page.route,inject(template,{title:page.title,description:page.description,canonical:`${base}${page.route}`,jsonLd:page.jsonLd,image}));
 }
 
 for(const j of rows){
   const description=strip(j.description||`Apply for ${j.title}${j.location?` in ${j.location}`:''}.`).slice(0,155);
   const canonical=`${base}/careers/${encodeURIComponent(j.slug)}`;
+  const pageTitle=`${j.title} | Vorlen Careers`;
   const schema=j.application_mode==='register_interest'
     ?{'@context':'https://schema.org','@type':'WebPage',name:j.title,description:strip(j.description||j.title),url:canonical}
-    :{'@context':'https://schema.org','@type':'JobPosting',title:j.title,description:strip(j.description||j.title),datePosted:j.created_at,employmentType:({permanent:'FULL_TIME',full_time:'FULL_TIME',part_time:'PART_TIME',contract:'CONTRACTOR',temporary:'TEMPORARY',internship:'INTERN'}[String(j.employment_type||'').toLowerCase()]||'FULL_TIME'),url:canonical,directApply:true,identifier:{'@type':'PropertyValue',name:'Vorlen vacancy reference',value:j.slug},hiringOrganization:{'@type':'Organization','@id':`${base}/#organization`,name:'VORLEN LTD',sameAs:'https://www.linkedin.com/company/vorlen/'},jobLocation:j.location?{'@type':'Place',address:{'@type':'PostalAddress',addressLocality:j.location,addressCountry:'GB'}}:undefined};
+    :{'@context':'https://schema.org','@type':'JobPosting',title:j.title,description:strip(j.description||j.title),datePosted:j.created_at,employmentType:({permanent:'FULL_TIME',full_time:'FULL_TIME',part_time:'PART_TIME',contract:'CONTRACTOR',temporary:'TEMPORARY',internship:'INTERN'}[String(j.employment_type||'').toLowerCase()]||'FULL_TIME'),url:canonical,directApply:true,identifier:{'@type':'PropertyValue',name:'Vorlen vacancy reference',value:j.slug},hiringOrganization:{'@type':'Organization',name:'Confidential client'},jobLocation:j.location?{'@type':'Place',address:{'@type':'PostalAddress',addressLocality:j.location,addressCountry:'GB'}}:undefined};
   if(j.application_mode!=='register_interest'&&(j.salary_min||j.salary_max)){
     schema.baseSalary={'@type':'MonetaryAmount',currency:'GBP',value:{'@type':'QuantitativeValue',minValue:j.salary_min||undefined,maxValue:j.salary_max||undefined,unitText:'YEAR'}};
   }
-  await writeRoute(`/careers/${j.slug}`,inject(template,{title:`${j.title} | Vorlen Careers`,description,canonical,jsonLd:schema}));
+  const image=await writeSocialCard(`/careers/${j.slug}`,pageTitle);
+  const bodyDetails=strip(j.description||'').split(/\n{2,}|(?<=[.!?])\s+(?=[A-Z])/).filter(Boolean);
+  await writeRoute(`/careers/${j.slug}`,inject(template,{title:pageTitle,description,canonical,jsonLd:schema,image,bodyDetails}));
 }
 
 const urls=[

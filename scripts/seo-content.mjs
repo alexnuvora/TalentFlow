@@ -108,3 +108,144 @@ export const homeMeta={
   orgDescription:'UK permanent recruitment agency. Brief-led searches, human-reviewed introductions, written fee terms.',
   legalName:'VORLEN LTD'
 };
+
+
+// Expanded, route-specific crawl copy. Keep every statement factual and tied to
+// the recruitment process; avoid invented placements, client names or outcomes.
+Object.assign(crawlDetails, {
+  '/sectors/engineering': [
+    "Vorlen supports permanent engineering recruitment for employers who need practical capability as well as a relevant job title. A useful brief identifies the engineering discipline, the equipment or systems in scope, the operating environment, the level of autonomy and the outcomes the new hire must deliver.",
+    "Depending on the vacancy, role families may include electrical and electronic engineering, mechanical engineering, design and CAD, maintenance, installation, manufacturing, project engineering, quality and technical supervision. The actual search is limited to the disciplines and experience the employer confirms are relevant.",
+    "Technical screening should distinguish essential requirements from preferences. That can include design packages, control systems, plant or machinery exposure, relevant standards, commissioning experience, fault-finding, project scale, safety responsibilities and any qualification or authorisation genuinely required for the work.",
+    "Site context matters. Shift patterns, travel between locations, call-out expectations, site access, safety procedures and whether the role is office, factory or field based all affect candidate suitability. These details should be clear before the search begins, not discovered after an introduction.",
+    "Vorlen's recruiter reviews evidence against the agreed brief and records the reason for recommending an introduction. Where a CV leaves a technical question unanswered, that gap should be raised for discussion rather than treated as proven experience. The employer retains the hiring decision.",
+    "For Greater Manchester vacancies, the search starts with the actual workplace and commute. If a specialist requirement makes the immediate area too narrow, the employer can agree to widen sourcing across the North West or UK. Salary, availability and working arrangements should remain realistic for the market and the role."
+  ],
+  '/sectors/technology': [
+    "Technology recruitment covers different markets that should not be collapsed into one generic developer search. Vorlen works from the employer's defined vacancy and may support permanent hiring across software engineering, data, cloud, infrastructure, product and technology leadership.",
+    "For software roles, the brief should identify the language and frameworks in active use, architecture, testing expectations, deployment approach, code ownership and the level of responsibility. A list of technologies alone is not enough: the employer should explain what the person will build, maintain or improve.",
+    "Data vacancies need clarity on the work itself: analytics, engineering, reporting, governance, modelling or platform ownership. Relevant systems, data scale, stakeholder groups, security requirements and the balance between hands-on delivery and leadership help distinguish candidates with genuinely comparable experience.",
+    "Cloud and infrastructure searches should specify platform, operating model, reliability expectations, security responsibilities, automation and on-call arrangements where applicable. Product roles need a different assessment, including discovery, prioritisation, delivery collaboration and the product outcomes the person will own.",
+    "Recruiter review should focus on evidence of delivery: the candidate's contribution, decisions made, complexity handled and results they can explain. A technology keyword on a CV is a prompt for a question, not proof of proficiency. Any technical exercise or interview remains the employer's responsibility and should be relevant to the job.",
+    "Vorlen confirms location, hybrid or on-site expectations, salary range and seniority before sourcing. These details materially affect the available market in Manchester and across the UK. If the brief combines incompatible requirements, we raise that early rather than promise an unrealistic shortlist."
+  ],
+  '/sectors/finance-accounting': [
+    "Finance and accounting recruitment spans distinct responsibilities. A transactional accounts hire, management accountant, practice accountant, financial controller and finance director do not share one interchangeable candidate market. Vorlen starts by defining the level of ownership and the work that must be completed.",
+    "For accounts and transactional roles, the brief may cover purchase ledger, sales ledger, credit control, reconciliations, invoicing, payroll support and month-end routines. Employers should specify transaction volumes, team structure, customer or supplier contact and the systems used day to day.",
+    "For qualified and part-qualified roles, confirm the qualification route and stage required, whether study support is available, and which duties require independent sign-off. Practice roles may need portfolio size, client type, accounts preparation, tax exposure, bookkeeping systems and audit involvement clearly stated.",
+    "Management and financial control positions need detail on month-end ownership, budgets, forecasting, cash flow, statutory reporting, controls, audit liaison and the senior stakeholders supported. A title such as 'finance manager' can mean very different things between organisations.",
+    "Screening should verify the candidate's actual level of responsibility, systems experience and examples of work. Recruiters should distinguish work personally completed from work reviewed, supervised or supported. Employers make final decisions and should validate any professional membership or qualification that is essential to the position.",
+    "Vorlen confirms salary, location, working pattern, reporting line and the expected balance between processing and analysis before starting a search. This helps avoid shortlists built around a title while missing the capability the finance team needs."
+  ],
+  '/sectors/sales-business-development': [
+    "Sales and business development recruitment works best when the employer describes the commercial environment rather than relying on a generic sales job title. Vorlen's brief should identify the product or service, target customer, territory, route to market and the result the new hire is expected to deliver.",
+    "The length and complexity of the sales cycle matter. A high-volume transactional role, field sales territory, account management position and consultative B2B new-business role require different experience. Clarify average deal value, decision-makers, procurement steps, lead sources and the balance between new business and account growth.",
+    "The package should be explained clearly, including basic salary, commission or bonus structure, targets, ramp-up period, payment rules and whether earnings are guaranteed or performance-related. Candidates need enough information to assess the opportunity and employers need a realistic basis for comparing experience.",
+    "Evidence-led screening explores what the candidate personally sold, to which customers, over what period and against what target. Where figures are shared, the recruiter should understand the context: territory potential, inherited pipeline, team contribution, cancellations and the difference between bookings and recognised revenue.",
+    "For leadership vacancies, the brief may include team size, coaching responsibilities, forecasting, CRM discipline, pipeline governance, recruitment and performance management. For account management, retention, renewal, expansion and stakeholder relationships may matter more than cold prospecting.",
+    "Vorlen agrees the essential evidence and interview questions with the employer before sourcing. No candidate should be described as a proven top performer solely because of a job title or an unverified number; gaps and context should be made clear for the hiring team to explore."
+  ],
+  '/services/permanent-recruitment': [
+    "A permanent search starts with a vacancy briefing. Vorlen asks about the reason for the hire, the outcomes expected, essential experience, qualifications where relevant, salary, location, working pattern, reporting line and interview process. The brief is confirmed before sourcing begins.",
+    "The recruiter then agrees the search approach and commercial terms in writing. The sourcing plan may combine relevant applications, direct research and professional networks. The aim is to reach people whose experience matches the agreed requirements, not to maximise the number of CVs sent.",
+    "Candidates are reviewed against job-related criteria. The recruiter checks the evidence available, clarifies material gaps where possible and explains why an introduction is being recommended. The employer receives context to support its own interview and selection decision.",
+    "Vorlen can coordinate interview arrangements, feedback and communication through the process. Timelines depend on the role, candidate availability, employer response times and the market; no fixed hiring date is promised before those factors are understood.",
+    "Fees, payment timing, rebate or replacement provisions and any exclusivity are set out in the agreed terms before work starts. Employers should have a written record of the terms that apply to their vacancy."
+  ],
+  '/services/candidate-sourcing': [
+    "Candidate sourcing is the work of finding relevant people for a defined vacancy, including people who may not be actively applying. It is most effective when the employer can explain the role, salary, location and essential experience clearly.",
+    "Vorlen can use the agreed criteria to research relevant candidate pools and assess whether a person's background appears aligned. Public profile information is not treated as verified proof; important details are checked with the candidate before an introduction is presented as confirmed.",
+    "A useful shortlist is not simply a collection of names. Each recommended introduction should explain the relevant experience, the evidence supporting the match and any points the employer should explore. Where the evidence is weak or incomplete, that limitation should be stated.",
+    "Candidate contact and sharing must respect privacy, data protection and the candidate's authority. Vorlen handles personal information under its privacy notice and shares candidate details with a client only through an appropriate recruitment process.",
+    "The search is reviewed with the employer as the market responds. If salary, location or requirements are limiting the available pool, Vorlen can explain the issue and agree whether the brief should change."
+  ],
+  '/services/recruitment-for-smes': [
+    "Smaller employers often need recruitment support for a specific vacancy without building a permanent internal recruitment function. Vorlen's SME service is organised around a defined role, clear commercial terms and a manageable process for the hiring manager.",
+    "The first step is to agree what the person must achieve, which skills are essential, what can be learned, the salary and the working arrangements. This helps avoid an unrealistic wish-list and gives candidates an accurate picture of the opportunity.",
+    "The recruiter sources and reviews candidates against the brief, then explains the reason for each recommended introduction. The employer can focus interview time on people whose experience appears relevant instead of sorting through a large volume of loosely matched CVs.",
+    "Vorlen can help coordinate interviews and feedback, while the employer remains responsible for the final selection, references and employment decision. The process and division of responsibilities are agreed at the start.",
+    "Fees and any rebate, replacement or exclusivity terms are confirmed in writing before sourcing begins. There is no assumed fixed fee or obligation beyond the terms agreed for the individual assignment."
+  ],
+  '/employers': [
+    "An employer enquiry should include the job title, workplace, salary range, employment type and the reason the vacancy exists. A short conversation can then establish whether the role is suitable for an external permanent search and what information is still missing.",
+    "Vorlen works with the hiring contact to separate essential criteria from preferences. This includes the work the person will own, the experience needed on day one, qualifications or licences where required, team context and how success will be judged.",
+    "Before work starts, the employer receives written commercial terms. These should explain the fee, VAT treatment, payment timing and any rebate, replacement or exclusivity conditions that apply. The search begins once the terms and vacancy brief are agreed.",
+    "Candidate introductions are reviewed by a recruiter and include context about the match. Employers should expect a clear explanation of the evidence and any areas to test at interview, not an unsupported guarantee that a candidate is right for the job.",
+    "Vorlen can coordinate interviews and feedback, but the employer retains control of the hiring decision and employment checks. A responsive process depends on timely feedback and an agreed point of contact."
+  ],
+  '/locations/manchester': [
+    "Manchester hiring decisions are shaped by the actual workplace, commute and working pattern. A role in the city centre, Trafford Park, the airport corridor or an outlying business park can draw from different practical candidate pools even when the job title is identical.",
+    "Vorlen starts with the location candidates must attend, how often they need to be on site and whether travel between sites is part of the job. Hybrid arrangements should be described accurately, including any fixed office days or customer visits.",
+    "The search can cover Greater Manchester and, where the role justifies it, the wider North West or UK. Widening the geography is a discussion with the employer, not an assumption that a candidate will relocate or commute.",
+    "Manchester vacancies still need a realistic salary and a clear description of the work. If a specialist requirement, shift pattern or package narrows the market, that should be explained early so the employer can decide which requirements are essential."
+  ],
+  '/locations/greater-manchester': [
+    "Greater Manchester is not one uniform recruitment market. Workplace location, public transport, motorway access, shift start times and the need to travel between sites can all change which candidates can realistically take a role.",
+    "Vorlen asks employers to identify the actual site and attendance pattern rather than relying only on a borough or postcode. This makes it easier to assess whether a local search is realistic and whether a wider North West or UK search is appropriate.",
+    "For roles based across multiple sites, the brief should explain travel expectations, mileage or expenses, working hours and whether a company vehicle is provided. Candidates should not have to discover these practical conditions late in the process.",
+    "The same role title can mean different things across manufacturing, logistics, professional services and technology employers. A strong brief describes the work, required experience and outcomes so the search is based on capability rather than location keywords alone."
+  ],
+  '/careers': [
+    "The careers page lists opportunities that have been published by Vorlen. Each listing should make the role, location, employment type and available pay information clear enough for a candidate to decide whether to read further.",
+    "A live vacancy is an open recruitment assignment with an application route. A register-interest opportunity is different: it invites candidates to share interest for future consideration and must be labelled clearly so it is not mistaken for a confirmed live vacancy.",
+    "Candidates should read the full role description, check the location and working arrangements, and review the privacy notice and work-seeker terms before applying. The application is received by Vorlen for recruiter review.",
+    "Vacancy information can change. The live listing is the source of current role details; if a role is filled or withdrawn, its public status and structured job data should be updated so search engines are not shown a stale opening."
+  ],
+  '/privacy': [
+    "Vorlen processes personal information in connection with employer enquiries, candidate applications, recruitment activity, partner relationships and website use. The information collected depends on the interaction and the purpose for which it is provided.",
+    "Candidate information is used to assess suitability for relevant opportunities, communicate about applications and manage the recruitment process. It is shared with a prospective employer only where there is an appropriate lawful basis and the required authority for the introduction.",
+    "People should use the contact details in this notice to ask about their information, raise a concern or exercise applicable data-protection rights. The full privacy notice on this page governs the detail; this summary does not replace it."
+  ],
+  '/candidate-terms': [
+    "These work-seeker terms explain the basis on which Vorlen provides recruitment work-finding services to candidates. Candidates should read the full terms on this page and ask Vorlen to clarify anything they do not understand before proceeding.",
+    "Candidates are responsible for providing accurate information about their experience, qualifications, availability and right to work where relevant. Vorlen may ask follow-up questions to clarify information that is material to a vacancy.",
+    "An application or introduction does not guarantee an interview, offer or employment. The employer makes the final hiring decision and may carry out its own selection and verification checks."
+  ],
+  '/accessibility': [
+    "Vorlen aims to make its public recruitment information and application journeys usable by people with different access needs. This includes clear page structure, readable text, labelled form controls and keyboard-operable navigation.",
+    "If a candidate or employer encounters a barrier when using the website, they can contact Vorlen and explain the page, task and assistive technology involved. This helps the team understand the issue and identify a practical alternative while it is reviewed.",
+    "Accessibility is an ongoing responsibility. New pages and changes to forms should be checked for keyboard access, visible focus, appropriate labels, heading order, contrast and layouts that work on small screens."
+  ]
+});
+
+
+// Additional high-intent landing-page copy so the pre-rendered HTML contains
+// useful answers before client-side application code loads.
+Object.assign(crawlDetails, {
+  '/': [
+    "Vorlen is a UK permanent recruitment agency for employers who need help filling a defined vacancy. We work from the requirements of the job, not a generic database search, and agree the commercial terms before sourcing begins.",
+    "The process starts with a conversation about the role, workplace, salary, working pattern, essential experience and the outcomes expected from the new hire. We help separate requirements that are genuinely necessary from preferences that can unnecessarily narrow the search.",
+    "Once the brief and terms are agreed, the recruiter researches the market, reviews relevant applications and speaks with suitable candidates. An introduction should explain the person's relevant experience, the evidence reviewed and any questions the employer should explore at interview.",
+    "Vorlen supports permanent recruitment across the UK, with a Manchester base and searches shaped around the actual workplace and commute. We can discuss engineering, technology, finance, sales, administration and other permanent vacancies where the requirements can be clearly defined.",
+    "Employers retain the final hiring decision. Candidate information is handled through the recruitment process and shared with clients only where there is an appropriate basis and candidate authority. We do not publish invented placement figures, client endorsements or testimonials.",
+    "If you are considering an external recruiter, start with one vacancy. Tell us the job title, location, salary range and the experience that matters most. We will discuss whether Vorlen can help and confirm any fee and terms in writing before work starts."
+  ],
+  '/guides/employer-recruitment-questions': [
+    "Choosing a recruitment agency is a commercial decision. Before agreeing to a search, ask who will manage the vacancy, how candidates will be sourced, who reviews the evidence and what information will accompany each introduction. Clear answers make it easier to compare agencies on delivery rather than sales language.",
+    "A useful vacancy brief identifies the job's purpose, essential outcomes, salary range, location, working pattern, reporting line and interview process. Add qualifications, licences, systems or technical requirements only where they are genuinely needed to perform the role.",
+    "Recruitment fees vary. Some agencies charge a percentage of first-year salary and others agree a fixed fee or another structure. Ask whether VAT applies, when payment becomes due, whether the search is exclusive and what rebate or replacement provisions apply if a placement does not work out. Get the complete terms in writing.",
+    "Hiring timelines depend on the availability of suitable candidates, the clarity of the brief, salary competitiveness and how quickly the employer can interview and provide feedback. An agency can organise sourcing and screening, but should not guarantee a hire by a date before those factors are understood.",
+    "A shortlist should be small enough to review properly and each introduction should include a reason for the recommendation. Ask what the recruiter has verified, what remains unconfirmed and which questions the hiring manager should explore. The employer remains responsible for the final selection and employment checks.",
+    "For SMEs without an internal HR team, agree who owns interview scheduling, candidate updates, feedback and offer communication. A named contact and a simple decision process help candidates stay informed and reduce avoidable delays."
+  ],
+  '/partners': [
+    "Vorlen's recruitment partner network is intended for experienced recruiters and business developers who can contribute to permanent recruitment assignments or introduce suitable employer relationships. A partner's role and permissions are agreed before any client or candidate activity begins.",
+    "Client development and candidate delivery are different responsibilities. A partner may be approved to research an employer, qualify a hiring requirement, source candidates or support a combined assignment, but access is controlled by the approval and role permissions recorded in Vorlen.",
+    "Before work begins, the relevant commercial terms, fee-sharing arrangement, payment trigger and responsibilities must be documented. Partner commission is tied to the applicable Vorlen fee and is payable only in accordance with the agreed terms and receipt of the corresponding client payment.",
+    "Partners must follow the agreed vacancy status, client confidentiality, candidate authority and data-handling processes. Research-only opportunities must not be treated as approval to submit CVs or contact candidates on behalf of a client.",
+    "People interested in the network can contact Vorlen with a short summary of their recruitment or business-development experience. An enquiry is not an automatic approval to access client records or work on an assignment."
+  ],
+  '/candidates': [
+    "Vorlen supports people exploring permanent roles with clear vacancy information and a recruiter-led application process. Read the job description carefully, check the location and working arrangements, and make sure the role matches the experience you can evidence.",
+    "A CV should explain the work you personally completed, the systems or equipment you used, the level of responsibility you held and the outcomes you contributed to. Where a qualification, licence or professional membership is required, include accurate details so the recruiter can clarify them.",
+    "Applications are reviewed in relation to the requirements of the vacancy. A recruiter may contact you to clarify experience, availability, location or other job-related information. Applying does not guarantee an interview or offer; the employer makes the final hiring decision.",
+    "Your personal information is handled under the Vorlen privacy notice. Candidate details are shared with a prospective employer only through an appropriate recruitment process and where the necessary lawful basis and authority are in place.",
+    "You can browse published opportunities without creating an account. Some listings may be register-interest opportunities rather than confirmed live vacancies; the page should identify the difference before you submit your details."
+  ],
+  '/contact': [
+    "Employers can contact Vorlen to discuss a permanent vacancy, recruitment requirement or the suitability of an external search. Include the job title, workplace location, salary range and the experience that matters most if those details are available.",
+    "Candidates can use the contact route for questions about an application, a published opportunity, their personal information or accessibility support. Please avoid sending sensitive identity documents unless a recruiter has requested them through an appropriate secure process.",
+    "Recruitment partners can enquire about the partner network and outline their relevant experience. An enquiry does not grant access to client or candidate records; onboarding and assignment permissions are handled separately.",
+    "Email: contact@vorlen.co.uk. Vorlen reviews enquiries and responds according to the nature of the request."
+  ]
+});
