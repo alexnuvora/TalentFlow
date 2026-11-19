@@ -37,8 +37,8 @@ for (const route of publicRoutes) {
   assert.match(html, /<h1[^>]*>[^<]+<\/h1>/, 'Missing crawlable H1: ' + route);
   assert.equal((html.match(/property="og:url"/g) || []).length, 1, 'Expected exactly one Open Graph URL: ' + route);
   assert.ok(html.includes('property="og:url" content="' + canonical + '"'), 'Incorrect Open Graph URL: ' + route);
-  const meta=html.match(/<meta name="description" content="([^"]*)"/);
-  assert.ok(meta&&meta[1].length<=155,'Meta description must be <=155 characters: '+route);
+  const metaDescriptionTag=html.match(/<meta name="description" content="([^"]*)"/);
+  assert.ok(metaDescriptionTag&&metaDescriptionTag[1].length<=155,'Meta description must be <=155 characters: '+route);
   assert.doesNotMatch(html,/<img(?![^>]*\balt=)[^>]*>/i,'Every content image must have alt text: '+route);
   const meta=html.match(/<meta name="description" content="([^"]*)"/);
   assert.ok(meta&&meta[1].length<=155,'Meta description must be <=155 characters: '+route);
