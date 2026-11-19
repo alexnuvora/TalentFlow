@@ -69,6 +69,17 @@ for (const url of urls) {
 }
 assert.ok(urls.includes(base + '/our-approach'), 'Missing methodology page in sitemap');
 const homeHtml = await read('index.html');
+for (const [route,label] of [
+  ['/guides/employer-recruitment-questions','Recruitment fees and employer FAQs'],
+  ['/sectors/engineering','Engineering recruitment'],
+  ['/sectors/technology','Technology recruitment'],
+  ['/sectors/finance-accounting','Finance and accounting recruitment'],
+  ['/sectors/sales-business-development','Sales recruitment'],
+  ['/locations/manchester','Recruitment in Manchester'],
+  ['/locations/greater-manchester','Recruitment across Greater Manchester']
+]) {
+  assert.ok(homeHtml.includes('href="'+route+'">'+label+'</a>'), 'Homepage must link directly to '+route);
+}
 const serviceHtml = await read('services/permanent-recruitment/index.html');
 const articleHtml = await read('guides/choosing-a-recruitment-agency/index.html');
 assert.match(homeHtml, /"@type":\["Organization","EmploymentAgency"\]/, 'Homepage must describe the agency entity');
