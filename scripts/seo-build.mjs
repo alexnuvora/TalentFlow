@@ -76,7 +76,7 @@ const service=(name,route,description,area='United Kingdom')=>({
   areaServed:{'@type':'AdministrativeArea',name:area},url:`${base}${route}`,description
 });
 
-const homePage={title:homeMeta.title,description:homeMeta.description,jsonLd:[{'@context':'https://schema.org','@type':['Organization','EmploymentAgency'],'@id':`${base}/#organization`,name:'Vorlen',legalName:homeMeta.legalName,url:`${base}/`,logo:`${base}/vorlen-logo.svg`,email:'contact@vorlen.co.uk',areaServed:{'@type':'Country',name:'United Kingdom'},identifier:{'@type':'PropertyValue',propertyID:'UK Company Number',value:'17387520'},address:{'@type':'PostalAddress',addressLocality:'Rochdale',postalCode:'OL16 2EP',addressCountry:'GB'},sameAs:['https://www.linkedin.com/company/vorlen/','https://find-and-update.company-information.service.gov.uk/company/17387520'],description:homeMeta.orgDescription},{'@context':'https://schema.org','@type':'WebSite','@id':`${base}/#website`,name:'Vorlen',url:`${base}/`,publisher:{'@id':`${base}/#organization`}}]};
+const homePage={title:homeMeta.title,description:homeMeta.description,jsonLd:[{'@context':'https://schema.org','@type':['Organization','EmploymentAgency'],'@id':`${base}/#organization`,name:'Vorlen',legalName:homeMeta.legalName,url:`${base}/`,logo:`${base}/vorlen-logo.svg`,email:'contact@vorlen.co.uk',areaServed:{'@type':'Country',name:'United Kingdom'},identifier:{'@type':'PropertyValue',propertyID:'UK Company Number',value:'17387520'},address:{'@type':'PostalAddress',streetAddress:'Piccadilly Business Centre, Unit C Aldow Enterprise Park, Blackett Street',addressLocality:'Manchester',postalCode:'M12 6AE',addressCountry:'GB'},sameAs:['https://www.linkedin.com/company/vorlen/','https://find-and-update.company-information.service.gov.uk/company/17387520'],description:homeMeta.orgDescription},{'@context':'https://schema.org','@type':'WebSite','@id':`${base}/#website`,name:'Vorlen',url:`${base}/`,publisher:{'@id':`${base}/#organization`}}]};
 
 const guideJsonLd={'@context':'https://schema.org','@graph':[{'@type':'Article','@id':`${base}${guideSlug}#article`,headline:'Choosing a Recruitment Agency: Fees, Shortlists and Questions to Ask',description:'A practical guide to choosing a UK recruitment agency, comparing fees, candidate assessment, shortlists and replacement terms.',mainEntityOfPage:`${base}${guideSlug}`,publisher:organization,author:{'@id':`${base}/#organization`}},{'@type':'FAQPage',mainEntity:guideQuestions.map(({q,a})=>({'@type':'Question',name:q,acceptedAnswer:{'@type':'Answer',text:a}}))}]};
 
@@ -137,7 +137,7 @@ await fs.writeFile(path.join(dist,'llms.txt'),`# Vorlen
 - Website: ${base}/
 - Legal name: VORLEN LTD
 - Company number: 17387520
-- Registered office: Rochdale, OL16 2EP, United Kingdom
+- Registered office: Piccadilly Business Centre, Unit C Aldow Enterprise Park, Blackett Street, Manchester, M12 6AE, United Kingdom
 - Contact: mailto:contact@vorlen.co.uk
 - LinkedIn: https://www.linkedin.com/company/vorlen/\n- Companies House: https://find-and-update.company-information.service.gov.uk/company/17387520
 
