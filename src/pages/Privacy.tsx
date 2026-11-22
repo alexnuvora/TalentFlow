@@ -1,3 +1,4 @@
+import MarketingHeader from '../components/MarketingHeader';
 import {useEffect} from 'react';
 import {Link} from 'react-router-dom';
 import {setSeo} from '../lib/seo';
@@ -10,7 +11,7 @@ export default function Privacy(){
   path:'/privacy'
  }),[]);
  return <div className="legal-public">
-  <header><VorlenBrand/><Link to="/contact">Contact</Link></header>
+  <MarketingHeader/>
   <main>
    <div className="legal-kicker">PRIVACY NOTICE · VERSION 25 SEPTEMBER 2026</div>
    <h1>Privacy notice</h1>

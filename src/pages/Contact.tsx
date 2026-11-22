@@ -1,3 +1,4 @@
+import MarketingHeader from '../components/MarketingHeader';
 import {useEffect,useState} from 'react';
 import {Link} from 'react-router-dom';
 import {ArrowRight,BriefcaseBusiness,Network,Users} from 'lucide-react';
@@ -20,7 +21,7 @@ export default function Contact(){
   }
 
   return <div className="vorlen-contact-page">
-    <header className="vorlen-nav"><VorlenBrand/><nav><Link to="/">About Vorlen</Link><Link to="/careers">Careers</Link></nav><div className="vorlen-nav-actions"><Link className="vorlen-text-link" to="/login">Sign in</Link></div></header>
+    <MarketingHeader/>
     <main className="vorlen-contact-main">
       <section className="vorlen-contact-intro"><div className="vorlen-contact-photo"><img src="/images/vorlen-page-16.webp" alt="Professionals discussing recruitment in an office" decoding="async"/></div><p className="vorlen-eyebrow">CONTACT VORLEN</p><h1>Let's talk about what you need.</h1><p>Hiring for a permanent role, asking about an application or exploring the Vorlen partner network? Send the context and we’ll route it properly.</p><div className="vorlen-contact-direct"><span>Prefer email?</span><a href="mailto:contact@vorlen.co.uk">contact@vorlen.co.uk</a></div></section>
       <section className="vorlen-contact-card">

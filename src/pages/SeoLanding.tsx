@@ -1,3 +1,4 @@
+import MarketingHeader from '../components/MarketingHeader';
 import {useEffect} from 'react';
 import {Link,useLocation} from 'react-router-dom';
 import {ArrowRight,BriefcaseBusiness,CheckCircle2,MapPin,Network,Search,ShieldCheck,Users} from 'lucide-react';
@@ -204,16 +205,7 @@ export default function SeoLanding(){
 
   return <div className="vorlen-site vorlen-seo-page">
     <a className="skip-link" href="#main">Skip to content</a>
-    <header className="vorlen-nav">
-      <VorlenBrand/>
-      <nav aria-label="Primary navigation">
-        <Link to="/employers">Employers</Link>
-        <Link to="/services/permanent-recruitment">Services</Link>
-        <Link to="/careers">Careers</Link>
-        <Link to="/partners">Partners</Link>
-      </nav>
-      <div className="vorlen-nav-actions"><Link className="vorlen-text-link" to="/login">Sign in</Link><Link className="vorlen-button small" to="/contact">Talk to Vorlen <ArrowRight size={15}/></Link></div>
-<div className="vorlen-mobile-signin"><Link to="/login">Client or recruiter sign in</Link></div>    </header>
+    <MarketingHeader/>
     <main id="main">
       <section className="seo-hero">
         <div>

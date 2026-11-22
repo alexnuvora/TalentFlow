@@ -1,3 +1,4 @@
+import MarketingHeader from '../components/MarketingHeader';
 import {useEffect,useState} from 'react';
 import {Link} from 'react-router-dom';
 import {ArrowRight,ArrowUpRight,BriefcaseBusiness,MapPin,Search} from 'lucide-react';
@@ -7,7 +8,7 @@ import VorlenBrand from '../components/VorlenBrand';
 
 type Opportunity={id:string;slug:string;title:string;location:string|null;employment_type:string;description:string|null;commission_text:string|null;minimum_remuneration_text:string|null;salary_min:number|null;salary_max:number|null;pay_interval:string|null;application_mode?:string};
 
-export function CareersHeader(){return <header className="careers-nav careers-nav-editorial"><VorlenBrand to="/careers"/><nav><Link to="/careers">Opportunities</Link><Link to="/candidates">Candidate guide</Link><Link to="/candidate-terms">Terms</Link><Link to="/" className="workspace-link">Vorlen <ArrowUpRight size={14}/></Link></nav></header>}
+export function CareersHeader(){return <MarketingHeader/>}
 
 export function CareersFooter(){return <footer className="careers-footer careers-footer-editorial"><div><VorlenBrand/><p>Find work that suits you.</p></div><nav><Link to="/candidates">For candidates</Link><Link to="/privacy">Privacy</Link><Link to="/candidate-terms">Candidate terms</Link><Link to="/accessibility">Accessibility</Link></nav></footer>}
 
