@@ -386,26 +386,27 @@
 }
 
 
-/* Homepage footer matches the light Services footer, full-bleed and square edged. */
+/* Homepage footer matches the dark Services footer reference (#091714). */
 .vp-site .vp-footer{
   width:100%!important;max-width:none!important;margin:0!important;border-radius:0!important;
-  border:0!important;border-top:1px solid var(--vorlen-line)!important;
-  background:var(--vorlen-paper)!important;color:var(--vorlen-ink)!important;
+  border:0!important;background:#091714!important;color:#fff!important;
   box-shadow:none!important;padding:70px clamp(22px,5vw,80px) 35px!important;
 }
-.vp-site .vp-footer strong,.vp-site .vp-footer .vp-footer-brand,.vp-site .vp-footer .vp-footer-brand strong{color:var(--vorlen-ink)!important}
-.vp-site .vp-footer p,.vp-site .vp-footer a,.vp-site .vp-footer span{color:#69766f!important}
-.vp-site .vp-footer a:hover{color:var(--vorlen-ink)!important}
-.vp-site .vp-footer .vorlen-brand{color:var(--vorlen-ink)!important}
-.vp-site .vp-footer .vp-footer-base{border-color:var(--vorlen-line)!important}
-.vp-site .vp-footer .vp-footer-socials a{background:#fff;border:1px solid #d7ded8;color:#254b40!important}
+.vp-site .vp-footer strong,.vp-site .vp-footer .vp-footer-brand,.vp-site .vp-footer .vp-footer-brand strong{color:#fff!important}
+.vp-site .vp-footer p,.vp-site .vp-footer a,.vp-site .vp-footer span{color:#d7e3de!important}
+.vp-site .vp-footer a:hover{color:#fff!important;text-decoration:underline}
+.vp-site .vp-footer .vorlen-brand{color:#fff!important}
+.vp-site .vp-footer .vorlen-mark-accent{fill:#c5e66b!important}
+.vp-site .vp-footer .vp-footer-base{border-color:#344640!important}
+.vp-site .vp-footer .vp-footer-socials a{background:#142c25;border:1px solid #39534a;color:#e7f3ec!important}
 .vp-site .vp-footer .vp-companies-house-link{
-  display:inline-flex;align-items:center;justify-content:center;gap:7px;width:auto;height:36px;
-  padding:0 10px;background:#fff;border:1px solid #d7ded8;border-radius:7px;
-  color:#254b40!important;text-decoration:none;white-space:nowrap;
+ display:inline-flex;align-items:center;justify-content:center;gap:7px;width:auto;height:36px;
+ padding:0 10px;background:#142c25;border:1px solid #39534a;border-radius:7px;
+ color:#e7f3ec!important;text-decoration:none;white-space:nowrap;
 }
-.vp-site .vp-footer .vp-companies-house-link span{font-size:11px!important;font-weight:700;color:#254b40!important}
+.vp-site .vp-footer .vp-companies-house-link span{font-size:11px!important;font-weight:700;color:#e7f3ec!important}
 .vp-site .vp-footer .vp-companies-house-link svg{flex:none}
+.vp-site .vp-footer .google-preferred-source-btn,.vp-site .vp-footer .google-preferred-source-btn span{color:#153329!important}
 @media(max-width:620px){
  .vp-site .vp-footer{padding:46px 20px 26px!important}
  .vp-site .vp-footer-socials{flex-wrap:wrap}
