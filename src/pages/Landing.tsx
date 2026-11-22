@@ -70,9 +70,9 @@ export default function Landing(){
         <div className="vp-hero-copy">
           <p className="vp-kicker">UK PERMANENT RECRUITMENT</p>
           <h1>Good people make a good business. Let's find yours.</h1>
-          <p className="vp-lead">Need someone new on your team? Tell us who you are looking for. We will help you find suitable people, arrange introductions and make hiring a little easier.</p>
+          <p className="vp-lead">Hiring permanent staff? Tell us the role, salary and what matters most. We source candidates, review their experience and help you arrange interviews — so you can focus on running your business.</p><p className="vp-hero-fee">Our standard permanent placement fee is 15% of the agreed first-year salary, subject to written terms. We confirm the fee and payment terms before starting a search.</p>
           <div className="vp-hero-actions">
-            <Link className="vp-btn" to="/contact">Discuss your vacancy <ArrowRight size={17}/></Link>
+            <Link className="vp-btn" to="/contact?reason=employer">Discuss your vacancy <ArrowRight size={17}/></Link>
             <Link className="vp-text-link" to="/careers">Looking for a role? View opportunities</Link>
           </div>
           <div className="vp-proof-row" aria-label="Vorlen service principles">

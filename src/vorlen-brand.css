@@ -345,3 +345,6 @@
 .vorlen-contact-page .vorlen-contact-photo img{display:block;width:100%;height:260px;object-fit:cover;object-position:center}
 .careers-site .ce-hero-photo{display:block;width:100%;height:150px;object-fit:cover;border-radius:12px;margin-bottom:20px}
 @media(max-width:700px){.vorlen-seo-page .seo-page-photo{height:190px}.vorlen-contact-page .vorlen-contact-photo img{height:190px}.careers-site .ce-hero-photo{height:120px}}
+
+/* Employer hero: keep commercial terms legible over the photography. */
+.vp-hero .vp-hero-fee{max-width:660px;margin:14px 0 0;color:#eef4e5;font-size:13px;line-height:1.55;font-weight:550;text-shadow:0 1px 3px rgba(0,0,0,.4)}
