@@ -2,6 +2,7 @@ import {useEffect} from 'react';
 import {Link} from 'react-router-dom';
 import {ArrowRight,CheckCircle2,ChevronDown,ShieldCheck,Users,BriefcaseBusiness,Search,Handshake,Facebook,Linkedin} from 'lucide-react';
 import MarketingHeader from '../components/MarketingHeader';
+import VorlenBrand from '../components/VorlenBrand';
 import GooglePreferredSource from '../components/GooglePreferredSource';
 import {orgSchema,setSeo} from '../lib/seo';
 
