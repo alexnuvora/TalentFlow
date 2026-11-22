@@ -61,7 +61,7 @@ export default function Landing(){
       <section className="vp-hero">
         <div className="vp-hero-media" aria-hidden="true">
           <img
-            src="/images/vorlen-hero-meeting.svg"
+            src="https://images.unsplash.com/photo-1573167507387-6b4b98cb7c13?auto=format&fit=crop&w=2200&q=85"
             alt=""
             fetchPriority="high"
             decoding="async"
@@ -114,7 +114,7 @@ export default function Landing(){
       <section className="vp-people-feature" aria-labelledby="vp-people-feature-title">
         <div className="vp-people-feature-image">
           <img
-            src="/images/vorlen-team-meeting.svg"
+            src="https://images.unsplash.com/photo-1573497701240-345a300b8d36?auto=format&fit=crop&w=1400&q=85"
             alt="Colleagues sharing ideas during a workplace meeting"
             loading="lazy"
             decoding="async"
