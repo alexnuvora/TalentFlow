@@ -119,7 +119,6 @@ export default function Landing(){
             loading="lazy"
             decoding="async"
           />
-          <span className="vp-image-credit">Photo by Christina @ wocintechchat.com / Unsplash</span>
         </div>
         <div className="vp-people-feature-copy">
           <p className="vp-kicker">PEOPLE FIRST, ALWAYS</p>
