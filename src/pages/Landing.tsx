@@ -1,7 +1,7 @@
 import {useEffect} from 'react';
 import {Link} from 'react-router-dom';
 import {ArrowRight,CheckCircle2,ChevronDown,ShieldCheck,Users,BriefcaseBusiness,Search,Handshake,Facebook,Linkedin} from 'lucide-react';
-import VorlenBrand from '../components/VorlenBrand';
+import MarketingHeader from '../components/MarketingHeader';
 import GooglePreferredSource from '../components/GooglePreferredSource';
 import {orgSchema,setSeo} from '../lib/seo';
 
@@ -42,21 +42,7 @@ export default function Landing(){
   return <div className="vp-site">
     <a className="skip-link" href="#main">Skip to content</a>
 
-    <header className="vp-nav">
-      <VorlenBrand/>
-      <nav aria-label="Primary navigation">
-        <Link to="/employers">Employers</Link>
-        <Link to="/services/permanent-recruitment">Services</Link>
-        <Link to="/careers">Careers</Link><Link to="/about">About us</Link>
-        <Link to="/partners">Partners</Link>
-      </nav>
-      <div className="vp-nav-actions">
-        <Link className="vp-signin" to="/login" style={{display:"inline-flex",alignItems:"center",whiteSpace:"nowrap"}}>Sign in</Link>
-        <Link className="vp-btn vp-btn-small" to="/contact">Discuss a vacancy</Link>
-      </div>
-    </header>
-    <nav className="vp-mobile-account" aria-label="Mobile account and candidate access"><Link to="/login">Client or recruiter sign in</Link><Link to="/careers">Find a job</Link></nav>
-
+    <MarketingHeader/>
     <main id="main">
       <section className="vp-hero">
         <div className="vp-hero-media" aria-hidden="true">
