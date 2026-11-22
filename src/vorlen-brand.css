@@ -348,3 +348,39 @@
 
 /* Employer hero: keep commercial terms legible over the photography. */
 .vp-hero .vp-hero-fee{max-width:660px;margin:14px 0 0;color:#eef4e5;font-size:13px;line-height:1.55;font-weight:550;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+
+
+/* Edge-to-edge editorial hero + adaptive sticky navigation (preview experiment). */
+.vp-site .vp-nav.vp-nav-overlay{position:fixed!important;top:0;left:0;right:0;z-index:1000;max-width:none;width:100%;height:84px;min-height:84px;margin:0;padding:0 clamp(20px,4vw,60px);display:grid;grid-template-columns:1fr auto 1fr;grid-template-rows:1fr;gap:0;align-items:center;border:0;background:transparent;box-shadow:none;transition:background-color .22s ease,box-shadow .22s ease,color .22s ease}
+.vp-site .vp-nav.vp-nav-on-hero{color:#fff}
+.vp-site .vp-nav.vp-nav-on-hero .vorlen-brand,.vp-site .vp-nav.vp-nav-on-hero .vp-desktop-links a,.vp-site .vp-nav.vp-nav-on-hero .vp-signin,.vp-site .vp-nav.vp-nav-on-hero .vp-menu-toggle{color:#fff}
+.vp-site .vp-nav.vp-nav-on-hero .vorlen-mark-accent{fill:#d0f080}
+.vp-site .vp-nav.vp-nav-on-hero .vp-btn{background:#d0f080;color:#102b25!important;border-color:#d0f080}
+.vp-site .vp-nav.vp-nav-on-light{background:rgba(250,249,245,.97);box-shadow:0 2px 16px rgba(10,38,30,.1);color:#102b25;backdrop-filter:blur(16px)}
+.vp-site .vp-nav.vp-nav-on-light .vorlen-brand,.vp-site .vp-nav.vp-nav-on-light .vp-desktop-links a,.vp-site .vp-nav.vp-nav-on-light .vp-signin,.vp-site .vp-nav.vp-nav-on-light .vp-menu-toggle{color:#102b25}
+.vp-site .vp-nav.vp-nav-on-light .vorlen-mark-accent{fill:var(--vorlen-accent)}
+.vp-site .vp-nav.vp-nav-overlay .vp-desktop-links{display:flex;gap:clamp(15px,2vw,30px);align-items:center;grid-row:1;grid-column:2;overflow:visible;padding:0}
+.vp-site .vp-nav.vp-nav-overlay .vp-nav-actions{grid-column:3;grid-row:1;justify-self:end;display:flex;align-items:center;gap:16px}
+.vp-site .vp-nav.vp-nav-overlay .vorlen-brand{grid-column:1;grid-row:1;justify-self:start}
+.vp-site .vp-nav.vp-nav-overlay .vp-desktop-links a,.vp-site .vp-nav.vp-nav-overlay .vp-signin{font-size:13px;font-weight:650;text-decoration:none}
+.vp-site .vp-nav.vp-nav-overlay a:focus-visible,.vp-site .vp-nav.vp-nav-overlay button:focus-visible{outline:3px solid #c7ed70;outline-offset:4px}
+.vp-site .vp-nav.vp-nav-overlay .vp-menu-toggle{display:none;border:0;background:transparent;padding:10px;align-items:center;justify-content:center;cursor:pointer}
+.vp-site .vp-nav.vp-nav-overlay .vp-mobile-menu{display:none}
+.vp-site .vp-hero{max-width:none!important;width:100%;margin:0!important;border-radius:0!important;padding-top:clamp(150px,14vw,210px)!important;min-height:clamp(680px,88vh,950px);background:#102b25}
+.vp-site.about-page .about-hero{margin:0!important;border-radius:0!important;min-height:clamp(620px,85vh,880px)}
+.vp-site.about-page .about-hero-inner{padding-top:160px;padding-bottom:90px}
+@media(max-width:900px){
+ .vp-site .vp-nav.vp-nav-overlay{height:72px;min-height:72px;padding:0 18px;grid-template-columns:1fr auto}
+ .vp-site .vp-nav.vp-nav-overlay .vp-desktop-links,.vp-site .vp-nav.vp-nav-overlay .vp-nav-actions{display:none}
+ .vp-site .vp-nav.vp-nav-overlay .vp-menu-toggle{display:flex;grid-column:2;grid-row:1;min-height:44px;min-width:44px}
+ .vp-site .vp-nav.vp-nav-overlay .vp-mobile-menu:not([hidden]){display:flex;position:absolute;top:72px;left:0;right:0;max-height:calc(100dvh - 72px);overflow-y:auto;flex-direction:column;gap:0;padding:12px 20px 24px;background:#faf9f5;box-shadow:0 20px 30px rgba(0,0,0,.17)}
+ .vp-site .vp-nav.vp-nav-overlay .vp-mobile-menu a{display:flex;align-items:center;min-height:48px;padding:11px 6px;color:#102b25;text-decoration:none;border-bottom:1px solid #e0e5dc;font-weight:650}
+ .vp-site .vp-nav.vp-nav-overlay .vp-mobile-menu .vp-mobile-cta{margin-top:14px;justify-content:center;border-radius:8px;background:#102b25;color:#fff}
+ .vp-site .vp-hero{padding-top:125px!important}
+ .vp-site.about-page .about-hero-inner{padding-top:130px}
+}
+@media(max-width:520px){
+ .vp-site .vp-hero{margin:0!important;border-radius:0!important;padding:125px 20px 38px!important;min-height:720px}
+ .vp-site.about-page .about-hero{margin:0!important;border-radius:0!important;min-height:680px}
+ .vp-site.about-page .about-hero-inner{padding-top:125px}
+}
