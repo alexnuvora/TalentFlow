@@ -1,4 +1,5 @@
 import { supabase, publicSupabase } from './supabase';
+import { publicJobSlug } from './publicJobSlug.mjs';
 import {disablePushNotifications} from './pushNotifications';
 export async function getDashboard(){const [jobs,candidates,clients,apps]=await Promise.all([supabase.from('jobs').select('*').order('created_at',{ascending:false}),supabase.from('candidates').select('*').is('erased_at',null).order('created_at',{ascending:false}),supabase.from('clients').select('*').order('created_at',{ascending:false}),supabase.from('applications').select('*').order('submitted_at',{ascending:false})]);for(const r of [jobs,candidates,clients,apps])if(r.error)throw r.error;return{jobs:jobs.data||[],candidates:candidates.data||[],clients:clients.data||[],applications:apps.data||[]}}
 export async function signIn(email:string,password:string){return supabase.auth.signInWithPassword({email,password})}export async function signOut(){await disablePushNotifications();return supabase.auth.signOut()}export async function updateCandidateStage(id:string,stage:string){return supabase.from('candidates').update({stage}).eq('id',id)}export async function createJob(payload:Record<string,unknown>){return supabase.from('jobs').insert(payload).select().single()}export async function createClient(payload:Record<string,unknown>){return supabase.from('clients').insert(payload).select().single()}
@@ -9,7 +10,14 @@ export async function eraseCandidate(id:string){const{data,error}=await supabase
 // Public careers intentionally queries only jobs. Joining clients here makes public job loading depend on client-table grants/RLS and can turn a valid published job into a failed PostgREST request.
 const publicJobFields='id,title,slug,location,employment_type,pay_text:commission_text,salary_min,salary_max,application_mode,opportunity_notice,description,requirements,application_questions,created_at,start_date,start_date_text,duration_text,duties,work_days_hours,health_safety_risks,health_safety_measures,required_qualifications,expenses_text,minimum_remuneration_text,pay_interval,notice_period,agency_legal_name_snapshot,hirer_name_snapshot,works_with_vulnerable_people,qualification_verification_required';
 export async function getPublicJobs(){return publicSupabase.from('jobs').select(publicJobFields).eq('status','published').order('created_at',{ascending:false})}
-export async function getPublicJob(slug:string){const normalized=decodeURIComponent(String(slug||'')).trim();return publicSupabase.from('jobs').select(publicJobFields).eq('slug',normalized).eq('status','published').maybeSingle()}
+export async function getPublicJob(slug:string){
+  const normalized=decodeURIComponent(String(slug||'')).trim();
+  const {data,error}=await getPublicJobs();
+  if(error)return {data:null,error};
+  // Accept the former database slug during migration/recrawl, but callers canonicalise it.
+  const job=(data||[]).find((item:any)=>item.slug===normalized||publicJobSlug(item)===normalized)||null;
+  return {data:job,error:null};
+}
 export async function submitApplication(form:FormData){try{const url=`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-application`;const res=await fetch(url,{method:'POST',headers:{apikey:import.meta.env.VITE_SUPABASE_ANON_KEY},body:form});const data=await res.json().catch(()=>({}));return res.ok?{data,error:null}:{data:null,error:new Error(data?.error||'Application could not be submitted.')}}catch(e){return{data:null,error:e instanceof Error?e:new Error('Application could not be submitted.')}}}
 
 export async function getCeoDashboard(){const {data:{session}}=await supabase.auth.getSession();if(!session)throw new Error('Authentication required');const url=import.meta.env.VITE_SUPABASE_URL+'/functions/v1/ceo-dashboard';const res=await fetch(url,{method:'POST',headers:{apikey:import.meta.env.VITE_SUPABASE_ANON_KEY,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:'{}'});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data?.error||'CEO dashboard could not be loaded');return data}

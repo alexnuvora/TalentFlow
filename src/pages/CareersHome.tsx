@@ -31,7 +31,7 @@ export default function CareersHome(){
           <h1>Find your next role.<br/><em>See what’s out there.</em></h1>
           <p>Browse our current vacancies, read about the jobs and apply online when something feels right.</p><a className="ce-hero-jump" href="#opportunities">Browse {loading?'opportunities':jobs.length+' current opportunities'} <ArrowRight size={17}/></a>
         </div>
-        <div className="ce-hero-side">
+        <div className="ce-hero-side"><img className="ce-hero-photo" src="/images/vorlen-team-meeting.webp" alt="Professionals collaborating in a workplace meeting" decoding="async"/>
           <span>BEFORE YOU APPLY</span>
           <ol><li>Read the role and terms.</li><li>Submit relevant evidence.</li><li>A recruiter reviews your application.</li></ol>
           <p>Register-interest opportunities are labelled before submission.</p>

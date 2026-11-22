@@ -23,6 +23,17 @@ export const crawlLinks=[
 
 export const guideSlug='/guides/choosing-a-recruitment-agency';
 
+export const crawlFaqs={
+  '/guides/employer-recruitment-questions':[
+    {q:'How much does a recruitment agency charge in the UK?',a:'Fees depend on the vacancy and the commercial model. Ask for the fee, VAT treatment, payment trigger and any replacement or rebate terms in writing before the search begins.'},
+    {q:'When should I pay a recruitment agency?',a:'The payment trigger is set out in the agreed terms. Check whether the fee becomes due on acceptance, the candidate start date or another defined event, and make sure the wording is clear before work begins.'},
+    {q:'What should I include in a recruitment brief?',a:'Include the role purpose, salary range, workplace and working pattern, essential experience, reporting line, expected outcomes and interview process. Distinguish genuine requirements from preferences.'},
+    {q:'How does Vorlen screen candidates?',a:'A recruiter reviews job-related evidence against the agreed vacancy brief and explains the reasons for an introduction, including any gaps the employer should explore. The employer retains the final hiring decision.'},
+    {q:'Can a recruitment agency guarantee a quick hire?',a:'No responsible agency can guarantee a hire date before understanding the role, salary, candidate market and employer interview process. A useful plan sets realistic milestones and identifies decisions the employer needs to make.'},
+    {q:'What happens if a placed candidate leaves?',a:'The applicable rebate or replacement provisions depend on the written terms agreed for that assignment. Ask for the precise time periods, conditions and remedy before instructing an agency.'}
+  ]
+};
+
 export const guideIntro=[
   "Picking a recruitment agency is a purchasing decision. Ask three questions before you sign anything: What jobs like mine have you filled recently? Who exactly reviews the candidates you send? What happens if the placement doesn't work out? If you get straight answers to those three, the rest of the conversation tends to go well.",
   "On fees: most UK permanent agencies charge a percentage of first-year salary. Some quote fixed fees instead. Vorlen sets its fee in writing before any search starts, so you know the number up front. What matters is not the size of the percentage but whether the terms were agreed before the work began."
@@ -113,7 +124,7 @@ export const crawlDetails={
 
 export const homeMeta={
   title:'Vorlen | UK Permanent Recruitment Agency for Employers',
-  description:'Vorlen is a UK permanent recruitment agency. We take your brief, source the market, screen every candidate ourselves, and introduce the people worth your time. Fees agreed in writing upfront.',
+  description:'UK permanent recruitment for employers. Vorlen sources and screens candidates against your brief, with fees agreed in writing before the search begins.',
   orgDescription:'UK permanent recruitment agency. Brief-led searches, human-reviewed introductions, written fee terms.',
   legalName:'VORLEN LTD'
 };

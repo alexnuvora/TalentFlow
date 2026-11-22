@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFile, stat} from 'node:fs/promises';
 import {join} from 'node:path';
+import {publicJobSlug} from '../src/lib/publicJobSlug.mjs';
 
 const root = new URL('../dist/', import.meta.url);
 const base = 'https://www.vorlen.co.uk';
@@ -36,6 +37,12 @@ for (const route of publicRoutes) {
   assert.match(html, /<h1[^>]*>[^<]+<\/h1>/, 'Missing crawlable H1: ' + route);
   assert.equal((html.match(/property="og:url"/g) || []).length, 1, 'Expected exactly one Open Graph URL: ' + route);
   assert.ok(html.includes('property="og:url" content="' + canonical + '"'), 'Incorrect Open Graph URL: ' + route);
+  const metaDescriptionTag=html.match(/<meta name="description" content="([^"]*)"/);
+  assert.ok(metaDescriptionTag&&metaDescriptionTag[1].length<=155,'Meta description must be <=155 characters: '+route);
+  assert.doesNotMatch(html,/<img(?![^>]*\balt=)[^>]*>/i,'Every content image must have alt text: '+route);
+  const meta=html.match(/<meta name="description" content="([^"]*)"/);
+  assert.ok(meta&&meta[1].length<=155,'Meta description must be <=155 characters: '+route);
+  assert.doesNotMatch(html,/<img(?![^>]*\balt=)[^>]*>/i,'Every content image must have alt text: '+route);
   const socialImage=html.match(/property="og:image" content="([^"]+)"/)?.[1];
   assert.ok(socialImage, 'Missing Open Graph image: ' + route);
   assert.ok(socialImage.startsWith(base + '/social/'), 'Expected a route-specific social card: ' + route);
@@ -82,6 +89,9 @@ for (const [route,label] of [
 }
 const serviceHtml = await read('services/permanent-recruitment/index.html');
 const articleHtml = await read('guides/choosing-a-recruitment-agency/index.html');
+const employerGuideHtml=await read('guides/employer-recruitment-questions/index.html');
+assert.match(employerGuideHtml,/<h3>How much does a recruitment agency charge in the UK\?<\/h3>/,'Employer guide must expose specific fee FAQs in crawlable HTML');
+assert.match(employerGuideHtml,/<h3>What should I include in a recruitment brief\?<\/h3>/,'Employer guide must expose vacancy-brief FAQs');
 assert.match(homeHtml, /"@type":\["Organization","EmploymentAgency"\]/, 'Homepage must describe the agency entity');
 assert.match(serviceHtml, /"@type":"Service"/, 'Permanent recruitment page must expose Service schema');
 assert.match(articleHtml, /"@type":"Article"/, 'Recruitment guide must expose Article schema');
@@ -95,7 +105,8 @@ for (const url of urls.filter(x=>x.includes('/careers/'))) {
     assert.match(jobHtml, /"hiringOrganization"/, 'JobPosting must identify the hiring organization: ' + url);
     assert.match(jobHtml, /"datePosted"/, 'JobPosting must include its publication date: ' + url);
     assert.match(jobHtml, /"directApply":true/, 'JobPosting must expose the direct application route: ' + url);
-    assert.match(jobHtml, /"hiringOrganization":\{"@type":"Organization","name":"Confidential client"\}/, 'JobPosting must keep the client confidential: ' + url);
+    assert.match(jobHtml, /"hiringOrganization":\{"@type":"Organization","name":"confidential"\}/, 'JobPosting must use the documented confidential employer value: ' + url);
+    assert.doesNotMatch(url,/(alliant|buzz-media|ame-services)/i,'Public vacancy URL must not disclose client names: '+url);
     assert.doesNotMatch(jobHtml, /"hiringOrganization"[^}]*"name":"VORLEN LTD"/, 'Vorlen must not be presented as the employer: ' + url);
   } else {
     assert.match(jobHtml, /"@type":"WebPage"/, 'Register-interest pages must not be labelled as live JobPosting: ' + url);

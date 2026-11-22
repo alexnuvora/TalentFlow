@@ -59,6 +59,14 @@ export default function Landing(){
 
     <main id="main">
       <section className="vp-hero">
+        <div className="vp-hero-media" aria-hidden="true">
+          <img
+            src="/images/vorlen-hero-colleague.webp"
+            alt=""
+            fetchPriority="high"
+            decoding="async"
+          />
+        </div>
         <div className="vp-hero-copy">
           <p className="vp-kicker">UK PERMANENT RECRUITMENT</p>
           <h1>Good people make a good business. Let's find yours.</h1>
@@ -101,6 +109,23 @@ export default function Landing(){
           <h2>Recruitment shouldn't take over your working day.</h2>
         </div>
         <p>Hiring takes time, especially when you are running a business as well. We can take some of that work off your hands, from finding candidates to arranging interviews.</p>
+      </section>
+
+      <section className="vp-people-feature" aria-labelledby="vp-people-feature-title">
+        <div className="vp-people-feature-image">
+          <img
+            src="/images/vorlen-team-meeting.webp"
+            alt="Colleagues sharing ideas during a workplace meeting"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+        <div className="vp-people-feature-copy">
+          <p className="vp-kicker">PEOPLE FIRST, ALWAYS</p>
+          <h2 id="vp-people-feature-title">Good hiring starts with a proper conversation.</h2>
+          <p>Every business is different. We take time to understand the role, the team and what the right person needs to bring — before we start looking.</p>
+          <Link className="vp-text-link" to="/employers">How we work with employers <ArrowRight size={15}/></Link>
+        </div>
       </section>
 
       <section className="vp-services">

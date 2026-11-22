@@ -150,19 +150,56 @@ const pages:Record<string,PageConfig>={
   },
 };
 
+
+function searchSnippet(value:string,max=155){
+  const text=value.replace(/\s+/g,' ').trim();
+  if(text.length<=max)return text;
+  const cut=text.slice(0,max-1).replace(/\s+\S*$/,'').replace(/[,:;—-]+$/,'').trim();
+  return cut+'…';
+}
+const relatedByPath:Record<string,[string,string][]>={
+  '/employers':[['/services/permanent-recruitment','Permanent recruitment'],['/guides/employer-recruitment-questions','Employer hiring FAQs'],['/contact','Discuss a vacancy']],
+  '/guides/employer-recruitment-questions':[['/services/recruitment-for-smes','Recruitment for SMEs'],['/sectors/engineering','Engineering recruitment'],['/contact','Discuss your vacancy']],
+  '/sectors/engineering':[['/services/permanent-recruitment','Permanent recruitment'],['/locations/manchester','Manchester recruitment'],['/contact','Discuss an engineering vacancy']],
+  '/sectors/technology':[['/services/permanent-recruitment','Permanent recruitment'],['/locations/manchester','Manchester recruitment'],['/contact','Discuss a technology vacancy']],
+  '/sectors/finance-accounting':[['/services/permanent-recruitment','Permanent recruitment'],['/sectors/sales-business-development','Sales recruitment'],['/contact','Discuss a finance vacancy']],
+  '/sectors/sales-business-development':[['/services/permanent-recruitment','Permanent recruitment'],['/sectors/finance-accounting','Finance recruitment'],['/contact','Discuss a sales vacancy']],
+  '/locations/manchester':[['/locations/greater-manchester','Greater Manchester recruitment'],['/sectors/engineering','Engineering recruitment'],['/contact','Discuss a Manchester vacancy']],
+  '/locations/greater-manchester':[['/locations/manchester','Manchester recruitment'],['/sectors/engineering','Engineering recruitment'],['/contact','Discuss a local vacancy']]
+};
+
+const pageImages: Record<string,string> = {
+  '/employers': '/images/vorlen-page-01.webp',
+  '/candidates': '/images/vorlen-page-02.webp',
+  '/services/permanent-recruitment': '/images/vorlen-page-03.webp',
+  '/guides/choosing-a-recruitment-agency': '/images/vorlen-page-04.webp',
+  '/guides/employer-recruitment-questions': '/images/vorlen-page-05.webp',
+  '/services/candidate-sourcing': '/images/vorlen-page-06.webp',
+  '/services/recruitment-for-smes': '/images/vorlen-page-07.webp',
+  '/sectors/technology': '/images/vorlen-page-08.webp',
+  '/sectors/sales-business-development': '/images/vorlen-page-09.webp',
+  '/sectors/finance-accounting': '/images/vorlen-page-10.webp',
+  '/sectors/engineering': '/images/vorlen-page-11.webp',
+  '/partners': '/images/vorlen-page-12.webp',
+  '/locations/manchester': '/images/vorlen-page-13.webp',
+  '/locations/greater-manchester': '/images/vorlen-page-14.webp',
+  '/our-approach': '/images/vorlen-page-15.webp'
+};
+const imageFor=(path:string)=>pageImages[path]||'/images/vorlen-hero-colleague.webp';
+
 const iconFor=(path:string)=>path.includes('candidate')?Users:path.includes('partner')?Network:path.includes('location')?MapPin:path.includes('sourcing')?Search:BriefcaseBusiness;
 
 export default function SeoLanding(){
   const {pathname}=useLocation();
   const page=pages[pathname]||pages['/employers'];
   const Icon=iconFor(pathname);
-  const pageTitles:Record<string,string>={'/our-approach':'How Vorlen Assesses Candidates | Recruitment Methodology','/employers':'UK Permanent Recruitment for Employers | Vorlen','/candidates':'Find Jobs and Apply for Permanent Roles | Vorlen','/partners':'UK Recruitment Partner Network | Vorlen','/services/permanent-recruitment':'Permanent Recruitment Agency UK | Vorlen','/guides/employer-recruitment-questions':'Recruitment Agency Fees & Hiring FAQs UK | Vorlen','/guides/choosing-a-recruitment-agency':'Choosing a Recruitment Agency: Fees and Questions to Ask | Vorlen','/services/candidate-sourcing':'Candidate Sourcing Services UK | Vorlen','/services/recruitment-for-smes':'Recruitment for SMEs UK | Vorlen','/sectors/technology':'Technology Recruitment UK | Vorlen','/sectors/sales-business-development':'Sales and Business Development Recruitment UK | Vorlen','/sectors/finance-accounting':'Finance and Accounting Recruitment UK | Vorlen','/sectors/engineering':'Engineering Recruitment UK | Vorlen','/locations/manchester':'Manchester Recruitment Agency | Vorlen','/locations/greater-manchester':'Greater Manchester Permanent Recruitment | Vorlen'};
+  const pageTitles:Record<string,string>={'/our-approach':'How Vorlen Assesses Candidates | Recruitment Methodology','/employers':'UK Permanent Recruitment for Employers | Vorlen','/candidates':'Find Jobs and Apply for Permanent Roles | Vorlen','/partners':'UK Recruitment Partner Network | Vorlen','/services/permanent-recruitment':'Permanent Recruitment Agency UK | Vorlen','/guides/employer-recruitment-questions':'Recruitment Agency Fees & Hiring FAQs UK | Vorlen','/guides/choosing-a-recruitment-agency':'UK Recruitment Agency Guide: Fees & Shortlists | Vorlen','/services/candidate-sourcing':'Candidate Sourcing Services UK | Vorlen','/services/recruitment-for-smes':'Recruitment for SMEs UK | Vorlen','/sectors/technology':'Technology Recruitment UK | Vorlen','/sectors/sales-business-development':'Sales and Business Development Recruitment UK | Vorlen','/sectors/finance-accounting':'Finance and Accounting Recruitment UK | Vorlen','/sectors/engineering':'Engineering Recruitment UK | Vorlen','/locations/manchester':'Manchester Recruitment Agency | Vorlen','/locations/greater-manchester':'Greater Manchester Permanent Recruitment | Vorlen'};
   const title=pageTitles[pathname]||`${page.eyebrow.replaceAll('_',' ').replace(/\b\w/g,m=>m.toUpperCase())} | Vorlen`;
   useEffect(()=>{
     const service={'@context':'https://schema.org','@type':'Service',name:page.serviceType||page.eyebrow,serviceType:page.serviceType||page.eyebrow,provider:{'@id':'https://www.vorlen.co.uk/#organization'},areaServed:{'@type':'AdministrativeArea',name:page.area||'United Kingdom'},url:`https://www.vorlen.co.uk${pathname}`,description:page.intro};
     const faq={'@context':'https://schema.org','@type':'FAQPage',mainEntity:page.faq.map(([q,a])=>({'@type':'Question',name:q,acceptedAnswer:{'@type':'Answer',text:a}}))};
     const crumbs={'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:[{'@type':'ListItem',position:1,name:'Vorlen',item:'https://www.vorlen.co.uk/'},{'@type':'ListItem',position:2,name:page.eyebrow,item:`https://www.vorlen.co.uk${pathname}`}]};
-    setSeo({title,description:page.intro,path:pathname,jsonLd:[service,faq,crumbs]});
+    setSeo({title,description:searchSnippet(page.intro),path:pathname,jsonLd:[service,faq,crumbs]});
   },[pathname,page,title]);
 
   return <div className="vorlen-site vorlen-seo-page">
@@ -185,7 +222,7 @@ export default function SeoLanding(){
           <p>{page.intro}</p>
           <div className="vorlen-hero-actions"><Link className="vorlen-button" to={page.ctaTo}>{page.ctaLabel} <ArrowRight size={16}/></Link><Link className="vorlen-button secondary" to="/careers">View opportunities</Link></div>
         </div>
-        <aside className="seo-audience-card"><Icon size={24}/><span>WHO THIS IS FOR</span><p>{page.audience}</p><div><CheckCircle2 size={16}/> People review candidates</div><div><ShieldCheck size={16}/> Care with candidate information</div></aside>
+        <aside className="seo-visual-aside"><div className="seo-page-photo"><img src={imageFor(pathname)} alt={pathname==='/candidates'?'Professionals discussing career opportunities':'Professionals collaborating in a modern office'} loading="eager" decoding="async"/></div><div className="seo-audience-card"><Icon size={24}/><span>WHO THIS IS FOR</span><p>{page.audience}</p><div><CheckCircle2 size={16}/> People review candidates</div><div><ShieldCheck size={16}/> Care with candidate information</div></div></aside>
       </section>
 
       <section className="seo-points">
@@ -199,14 +236,7 @@ export default function SeoLanding(){
       <section className="seo-related">
         <p className="vorlen-eyebrow">EXPLORE VORLEN</p>
         <div>
-          <Link to="/services/permanent-recruitment">How we recruit <ArrowRight size={14}/></Link>
-          <Link to="/guides/choosing-a-recruitment-agency">Choosing an agency <ArrowRight size={14}/></Link>
-          <Link to="/services/candidate-sourcing">Candidate sourcing <ArrowRight size={14}/></Link>
-          <Link to="/services/recruitment-for-smes">Recruitment for SMEs <ArrowRight size={14}/></Link>
-          <Link to="/employers">For employers <ArrowRight size={14}/></Link>
-          <Link to="/candidates">For candidates <ArrowRight size={14}/></Link>
-          <Link to="/careers">Careers <ArrowRight size={14}/></Link>
-          <Link to="/contact">Contact <ArrowRight size={14}/></Link>
+          {(relatedByPath[pathname]||[['/services/permanent-recruitment','How we recruit'],['/guides/choosing-a-recruitment-agency','Choosing an agency'],['/services/candidate-sourcing','Candidate sourcing'],['/services/recruitment-for-smes','Recruitment for SMEs'],['/employers','For employers'],['/candidates','For candidates'],['/careers','Careers'],['/contact','Contact']]).map(([to,label])=><Link key={to} to={to}>{label} <ArrowRight size={14}/></Link>)}
         </div>
       </section>
 
