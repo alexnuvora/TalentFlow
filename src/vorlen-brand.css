@@ -419,3 +419,26 @@
  .vp-site .vp-footer{padding:46px 20px 26px!important}
  .vp-site .vp-footer-socials{flex-wrap:wrap}
 }
+
+
+/* Homepage editorial refinement: a quieter, more readable hero panel. */
+@media(min-width:901px){
+ .vp-site .vp-hero{grid-template-columns:minmax(0,1.25fr) minmax(290px,.62fr)!important;gap:clamp(30px,4.5vw,78px)!important;align-items:center!important}
+ .vp-site .vp-hero-panel{max-width:390px;justify-self:end;padding:30px 32px}
+ .vp-site .vp-panel-item{padding:22px 0;gap:16px}
+ .vp-site .vp-hero-copy{max-width:690px}
+}
+.vp-site .vp-hero-panel{background:rgba(249,249,243,.98);border-radius:12px}
+.vp-site .vp-panel-item:last-child{border-bottom:0;padding-bottom:2px}
+.vp-site .vp-panel-item p{line-height:1.6}
+.vp-site .vp-people-feature{padding-top:95px}
+.vp-site .vp-discover{padding-bottom:52px}
+@media(max-width:900px){
+ .vp-site .vp-hero-panel{max-width:100%;margin-top:16px}
+ .vp-site .vp-people-feature{padding-top:65px}
+}
+@media(max-width:620px){
+ .vp-site .vp-hero-panel{padding:23px 22px}
+ .vp-site .vp-panel-item{padding:15px 0}
+ .vp-site .vp-people-feature{padding-top:50px}
+}
