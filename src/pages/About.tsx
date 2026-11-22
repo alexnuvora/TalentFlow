@@ -2,6 +2,7 @@ import {useEffect} from 'react';
 import {Link} from 'react-router-dom';
 import {ArrowRight,CheckCircle2,Handshake,SearchCheck,Users} from 'lucide-react';
 import MarketingHeader from '../components/MarketingHeader';
+import VorlenBrand from '../components/VorlenBrand';
 import {orgSchema,setSeo} from '../lib/seo';
 
 const principles=[
