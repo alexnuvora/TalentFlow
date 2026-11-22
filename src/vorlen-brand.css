@@ -384,3 +384,12 @@
  .vp-site.about-page .about-hero{margin:0!important;border-radius:0!important;min-height:680px}
  .vp-site.about-page .about-hero-inner{padding-top:125px}
 }
+
+
+/* Unified navigation: standard public pages reserve room below the fixed header. */
+.vp-header-host.vp-header-with-offset{height:84px;min-height:84px;background:#faf9f5}
+.vp-header-host.vp-header-over-hero{height:0;min-height:0}
+.vp-header-host .vp-nav.vp-nav-overlay{z-index:1100}
+.vp-header-host .vp-nav.vp-nav-on-light{background:rgba(250,249,245,.98)}
+.vp-header-host .vp-nav.vp-nav-on-hero{background:linear-gradient(180deg,rgba(6,24,20,.32),rgba(6,24,20,0))}
+@media(max-width:900px){.vp-header-host.vp-header-with-offset{height:72px;min-height:72px}}
