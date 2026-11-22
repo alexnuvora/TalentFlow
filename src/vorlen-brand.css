@@ -335,3 +335,13 @@
   .vp-site .vp-people-feature-copy h2{font-size:38px}
 }
 @media(prefers-reduced-motion:reduce){.vp-site .vp-people-feature img{transition:none}}
+
+/* Public-page photography: restrained editorial imagery across marketing pages */
+.vorlen-seo-page .seo-visual-aside{display:flex;flex-direction:column;gap:16px;min-width:0}
+.vorlen-seo-page .seo-page-photo{height:210px;overflow:hidden;border-radius:16px;background:#e0e8e1}
+.vorlen-seo-page .seo-page-photo img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
+.vorlen-seo-page .seo-visual-aside .seo-audience-card{width:100%;box-sizing:border-box}
+.vorlen-contact-page .vorlen-contact-photo{overflow:hidden;border-radius:16px;margin:0 0 26px;max-height:260px}
+.vorlen-contact-page .vorlen-contact-photo img{display:block;width:100%;height:260px;object-fit:cover;object-position:center}
+.careers-site .ce-hero-photo{display:block;width:100%;height:150px;object-fit:cover;border-radius:12px;margin-bottom:20px}
+@media(max-width:700px){.vorlen-seo-page .seo-page-photo{height:190px}.vorlen-contact-page .vorlen-contact-photo img{height:190px}.careers-site .ce-hero-photo{height:120px}}

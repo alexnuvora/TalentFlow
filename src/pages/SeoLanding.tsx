@@ -168,6 +168,8 @@ const relatedByPath:Record<string,[string,string][]>={
   '/locations/greater-manchester':[['/locations/manchester','Manchester recruitment'],['/sectors/engineering','Engineering recruitment'],['/contact','Discuss a local vacancy']]
 };
 
+const imageFor=(path:string)=>path==='/candidates'||path.includes('candidate')||path.includes('partner')?'/images/vorlen-team-meeting.webp':'/images/vorlen-hero-colleague.webp';
+
 const iconFor=(path:string)=>path.includes('candidate')?Users:path.includes('partner')?Network:path.includes('location')?MapPin:path.includes('sourcing')?Search:BriefcaseBusiness;
 
 export default function SeoLanding(){
@@ -203,7 +205,7 @@ export default function SeoLanding(){
           <p>{page.intro}</p>
           <div className="vorlen-hero-actions"><Link className="vorlen-button" to={page.ctaTo}>{page.ctaLabel} <ArrowRight size={16}/></Link><Link className="vorlen-button secondary" to="/careers">View opportunities</Link></div>
         </div>
-        <aside className="seo-audience-card"><Icon size={24}/><span>WHO THIS IS FOR</span><p>{page.audience}</p><div><CheckCircle2 size={16}/> People review candidates</div><div><ShieldCheck size={16}/> Care with candidate information</div></aside>
+        <aside className="seo-visual-aside"><div className="seo-page-photo"><img src={imageFor(pathname)} alt={pathname==='/candidates'?'Professionals discussing career opportunities':'Professionals collaborating in a modern office'} loading="eager" decoding="async"/></div><div className="seo-audience-card"><Icon size={24}/><span>WHO THIS IS FOR</span><p>{page.audience}</p><div><CheckCircle2 size={16}/> People review candidates</div><div><ShieldCheck size={16}/> Care with candidate information</div></div></aside>
       </section>
 
       <section className="seo-points">
