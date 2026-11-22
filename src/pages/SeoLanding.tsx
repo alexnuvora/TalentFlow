@@ -168,7 +168,24 @@ const relatedByPath:Record<string,[string,string][]>={
   '/locations/greater-manchester':[['/locations/manchester','Manchester recruitment'],['/sectors/engineering','Engineering recruitment'],['/contact','Discuss a local vacancy']]
 };
 
-const imageFor=(path:string)=>path==='/candidates'||path.includes('candidate')||path.includes('partner')?'/images/vorlen-team-meeting.webp':'/images/vorlen-hero-colleague.webp';
+const pageImages: Record<string,string> = {
+  '/employers': '/images/vorlen-page-01.webp',
+  '/candidates': '/images/vorlen-page-02.webp',
+  '/services/permanent-recruitment': '/images/vorlen-page-03.webp',
+  '/guides/choosing-a-recruitment-agency': '/images/vorlen-page-04.webp',
+  '/guides/employer-recruitment-questions': '/images/vorlen-page-05.webp',
+  '/services/candidate-sourcing': '/images/vorlen-page-06.webp',
+  '/services/recruitment-for-smes': '/images/vorlen-page-07.webp',
+  '/sectors/technology': '/images/vorlen-page-08.webp',
+  '/sectors/sales-business-development': '/images/vorlen-page-09.webp',
+  '/sectors/finance-accounting': '/images/vorlen-page-10.webp',
+  '/sectors/engineering': '/images/vorlen-page-11.webp',
+  '/partners': '/images/vorlen-page-12.webp',
+  '/locations/manchester': '/images/vorlen-page-13.webp',
+  '/locations/greater-manchester': '/images/vorlen-page-14.webp',
+  '/our-approach': '/images/vorlen-page-15.webp'
+};
+const imageFor=(path:string)=>pageImages[path]||'/images/vorlen-hero-colleague.webp';
 
 const iconFor=(path:string)=>path.includes('candidate')?Users:path.includes('partner')?Network:path.includes('location')?MapPin:path.includes('sourcing')?Search:BriefcaseBusiness;
 
