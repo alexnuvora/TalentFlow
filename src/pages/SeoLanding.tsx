@@ -14,7 +14,7 @@ type PageConfig={
 
 const pages:Record<string,PageConfig>={
   '/employers':{
-    eyebrow:'FOR EMPLOYERS',title:'Recruitment that answers',accent:'the brief.',
+    eyebrow:'FOR EMPLOYERS',title:'Permanent recruitment built around',accent:'your vacancy.',
     intro:'Tell us the role, salary and must-haves. Our standard permanent placement fee is 15% of agreed first-year salary, subject to written terms. We confirm the fee and payment terms before sourcing, review candidates ourselves and explain why each introduction fits.',
     audience:'For employers who want a shortlist with reasoning behind it, not a pile of CVs.',
     points:[['Start with a real brief','The role, the salary, the working pattern, and the two or three skills that actually decide whether someone can do the job.'],['Search with intent','We go out and find people, including the ones not actively applying anywhere.'],['Review before introduction','A recruiter reads the evidence before you see anyone. No forwarding blind.'],['Keep momentum','Feedback, interviews and offers stay attached to the vacancy instead of scattered across inbox threads.']],
@@ -233,6 +233,8 @@ export default function SeoLanding(){
         {page.sections.map((section,i)=><article key={section.title}><p className="vorlen-eyebrow">{i===0?'HOW VORLEN WORKS':'WHY IT MATTERS'}</p><h2>{section.title}</h2><p>{section.copy}</p></article>)}
       </section>
 
+      {(pathname==='/employers'||pathname.startsWith('/services/'))&&<section className="seo-copy-grid" aria-label="Recruitment fees and next steps"><article><p className="vorlen-eyebrow">TRANSPARENT COMMERCIAL TERMS</p><h2>Understand the fee before a search starts.</h2><p>Our standard permanent placement fee is 15% of the agreed first-year salary, subject to written terms. We agree the fee, payment trigger and applicable terms before sourcing begins.</p></article><article><p className="vorlen-eyebrow">WHAT HAPPENS NEXT</p><h2>Start with a short vacancy brief.</h2><p>Tell us the job title, salary range, location, working pattern and essential experience. We will discuss the search approach, review relevant candidates and explain the evidence behind each introduction.</p><Link to="/contact?reason=employer">Discuss your vacancy <ArrowRight size={16}/></Link></article></section>}
+      {(pathname.startsWith('/sectors/')||pathname.startsWith('/locations/'))&&<section className="seo-copy-grid" aria-label="Useful employer hiring guidance"><article><p className="vorlen-eyebrow">PLAN YOUR SEARCH</p><h2>What makes a useful hiring brief?</h2><p>Include the salary range, exact workplace or travel requirements, working pattern, essential qualifications and the experience needed in the first six months. For specialist roles, describe the tools, systems or environment candidates will work in.</p></article><article><p className="vorlen-eyebrow">RELEVANT NEXT STEPS</p><h2>Agree the shortlist criteria first.</h2><p>We discuss which requirements are essential and which can be learned on the job. Every introduction should explain relevant experience and what to explore at interview.</p><Link to="/guides/employer-recruitment-questions">Read the employer hiring FAQs <ArrowRight size={16}/></Link></article></section>}
       <section className="seo-related">
         <p className="vorlen-eyebrow">EXPLORE VORLEN</p>
         <div>

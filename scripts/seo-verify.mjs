@@ -5,7 +5,7 @@ import {publicJobSlug} from '../src/lib/publicJobSlug.mjs';
 
 const root = new URL('../dist/', import.meta.url);
 const base = 'https://www.vorlen.co.uk';
-const publicRoutes = ['/', '/our-approach', '/guides/employer-recruitment-questions', '/guides/choosing-a-recruitment-agency', '/employers', '/contact', '/careers', '/services/permanent-recruitment',
+const publicRoutes = ['/', '/about', '/our-approach', '/guides/employer-recruitment-questions', '/guides/choosing-a-recruitment-agency', '/employers', '/contact', '/careers', '/services/permanent-recruitment',
   '/services/candidate-sourcing', '/services/recruitment-for-smes', '/sectors/technology',
   '/sectors/engineering', '/sectors/finance-accounting', '/sectors/sales-business-development',
   '/locations/manchester', '/locations/greater-manchester', '/partners', '/candidates', '/privacy', '/candidate-terms', '/accessibility'];
@@ -23,6 +23,7 @@ for (const privateRoute of privateRoutes) {
 }
 const urls = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map(match=>match[1]);
 const vercel = JSON.parse(await readFile(new URL('../vercel.json', import.meta.url), 'utf8'));
+assert.ok(!(vercel.redirects || []).some(item=>item.source==='/about'), 'About page must not redirect');
 const legacyGuideRedirect = (vercel.redirects || []).find(item => item.source === '/guides/ai-recruitment-questions');
 assert.ok(legacyGuideRedirect, 'Missing legacy guide redirect');
 assert.equal(legacyGuideRedirect.destination, '/guides/choosing-a-recruitment-agency', 'Legacy guide must redirect to the renamed guide');
