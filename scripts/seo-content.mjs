@@ -2,6 +2,7 @@
 // Consumed by scripts/seo-build.mjs (crawl HTML + JSON-LD are generated from this data).
 
 export const crawlLinks=[
+  ['/about','About Vorlen'],
   ['/services/permanent-recruitment','Permanent recruitment'],
   ['/services/candidate-sourcing','Candidate sourcing'],
   ['/services/recruitment-for-smes','Recruitment for SMEs'],
