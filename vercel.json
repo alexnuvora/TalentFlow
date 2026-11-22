@@ -42,11 +42,6 @@
   ],
   "redirects": [
     {
-      "source": "/about",
-      "destination": "/our-approach",
-      "permanent": true
-    },
-    {
       "source": "/guides/ai-recruitment-questions",
       "destination": "/guides/choosing-a-recruitment-agency",
       "permanent": true
