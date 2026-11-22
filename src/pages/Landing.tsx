@@ -57,7 +57,7 @@ export default function Landing(){
         <div className="vp-hero-copy">
           <p className="vp-kicker">UK PERMANENT RECRUITMENT</p>
           <h1>Hiring permanent staff? Start with a better shortlist.</h1>
-          <p className="vp-lead">Tell us the role, salary and what matters most. We source relevant people, review their experience and explain why each introduction deserves your consideration. We also help coordinate interviews and feedback.</p><p className="vp-hero-fee">Our standard permanent placement fee is 15% of the agreed first-year salary, subject to written terms. We confirm the fee and payment terms before starting a search.</p>
+          <p className="vp-lead">Tell us who you need to hire and what the job involves. We search for suitable people, speak to them about the role and explain why we think they are worth meeting.</p><p className="vp-hero-fee">Our standard fee is 15% of the agreed first-year salary, subject to written terms. We agree the fee and payment terms with you before starting.</p>
           <div className="vp-hero-actions">
             <Link className="vp-btn" to="/contact?reason=employer">Discuss your vacancy <ArrowRight size={17}/></Link>
             <Link className="vp-text-link" to="/careers">Looking for a role? View opportunities</Link>
@@ -73,29 +73,13 @@ export default function Landing(){
           <div className="vp-panel-label">WHAT YOU CAN EXPECT</div>
           <div className="vp-panel-item">
             <span>01</span>
-            <div><strong>Tell us what you need</strong><p>We will ask about the role, your team and what you are looking for.</p></div>
+            <div><strong>Tell us what you need</strong><p>We ask about the work, salary and experience you need.</p></div>
           </div>
           <div className="vp-panel-item">
             <span>02</span>
-            <div><strong>We will start looking</strong><p>We search for people with the right experience for the job.</p></div>
-          </div>
-          <div className="vp-panel-item">
-            <span>03</span>
-            <div><strong>Meet suitable candidates</strong><p>We review candidates before introducing them to you.</p></div>
-          </div>
-          <div className="vp-panel-item">
-            <span>04</span>
-            <div><strong>Help until you've hired</strong><p>We will help organise interviews and keep you updated.</p></div>
+            <div><strong>We will start looking</strong><p>We search for people whose experience fits your brief.</p></div>
           </div>
         </aside>
-      </section>
-
-      <section className="vp-positioning">
-        <div>
-          <p className="vp-kicker">WHY VORLEN</p>
-          <h2>Recruitment shouldn't take over your working day.</h2>
-        </div>
-        <p>Hiring takes time, especially when you are running a business as well. We can take some of that work off your hands, from finding candidates to arranging interviews.</p>
       </section>
 
       <section className="vp-people-feature" aria-labelledby="vp-people-feature-title">
@@ -109,8 +93,8 @@ export default function Landing(){
         </div>
         <div className="vp-people-feature-copy">
           <p className="vp-kicker">PEOPLE FIRST, ALWAYS</p>
-          <h2 id="vp-people-feature-title">Good hiring starts with a proper conversation.</h2>
-          <p>Every business is different. We take time to understand the role, the team and what the right person needs to bring — before we start looking.</p>
+          <h2 id="vp-people-feature-title">First, we get to know the job.</h2>
+          <p>A job title alone rarely tells the whole story. We ask about the day-to-day work, who the person will work with and what experience really matters.</p>
           <Link className="vp-text-link" to="/employers">How we work with employers <ArrowRight size={15}/></Link>
         </div>
       </section>
@@ -146,11 +130,6 @@ export default function Landing(){
         <p className="vp-section-note">Based in Greater Manchester, supporting permanent recruitment enquiries across the UK. Every assignment is reviewed individually.</p>
       </section>
 
-      <section className="vp-employer-assurance" aria-labelledby="vp-assurance-title">
-        <div><p className="vp-kicker">FOR HIRING TEAMS</p><h2 id="vp-assurance-title">Get to know the person behind the CV.</h2></div>
-        <div><p>A CV only tells part of the story. We look at relevant experience and suitability before introducing someone, so you have more to go on when deciding who to interview.</p><Link className="vp-text-link" to="/employers">How we support employers <ArrowRight size={15}/></Link></div>
-      </section>
-
       <section className="vp-process">
         <div className="vp-process-intro">
           <p className="vp-kicker vp-kicker-light">OUR APPROACH</p>
@@ -165,31 +144,14 @@ export default function Landing(){
         </div>
       </section>
 
-      <section className="vp-audiences">
-        <article className="vp-employer">
-          <BriefcaseBusiness size={24}/>
-          <p className="vp-kicker">FOR EMPLOYERS</p>
-          <h2>Hiring for a permanent role?</h2>
-          <p>Tell us about your vacancy and the kind of person you are hoping to find. We will discuss how we can help.</p>
-          <Link className="vp-btn" to="/contact">Discuss your vacancy <ArrowRight size={16}/></Link>
-        </article>
-        <article className="vp-candidate">
-          <Users size={24}/>
-          <p className="vp-kicker">FOR CANDIDATES</p>
-          <h2>Looking for your next move?</h2>
-          <p>Take a look at our latest vacancies. If one interests you, you can apply through Vorlen Careers.</p>
-          <Link className="vp-outline-link" to="/careers">View current opportunities <ArrowRight size={16}/></Link>
-        </article>
-      </section>
-
       <section className="vp-confidence">
         <div>
           <ShieldCheck size={26}/>
           <p className="vp-kicker">RECRUITMENT WITH ACCOUNTABILITY</p>
-          <h2>Real people, making recruitment decisions.</h2>
+          <h2>You decide who gets an interview.</h2>
         </div>
         <div className="vp-confidence-copy">
-          <p className="vp-confidence-intro">We take care with every introduction. Our team reviews suitability and shares candidate information through the right channels.</p>
+          <p className="vp-confidence-intro">We review each introduction against your brief, check that candidates are happy for their details to be shared and leave the final hiring decision with you.</p>
           <div className="vp-assurance-list">
             <article className="vp-assurance-item"><span className="vp-assurance-number" aria-hidden="true">01</span><div><h3>Assessed against your vacancy</h3><p>We look at the experience and skills you told us matter.</p></div></article>
             <article className="vp-assurance-item"><span className="vp-assurance-number" aria-hidden="true">02</span><div><h3>Shared with permission</h3><p>We only share candidate details when we have the right permission.</p></div></article>
@@ -201,20 +163,16 @@ export default function Landing(){
       <section className="vp-discover" aria-labelledby="vp-discover-title">
         <div className="vp-section-head">
           <p className="vp-kicker">CURRENT OPPORTUNITIES</p>
-          <h2 id="vp-discover-title">See who's hiring.</h2>
-          <p>Browse our current vacancies and apply online. We will add new opportunities as they become available.</p>
+          <h2 id="vp-discover-title">Looking for your next role?</h2>
+          <p>Browse published vacancies and apply directly through Vorlen Careers.</p>
           <Link to="/careers">Browse live opportunities <ArrowRight size={16}/></Link>
-        </div>
-        <div className="vp-discover-cards">
-          <article><BriefcaseBusiness size={24}/><h3>Hiring for your team?</h3><p>Tell us the job title, where the role is based and what you are looking for. We will take it from there.</p><Link to="/contact">Start an employer enquiry <ArrowRight size={16}/></Link></article>
-          <article><Users size={24}/><h3>Considering your next role?</h3><p>See a role that sounds right for you? Read the details and apply through our careers page.</p><Link to="/careers">View opportunities <ArrowRight size={16}/></Link></article>
         </div>
       </section>
 
       <section className="vp-faq">
         <div className="vp-faq-head">
           <p className="vp-kicker">COMMON QUESTIONS</p>
-          <h2>A few things you might want to know.</h2>
+          <h2>Questions employers often ask.</h2>
         </div>
         <div className="vp-faq-list">
           {faqs.map(([q,a])=><details key={q}>
