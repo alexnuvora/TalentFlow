@@ -442,3 +442,18 @@
  .vp-site .vp-panel-item{padding:15px 0}
  .vp-site .vp-people-feature{padding-top:50px}
 }
+
+
+/* Contact: keep the direct email address legible without overpowering the layout. */
+.vorlen-contact-page .vorlen-contact-direct{
+  display:flex;flex-wrap:wrap;align-items:baseline;column-gap:12px;row-gap:6px;
+  min-width:0;
+}
+.vorlen-contact-page .vorlen-contact-direct a{
+  font-size:clamp(15px,1.35vw,18px);font-weight:700;line-height:1.45;
+  letter-spacing:-.015em;overflow-wrap:anywhere;word-break:normal;max-width:100%;
+}
+@media(max-width:620px){
+  .vorlen-contact-page .vorlen-contact-direct{align-items:flex-start;flex-direction:column}
+  .vorlen-contact-page .vorlen-contact-direct a{font-size:16px}
+}
