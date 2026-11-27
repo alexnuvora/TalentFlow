@@ -81,6 +81,8 @@ function crawlBody(title,description,canonical,bodyDetails,job){
     'Commercial terms are agreed in writing before a search begins. Employers retain responsibility for the final hiring decision.'
   ];
   const related={
+"/tools/recruitment-fee-calculator":[["/guides/employer-recruitment-questions","Recruitment fees and employer FAQs"],["/services/permanent-recruitment","Permanent recruitment"],["/contact","Request a recruitment quote"]],
+"/sectors/electrical-design-engineer-recruitment":[["/sectors/engineering","Engineering recruitment"],["/locations/manchester","Manchester recruitment"],["/tools/recruitment-fee-calculator","Recruitment fee calculator"],["/contact","Discuss a vacancy"]],
     "/sectors/hgv-driver-recruitment":[["/services/permanent-recruitment","Permanent recruitment"],["/guides/employer-recruitment-questions","Recruitment fees and hiring FAQs"],["/contact","Discuss your driver vacancy"]],
     '/employers':[['/services/permanent-recruitment','Permanent recruitment'],['/guides/employer-recruitment-questions','Employer hiring FAQs'],['/contact','Discuss a vacancy']],
     '/guides/employer-recruitment-questions':[['/employers','Recruitment for employers'],['/services/recruitment-for-smes','Recruitment for SMEs'],['/contact','Discuss your vacancy']],
@@ -91,6 +93,10 @@ function crawlBody(title,description,canonical,bodyDetails,job){
     '/locations/manchester':[['/locations/greater-manchester','Greater Manchester recruitment'],['/sectors/engineering','Engineering recruitment'],['/contact','Discuss a Manchester vacancy']],
     '/locations/greater-manchester':[['/locations/manchester','Manchester recruitment'],['/sectors/engineering','Engineering recruitment'],['/contact','Discuss a local vacancy']]
   }[route]||crawlLinks;
+  if (route.startsWith('/sectors/')||route.startsWith('/services/')||route.startsWith('/guides/')||route==='/employers') {
+    if (!related.some(([href])=>href==='/tools/recruitment-fee-calculator')) related.push(['/tools/recruitment-fee-calculator','Recruitment fee calculator']);
+  }
+  if(route==='/sectors/engineering'&&!related.some(([href])=>href==='/sectors/electrical-design-engineer-recruitment')) related.push(['/sectors/electrical-design-engineer-recruitment','Electrical design engineer recruitment']);
   const links=related.map(([href,label])=>`<a href="${href}">${esc(label)}</a>`).join(' · ');
   const heading=route.startsWith('/sectors/')?'How we approach this specialism':route.startsWith('/services/')?'What the service includes':route.startsWith('/locations/')?'Recruitment in this area':route.startsWith('/careers/')?'Role information':route===guideSlug?'Choosing a recruitment agency':route==='/our-approach'?'How candidate assessment works':'How Vorlen works';
   const paragraphs=safeDetails.map(x=>`<p>${esc(x)}</p>`).join('');
@@ -145,6 +151,8 @@ const homePage={title:homeMeta.title,description:homeMeta.description,jsonLd:[{'
 const guideJsonLd={'@context':'https://schema.org','@graph':[{'@type':'Article','@id':`${base}${guideSlug}#article`,headline:'Choosing a Recruitment Agency: Fees, Shortlists and Questions to Ask',description:'A practical guide to choosing a UK recruitment agency, comparing fees, candidate assessment, shortlists and replacement terms.',mainEntityOfPage:`${base}${guideSlug}`,publisher:organization,author:{'@id':`${base}/#organization`}},{'@type':'FAQPage',mainEntity:guideQuestions.map(({q,a})=>({'@type':'Question',name:q,acceptedAnswer:{'@type':'Answer',text:a}}))}]};
 
 const staticPages=[
+{route:"/tools/recruitment-fee-calculator",title:"Recruitment Agency Fee Calculator UK | Vorlen",description:"Calculate a permanent recruitment agency fee using salary and percentage. Compare a quote with Vorlen's standard 15% fee, subject to written terms.",lastmod:'2026-11-27',jsonLd:{'@context':'https://schema.org','@type':'WebPage',name:"Recruitment Agency Fee Calculator UK | Vorlen",url:base+"/tools/recruitment-fee-calculator",about:organization}},
+{route:"/sectors/electrical-design-engineer-recruitment",title:"Electrical Design Engineer Recruitment Agency | Vorlen",description:"Permanent electrical design engineer recruitment for employers in Manchester, the North West and across the UK. Discuss your technical vacancy with Vorlen.",lastmod:'2026-11-27',jsonLd:service("Permanent electrical design engineer recruitment","/sectors/electrical-design-engineer-recruitment","Permanent electrical design engineer recruitment for employers in Manchester, the North West and across the UK. Discuss your technical vacancy with Vorlen.")},
   {route:"/sectors/hgv-driver-recruitment",title:"Permanent HGV Driver Recruitment Agency | Vorlen",description:"Permanent HGV Class 1 and Class 2 driver recruitment for transport employers in Cheshire, Greater Manchester and across the UK.",lastmod:'2026-11-27',jsonLd:service('Permanent HGV driver recruitment',"/sectors/hgv-driver-recruitment",'Permanent Class 1 and Class 2 driver recruitment for transport employers.')},
   {route:'/about',title:'About Vorlen | People-first UK Recruitment',description:'Meet Vorlen, a Greater Manchester-based permanent recruitment company supporting UK employers with human-reviewed shortlists, clear terms and thoughtful hiring.',lastmod:'2026-11-22',jsonLd:{'@context':'https://schema.org','@type':'AboutPage',name:'About Vorlen',url:`${base}/about`,about:organization}},
   {route:'/our-approach',title:'How Vorlen Assesses Candidates | Recruitment Methodology',description:'How Vorlen defines a vacancy, sources candidates, reviews job-related evidence, records recruiter judgement and shares candidate information with permission.',lastmod:RELEASE_LASTMOD,jsonLd:{'@context':'https://schema.org','@type':'WebPage',name:'Vorlen candidate assessment methodology',url:`${base}/our-approach`,about:organization}},
@@ -234,6 +242,9 @@ await fs.writeFile(path.join(dist,'llms.txt'),`# Vorlen
 - [Choosing a recruitment agency](${base}/guides/choosing-a-recruitment-agency): employer guide to agency selection and terms.
 - [Contact](${base}/contact): contact Vorlen.
 - [Privacy](${base}/privacy): privacy information.
+
+- [Recruitment fee calculator](${base}/tools/recruitment-fee-calculator): estimate permanent placement fees.
+- [Electrical design engineer recruitment](${base}/sectors/electrical-design-engineer-recruitment): permanent specialist design recruitment.
 
 ## Vacancy data
 Current public vacancies are listed on the Careers page and published as individual pages. Machine-readable JobPosting data is generated only for published vacancies; talent-pool or register-interest pages are not represented as live jobs.
