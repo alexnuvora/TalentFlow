@@ -124,6 +124,7 @@ export default function Landing(){
           {[
             ['Engineering & technical','Permanent roles requiring relevant technical knowledge, qualifications and practical experience.','/sectors/engineering'],
             ['HGV & logistics','Permanent Class 1 and Class 2 driver recruitment for transport employers.','/sectors/hgv-driver-recruitment'],
+            ['Transport operations','Permanent transport planners, fleet coordinators and logistics staff in Cheshire.','/sectors/transport-logistics-recruitment-cheshire'],
             ['Telesales & inside sales','Permanent telesales executives, appointment setters and inside sales professionals.','/sectors/telesales-recruitment'],
             ['Residential childcare','Permanent residential childcare and senior support worker recruitment for children’s homes in England.','/sectors/childrens-residential-care-recruitment'],
             ['Office & administration','Reliable administrative and operational support, from office staff to experienced coordinators.'],
