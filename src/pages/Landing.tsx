@@ -122,10 +122,11 @@ export default function Landing(){
         </div>
         <div className="vp-specialisms-grid">
           {[
-            ['Engineering & technical','Permanent roles requiring relevant technical knowledge, qualifications and practical experience.'],
+            ['Engineering & technical','Permanent roles requiring relevant technical knowledge, qualifications and practical experience.','/sectors/engineering'],
+            ['HGV & logistics','Permanent Class 1 and Class 2 driver recruitment for transport employers.','/sectors/hgv-driver-recruitment'],
             ['Office & administration','Reliable administrative and operational support, from office staff to experienced coordinators.'],
             ['Accounting & finance','Finance and accounts positions where accuracy, experience and attention to detail count.']
-          ].map(([title,copy])=><article key={title}><h3>{title}</h3><p>{copy}</p><Link to="/contact">Discuss a role <ArrowRight size={15}/></Link></article>)}
+          ].map(([title,copy,route])=><article key={title}><h3>{title}</h3><p>{copy}</p><Link to={route||'/contact'}>{route?'Explore recruitment':'Discuss a role'} <ArrowRight size={15}/></Link></article>)}
         </div>
         <p className="vp-section-note">Based in Greater Manchester, supporting permanent recruitment enquiries across the UK. Every assignment is reviewed individually.</p>
       </section>
