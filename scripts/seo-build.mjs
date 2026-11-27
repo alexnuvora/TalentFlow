@@ -80,7 +80,9 @@ function crawlBody(title,description,canonical,bodyDetails,job){
     'Vorlen is a UK permanent recruitment agency. We take a clear vacancy brief, source candidates and review relevant evidence before making introductions.',
     'Commercial terms are agreed in writing before a search begins. Employers retain responsibility for the final hiring decision.'
   ];
-  const related={
+  const related=[...({
+"/guides/how-to-hire-hgv-drivers":[["/sectors/hgv-driver-recruitment","Permanent HGV driver recruitment"],["/tools/recruitment-brief-template","Recruitment brief template"],["/tools/recruitment-fee-calculator","Recruitment fee calculator"],["/contact","Discuss driver recruitment"]],
+"/tools/recruitment-brief-template":[["/employers","Recruitment for employers"],["/tools/recruitment-fee-calculator","Recruitment fee calculator"],["/contact","Discuss your vacancy"]],
 "/sectors/telesales-recruitment":[["/sectors/sales-business-development","Sales recruitment"],["/tools/recruitment-fee-calculator","Recruitment fee calculator"],["/contact","Discuss a telesales vacancy"]],
 "/sectors/childrens-residential-care-recruitment":[["/our-approach","Candidate assessment methodology"],["/tools/recruitment-fee-calculator","Recruitment fee calculator"],["/contact","Discuss a care vacancy"]],
 "/tools/recruitment-fee-calculator":[["/guides/employer-recruitment-questions","Recruitment fees and employer FAQs"],["/services/permanent-recruitment","Permanent recruitment"],["/contact","Request a recruitment quote"]],
@@ -94,13 +96,16 @@ function crawlBody(title,description,canonical,bodyDetails,job){
     '/sectors/sales-business-development':[['/services/permanent-recruitment','Permanent recruitment'],['/sectors/finance-accounting','Finance recruitment'],['/contact','Discuss a sales vacancy']],
     '/locations/manchester':[['/locations/greater-manchester','Greater Manchester recruitment'],['/sectors/engineering','Engineering recruitment'],['/contact','Discuss a Manchester vacancy']],
     '/locations/greater-manchester':[['/locations/manchester','Manchester recruitment'],['/sectors/engineering','Engineering recruitment'],['/contact','Discuss a local vacancy']]
-  }[route]||crawlLinks;
+  }[route]||crawlLinks)];
   if (route.startsWith('/sectors/')||route.startsWith('/services/')||route.startsWith('/guides/')||route==='/employers') {
     if (!related.some(([href])=>href==='/tools/recruitment-fee-calculator')) related.push(['/tools/recruitment-fee-calculator','Recruitment fee calculator']);
   }
   if(route==='/sectors/engineering'&&!related.some(([href])=>href==='/sectors/electrical-design-engineer-recruitment')) related.push(['/sectors/electrical-design-engineer-recruitment','Electrical design engineer recruitment']);
   if(route==='/sectors/sales-business-development') related.push(['/sectors/telesales-recruitment','Permanent telesales recruitment']);
   if(route==='/sectors/childrens-residential-care-recruitment') related.push(['https://www.gov.uk/guidance/childrens-homes-recruiting-staff','Ofsted: Children’s homes — recruiting staff']);
+  if(route==='/guides/how-to-hire-hgv-drivers') related.push(['https://www.gov.uk/being-a-goods-vehicle-operator/employing-or-using-drivers','GOV.UK: employing or using drivers']);
+  if(route==='/sectors/hgv-driver-recruitment') related.push(['/guides/how-to-hire-hgv-drivers','How to hire HGV drivers']);
+  if(['/employers','/services/permanent-recruitment','/guides/employer-recruitment-questions'].includes(route)) related.push(['/tools/recruitment-brief-template','Recruitment brief template']);
   const links=related.map(([href,label])=>`<a href="${href}">${esc(label)}</a>`).join(' · ');
   const heading=route.startsWith('/sectors/')?'How we approach this specialism':route.startsWith('/services/')?'What the service includes':route.startsWith('/locations/')?'Recruitment in this area':route.startsWith('/careers/')?'Role information':route===guideSlug?'Choosing a recruitment agency':route==='/our-approach'?'How candidate assessment works':'How Vorlen works';
   const paragraphs=safeDetails.map(x=>`<p>${esc(x)}</p>`).join('');
@@ -155,8 +160,10 @@ const homePage={title:homeMeta.title,description:homeMeta.description,jsonLd:[{'
 const guideJsonLd={'@context':'https://schema.org','@graph':[{'@type':'Article','@id':`${base}${guideSlug}#article`,headline:'Choosing a Recruitment Agency: Fees, Shortlists and Questions to Ask',description:'A practical guide to choosing a UK recruitment agency, comparing fees, candidate assessment, shortlists and replacement terms.',mainEntityOfPage:`${base}${guideSlug}`,publisher:organization,author:{'@id':`${base}/#organization`}},{'@type':'FAQPage',mainEntity:guideQuestions.map(({q,a})=>({'@type':'Question',name:q,acceptedAnswer:{'@type':'Answer',text:a}}))}]};
 
 const staticPages=[
+{route:"/guides/how-to-hire-hgv-drivers",title:"How to Hire HGV Drivers: UK Employer Guide | Vorlen",description:"A practical guide to recruiting permanent HGV drivers, from defining Class 1 or Class 2 roles to interview planning and pre-start checks.",lastmod:'2026-11-27',jsonLd:{'@context':'https://schema.org','@type':'WebPage',name:"How to Hire HGV Drivers: UK Employer Guide | Vorlen",url:base+"/guides/how-to-hire-hgv-drivers",about:organization}},
+{route:"/tools/recruitment-brief-template",title:"Free Recruitment Brief Template for Employers | Vorlen",description:"Create a free recruitment brief for a permanent vacancy. Set out salary, duties, location, essential skills and interview stages before sourcing.",lastmod:'2026-11-27',jsonLd:{'@context':'https://schema.org','@type':'WebPage',name:"Free Recruitment Brief Template for Employers | Vorlen",url:base+"/tools/recruitment-brief-template",about:organization}},
 {route:"/sectors/telesales-recruitment",title:"Permanent Telesales Recruitment Agency | Vorlen",description:"Hire permanent telesales executives and appointment setters in Manchester, Lancashire and across the UK. Discuss your sales recruitment brief with Vorlen.",lastmod:'2026-11-27',jsonLd:service("Permanent telesales recruitment","/sectors/telesales-recruitment","Hire permanent telesales executives and appointment setters in Manchester, Lancashire and across the UK. Discuss your sales recruitment brief with Vorlen.","United Kingdom")},
-{route:"/sectors/childrens-residential-care-recruitment",title:"Children's Residential Care Recruitment Agency | Vorlen",description:"Permanent residential childcare recruitment for children's homes in England. Discuss senior support worker and residential childcare vacancies with Vorlen.",lastmod:'2026-11-27',jsonLd:service("Permanent children's residential care recruitment","/sectors/childrens-residential-care-recruitment","Permanent residential childcare recruitment for children's homes in England. Discuss senior support worker and residential childcare vacancies with Vorlen.","England, United Kingdom")},
+{route:"/sectors/childrens-residential-care-recruitment",title:"Children's Residential Care Recruitment Agency | Vorlen",description:"Permanent residential childcare and senior support worker recruitment for children's homes in England. Discuss your vacancy with Vorlen.",lastmod:'2026-11-27',jsonLd:service("Permanent children's residential care recruitment","/sectors/childrens-residential-care-recruitment","Permanent residential childcare and senior support worker recruitment for children's homes in England. Discuss your vacancy with Vorlen.","England, United Kingdom")},
 {route:"/tools/recruitment-fee-calculator",title:"Recruitment Agency Fee Calculator UK | Vorlen",description:"Calculate a permanent recruitment agency fee using salary and percentage. Compare a quote with Vorlen's standard 15% fee, subject to written terms.",lastmod:'2026-11-27',jsonLd:{'@context':'https://schema.org','@type':'WebPage',name:"Recruitment Agency Fee Calculator UK | Vorlen",url:base+"/tools/recruitment-fee-calculator",about:organization}},
 {route:"/sectors/electrical-design-engineer-recruitment",title:"Electrical Design Engineer Recruitment Agency | Vorlen",description:"Permanent electrical design engineer recruitment for employers in Manchester, the North West and across the UK. Discuss your technical vacancy with Vorlen.",lastmod:'2026-11-27',jsonLd:service("Permanent electrical design engineer recruitment","/sectors/electrical-design-engineer-recruitment","Permanent electrical design engineer recruitment for employers in Manchester, the North West and across the UK. Discuss your technical vacancy with Vorlen.")},
   {route:"/sectors/hgv-driver-recruitment",title:"Permanent HGV Driver Recruitment Agency | Vorlen",description:"Permanent HGV Class 1 and Class 2 driver recruitment for transport employers in Cheshire, Greater Manchester and across the UK.",lastmod:'2026-11-27',jsonLd:service('Permanent HGV driver recruitment',"/sectors/hgv-driver-recruitment",'Permanent Class 1 and Class 2 driver recruitment for transport employers.')},
@@ -254,6 +261,9 @@ await fs.writeFile(path.join(dist,'llms.txt'),`# Vorlen
 
 - [Telesales recruitment](${base}/sectors/telesales-recruitment): Permanent telesales recruitment.
 - [Children's residential care recruitment](${base}/sectors/childrens-residential-care-recruitment): Permanent children's residential care recruitment.
+
+- [How to hire HGV drivers](${base}/guides/how-to-hire-hgv-drivers): A practical guide to recruiting permanent HGV drivers, from defining Class 1 or Class 2 roles to interview planning and pre-start checks.
+- [Recruitment brief template](${base}/tools/recruitment-brief-template): Create a free recruitment brief for a permanent vacancy. Set out salary, duties, location, essential skills and interview stages before sourcing.
 
 ## Vacancy data
 Current public vacancies are listed on the Careers page and published as individual pages. Machine-readable JobPosting data is generated only for published vacancies; talent-pool or register-interest pages are not represented as live jobs.
