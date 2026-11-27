@@ -301,9 +301,9 @@ Deno.serve(async(req)=>{
    const out=await response.json().catch(()=>({}));if(!response.ok||!out.id){await db.from('outbound_deliveries').update({status:'failed',last_error:'Provider response '+response.status}).eq('id',deliveryId).eq('company_id',company_id);return done({sent:false,status:'failed',delivery_id:deliveryId,provider_status:response.status})}
    const saved=await db.from('outbound_deliveries').update({status:'sent',provider_message_id:out.id,sent_at:new Date().toISOString(),last_error:null}).eq('id',deliveryId).eq('company_id',company_id);
    let logWarning=false;
-   if(client){const logged=await userDb.rpc('partner_log_communication',{p_client:client.id,p_event_type:'email',p_summary:'Sent via Vorlen MCP: '+subject,p_channel:'email',p_direction:'outbound',p_contact:null,p_candidate:null,p_job:null,p_subject:subject,p_occurred_at:new Date().toISOString(),p_metadata:{provider:'resend',message_id:out.id,delivery_id:deliveryId,attachments:manifest}});logWarning=!!logged.error}
-   await audit('send_vorlen_email:'+deliveryId);
-   return done({sent:true,provider_accepted:true,recipient,subject,attachments:manifest,delivery_id:deliveryId,provider_message_id:out.id,audit_warning:!!saved.error||logWarning});
+   if(client){const logged=await db.from('partner_communication_events').insert({company_id,partner_id:user.id,client_id:client.id,event_type:'email',channel:'email',direction:'outbound',subject,summary:'Sent via Vorlen MCP: '+subject,occurred_at:new Date().toISOString(),metadata:{provider:'resend',message_id:out.id,delivery_id:deliveryId,attachments:manifest}}).select('id').single();logWarning=!!logged.error||!logged.data?.id;if(logWarning)console.error('MCP client email communication audit failed',deliveryId,logged.error?.code||'missing record')}
+   const activity=await db.from('activity_log').insert({company_id,actor_id:user.id,event_type:'mcp_action',detail:'send_vorlen_email:'+deliveryId});if(activity.error)console.error('MCP email activity audit failed',deliveryId,activity.error.code);
+   return done({sent:true,provider_accepted:true,recipient,subject,attachments:manifest,delivery_id:deliveryId,provider_message_id:out.id,audit_warning:!!saved.error||logWarning||!!activity.error});
   }
   if(name==='upload_candidate_cv'){
    if(!['owner','manager'].includes(profile.role))return err(id,-32003,'Owner or manager access required',403);
