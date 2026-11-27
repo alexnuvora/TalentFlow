@@ -3,6 +3,7 @@ import {Link} from 'react-router-dom';
 import {ArrowRight,CheckCircle2,ChevronDown,ShieldCheck,Users,BriefcaseBusiness,Search,Handshake,Facebook,Linkedin,Building2} from 'lucide-react';
 import MarketingHeader from '../components/MarketingHeader';
 import VorlenBrand from '../components/VorlenBrand';
+import DirectoryVerificationBadge from '../components/DirectoryVerificationBadge';
 import GooglePreferredSource from '../components/GooglePreferredSource';
 import {orgSchema,setSeo} from '../lib/seo';
 
@@ -201,7 +202,7 @@ export default function Landing(){
       <div><strong>Employers</strong><Link to="/employers">For employers</Link><Link to="/services/permanent-recruitment">Permanent recruitment</Link><Link to="/services/candidate-sourcing">Candidate sourcing</Link><Link to="/services/recruitment-for-smes">Recruitment for SMEs</Link></div>
       <div><strong>Candidates</strong><Link to="/candidates">For candidates</Link><Link to="/careers">Open opportunities</Link><Link to="/candidate-terms">Candidate terms</Link><Link to="/privacy">Privacy policy</Link></div>
       <div><strong>Vorlen</strong><Link to="/about">About us</Link><Link to="/partners">Partner network</Link><Link to="/locations/manchester">Manchester</Link><Link to="/locations/greater-manchester">Greater Manchester</Link><Link to="/contact">Contact</Link><Link to="/accessibility">Accessibility</Link></div>
-      <div className="vp-footer-base"><span>© {new Date().getFullYear()} Vorlen</span><span>Vorlen Ltd · Company No. 17387520 · Registered in England and Wales · Registered office: Piccadilly Business Centre, Unit C Aldow Enterprise Park, Blackett Street, Manchester, M12 6AE · ICO Ref: ZC275029</span></div>
+      <div className="vp-footer-base"><span>© {new Date().getFullYear()} Vorlen</span><div style={{display:'flex',flexWrap:'wrap',alignItems:'center',gap:'16px',minWidth:0}}><span>Vorlen Ltd · Company No. 17387520 · Registered in England and Wales · Registered office: Piccadilly Business Centre, Unit C Aldow Enterprise Park, Blackett Street, Manchester, M12 6AE · ICO Ref: ZC275029</span><DirectoryVerificationBadge/></div></div>
     </footer>
   </div>
 }

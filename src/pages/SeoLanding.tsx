@@ -3,6 +3,7 @@ import {useEffect,useState} from 'react';
 import {Link,useLocation} from 'react-router-dom';
 import {ArrowRight,BriefcaseBusiness,CheckCircle2,MapPin,Network,Search,ShieldCheck,Users} from 'lucide-react';
 import VorlenBrand from '../components/VorlenBrand';
+import DirectoryVerificationBadge from '../components/DirectoryVerificationBadge';
 import GooglePreferredSource from '../components/GooglePreferredSource';
 import {setSeo} from '../lib/seo';
 
@@ -300,7 +301,7 @@ export default function SeoLanding(){
       <div><strong>Employers</strong><Link to="/employers">Employer recruitment</Link><Link to="/services/permanent-recruitment">How we recruit</Link><Link to="/our-approach">Assessment methodology</Link><Link to="/services/candidate-sourcing">Candidate sourcing</Link><Link to="/services/recruitment-for-smes">Recruitment for SMEs</Link><Link to="/sectors/hgv-driver-recruitment">HGV driver recruitment</Link><Link to="/sectors/transport-logistics-recruitment-cheshire">Transport and logistics recruitment</Link><Link to="/sectors/telesales-recruitment">Telesales recruitment</Link><Link to="/sectors/childrens-residential-care-recruitment">Children's residential care recruitment</Link><Link to="/tools/recruitment-fee-calculator">Recruitment fee calculator</Link><Link to="/tools/recruitment-brief-template">Recruitment brief template</Link><Link to="/guides/choosing-a-recruitment-agency">Choosing an agency</Link></div>
       <div><strong>Candidates & partners</strong><Link to="/candidates">For candidates</Link><Link to="/careers">Open opportunities</Link><Link to="/partners">Partner network</Link></div>
       <div><strong>Locations</strong><Link to="/locations/manchester">Manchester</Link><Link to="/locations/greater-manchester">Greater Manchester</Link><Link to="/contact">Contact Vorlen</Link></div>
-      <div className="vorlen-footer-bottom"><span>© {new Date().getFullYear()} Vorlen</span><span>Vorlen Ltd · Company No. 17387520 · Registered in England and Wales · Registered office: Piccadilly Business Centre, Unit C Aldow Enterprise Park, Blackett Street, Manchester, M12 6AE</span></div>
+      <div className="vorlen-footer-bottom"><span>© {new Date().getFullYear()} Vorlen</span><div style={{display:'flex',flexWrap:'wrap',alignItems:'center',gap:'16px',minWidth:0}}><span>Vorlen Ltd · Company No. 17387520 · Registered in England and Wales · Registered office: Piccadilly Business Centre, Unit C Aldow Enterprise Park, Blackett Street, Manchester, M12 6AE</span><DirectoryVerificationBadge/></div></div>
     </footer>
   </div>
 }

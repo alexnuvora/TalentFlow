@@ -3,6 +3,7 @@ import {Link} from 'react-router-dom';
 import {ArrowRight,CheckCircle2,Handshake,SearchCheck,Users} from 'lucide-react';
 import MarketingHeader from '../components/MarketingHeader';
 import VorlenBrand from '../components/VorlenBrand';
+import DirectoryVerificationBadge from '../components/DirectoryVerificationBadge';
 import {orgSchema,setSeo} from '../lib/seo';
 
 const principles=[
@@ -34,6 +35,6 @@ export default function About(){
       <div className="about-wrap about-local"><CheckCircle2 size={19} aria-hidden="true"/> Based in Greater Manchester. Supporting employers across the UK.</div>
       <section className="vp-final"><div><p className="vp-kicker vp-kicker-light">LET'S WORK TOGETHER</p><h2>Great teams start with a conversation.</h2><p>Tell us about the people you're looking for. We'll take it from there, together.</p></div><Link className="vp-final-btn" to="/contact?reason=employer">Discuss a vacancy <ArrowRight size={17}/></Link></section>
     </main>
-    <footer className="vp-footer"><div className="vp-footer-brand"><VorlenBrand/><p>Good recruitment starts with a conversation.</p></div><div><strong>Explore</strong><Link to="/">Home</Link><Link to="/about">About us</Link><Link to="/employers">For employers</Link><Link to="/careers">Careers</Link></div><div><strong>Get in touch</strong><Link to="/contact">Contact</Link><Link to="/partners">Partner network</Link><Link to="/privacy">Privacy policy</Link><Link to="/accessibility">Accessibility</Link></div><div className="vp-footer-base"><span>© {new Date().getFullYear()} Vorlen Ltd</span><span>Registered in England and Wales · Company No. 17387520</span></div></footer>
+    <footer className="vp-footer"><div className="vp-footer-brand"><VorlenBrand/><p>Good recruitment starts with a conversation.</p></div><div><strong>Explore</strong><Link to="/">Home</Link><Link to="/about">About us</Link><Link to="/employers">For employers</Link><Link to="/careers">Careers</Link></div><div><strong>Get in touch</strong><Link to="/contact">Contact</Link><Link to="/partners">Partner network</Link><Link to="/privacy">Privacy policy</Link><Link to="/accessibility">Accessibility</Link></div><div className="vp-footer-base"><span>© {new Date().getFullYear()} Vorlen Ltd</span><div style={{display:'flex',flexWrap:'wrap',alignItems:'center',gap:'16px',minWidth:0}}><span>Registered in England and Wales · Company No. 17387520</span><DirectoryVerificationBadge/></div></div></footer>
   </div>;
 }
