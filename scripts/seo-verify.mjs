@@ -5,7 +5,7 @@ import {publicJobSlug} from '../src/lib/publicJobSlug.mjs';
 
 const root = new URL('../dist/', import.meta.url);
 const base = 'https://www.vorlen.co.uk';
-const publicRoutes = ['/', '/about', '/our-approach', '/guides/employer-recruitment-questions', '/guides/choosing-a-recruitment-agency', '/employers', '/contact', '/careers', '/services/permanent-recruitment',
+const publicRoutes = ['/sectors/hgv-driver-recruitment', '/', '/about', '/our-approach', '/guides/employer-recruitment-questions', '/guides/choosing-a-recruitment-agency', '/employers', '/contact', '/careers', '/services/permanent-recruitment',
   '/services/candidate-sourcing', '/services/recruitment-for-smes', '/sectors/technology',
   '/sectors/engineering', '/sectors/finance-accounting', '/sectors/sales-business-development',
   '/locations/manchester', '/locations/greater-manchester', '/partners', '/candidates', '/privacy', '/candidate-terms', '/accessibility'];
@@ -88,6 +88,11 @@ for (const [route,label] of [
 ]) {
   assert.ok(homeHtml.includes('href="'+route+'">'+label+'</a>'), 'Homepage must link directly to '+route);
 }
+const driverHtml=await read('sectors/hgv-driver-recruitment/index.html');
+assert.match(driverHtml,/Class 1 and Class 2/);
+assert.match(driverHtml,/15%/);
+assert.match(driverHtml,/temporary shift cover/);
+assert.ok(homeHtml.includes('href="/sectors/hgv-driver-recruitment">HGV driver recruitment</a>'),'Homepage must link to permanent HGV recruitment');
 const serviceHtml = await read('services/permanent-recruitment/index.html');
 const articleHtml = await read('guides/choosing-a-recruitment-agency/index.html');
 const employerGuideHtml=await read('guides/employer-recruitment-questions/index.html');
