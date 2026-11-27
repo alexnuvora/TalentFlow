@@ -81,6 +81,7 @@ function crawlBody(title,description,canonical,bodyDetails,job){
     'Commercial terms are agreed in writing before a search begins. Employers retain responsibility for the final hiring decision.'
   ];
   const related=[...({
+"/sectors/transport-logistics-recruitment-cheshire":[["/sectors/hgv-driver-recruitment","HGV driver recruitment"],["/guides/how-to-hire-hgv-drivers","HGV employer hiring guide"],["/tools/recruitment-fee-calculator","Recruitment fee calculator"],["/contact","Discuss a logistics vacancy"]],
 "/guides/how-to-hire-hgv-drivers":[["/sectors/hgv-driver-recruitment","Permanent HGV driver recruitment"],["/tools/recruitment-brief-template","Recruitment brief template"],["/tools/recruitment-fee-calculator","Recruitment fee calculator"],["/contact","Discuss driver recruitment"]],
 "/tools/recruitment-brief-template":[["/employers","Recruitment for employers"],["/tools/recruitment-fee-calculator","Recruitment fee calculator"],["/contact","Discuss your vacancy"]],
 "/sectors/telesales-recruitment":[["/sectors/sales-business-development","Sales recruitment"],["/tools/recruitment-fee-calculator","Recruitment fee calculator"],["/contact","Discuss a telesales vacancy"]],
@@ -106,6 +107,7 @@ function crawlBody(title,description,canonical,bodyDetails,job){
   if(route==='/guides/how-to-hire-hgv-drivers') related.push(['https://www.gov.uk/being-a-goods-vehicle-operator/employing-or-using-drivers','GOV.UK: employing or using drivers']);
   if(route==='/sectors/hgv-driver-recruitment') related.push(['/guides/how-to-hire-hgv-drivers','How to hire HGV drivers']);
   if(['/employers','/services/permanent-recruitment','/guides/employer-recruitment-questions'].includes(route)) related.push(['/tools/recruitment-brief-template','Recruitment brief template']);
+  if(route==='/sectors/hgv-driver-recruitment') related.push(['/sectors/transport-logistics-recruitment-cheshire','Transport and logistics recruitment in Cheshire']);
   const links=related.map(([href,label])=>`<a href="${href}">${esc(label)}</a>`).join(' · ');
   const heading=route.startsWith('/sectors/')?'How we approach this specialism':route.startsWith('/services/')?'What the service includes':route.startsWith('/locations/')?'Recruitment in this area':route.startsWith('/careers/')?'Role information':route===guideSlug?'Choosing a recruitment agency':route==='/our-approach'?'How candidate assessment works':'How Vorlen works';
   const paragraphs=safeDetails.map(x=>`<p>${esc(x)}</p>`).join('');
@@ -160,6 +162,7 @@ const homePage={title:homeMeta.title,description:homeMeta.description,jsonLd:[{'
 const guideJsonLd={'@context':'https://schema.org','@graph':[{'@type':'Article','@id':`${base}${guideSlug}#article`,headline:'Choosing a Recruitment Agency: Fees, Shortlists and Questions to Ask',description:'A practical guide to choosing a UK recruitment agency, comparing fees, candidate assessment, shortlists and replacement terms.',mainEntityOfPage:`${base}${guideSlug}`,publisher:organization,author:{'@id':`${base}/#organization`}},{'@type':'FAQPage',mainEntity:guideQuestions.map(({q,a})=>({'@type':'Question',name:q,acceptedAnswer:{'@type':'Answer',text:a}}))}]};
 
 const staticPages=[
+{route:"/sectors/transport-logistics-recruitment-cheshire",title:"Transport & Logistics Recruitment Cheshire | Vorlen",description:"Permanent transport planners, fleet coordinators and logistics staff for Cheshire employers. Discuss your recruitment brief with Vorlen.",lastmod:'2026-11-27',jsonLd:service("Permanent transport and logistics recruitment in Cheshire","/sectors/transport-logistics-recruitment-cheshire","Permanent transport planners, fleet coordinators and logistics staff for Cheshire employers. Discuss your recruitment brief with Vorlen.","Cheshire, United Kingdom")},
 {route:"/guides/how-to-hire-hgv-drivers",title:"How to Hire HGV Drivers: UK Employer Guide | Vorlen",description:"A practical guide to recruiting permanent HGV drivers, from defining Class 1 or Class 2 roles to interview planning and pre-start checks.",lastmod:'2026-11-27',jsonLd:{'@context':'https://schema.org','@type':'WebPage',name:"How to Hire HGV Drivers: UK Employer Guide | Vorlen",url:base+"/guides/how-to-hire-hgv-drivers",about:organization}},
 {route:"/tools/recruitment-brief-template",title:"Free Recruitment Brief Template for Employers | Vorlen",description:"Create a free recruitment brief for a permanent vacancy. Set out salary, duties, location, essential skills and interview stages before sourcing.",lastmod:'2026-11-27',jsonLd:{'@context':'https://schema.org','@type':'WebPage',name:"Free Recruitment Brief Template for Employers | Vorlen",url:base+"/tools/recruitment-brief-template",about:organization}},
 {route:"/sectors/telesales-recruitment",title:"Permanent Telesales Recruitment Agency | Vorlen",description:"Hire permanent telesales executives and appointment setters in Manchester, Lancashire and across the UK. Discuss your sales recruitment brief with Vorlen.",lastmod:'2026-11-27',jsonLd:service("Permanent telesales recruitment","/sectors/telesales-recruitment","Hire permanent telesales executives and appointment setters in Manchester, Lancashire and across the UK. Discuss your sales recruitment brief with Vorlen.","United Kingdom")},
@@ -264,6 +267,8 @@ await fs.writeFile(path.join(dist,'llms.txt'),`# Vorlen
 
 - [How to hire HGV drivers](${base}/guides/how-to-hire-hgv-drivers): A practical guide to recruiting permanent HGV drivers, from defining Class 1 or Class 2 roles to interview planning and pre-start checks.
 - [Recruitment brief template](${base}/tools/recruitment-brief-template): Create a free recruitment brief for a permanent vacancy. Set out salary, duties, location, essential skills and interview stages before sourcing.
+
+- [Transport and logistics recruitment in Cheshire](${base}/sectors/transport-logistics-recruitment-cheshire): permanent transport planning, fleet and operations recruitment.
 
 ## Vacancy data
 Current public vacancies are listed on the Careers page and published as individual pages. Machine-readable JobPosting data is generated only for published vacancies; talent-pool or register-interest pages are not represented as live jobs.

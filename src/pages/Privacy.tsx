@@ -13,7 +13,7 @@ export default function Privacy(){
  return <div className="legal-public">
   <MarketingHeader/>
   <main>
-   <div className="legal-kicker">PRIVACY NOTICE · VERSION 25 SEPTEMBER 2026</div>
+   <div className="legal-kicker">PRIVACY NOTICE · VERSION 27 NOVEMBER 2026</div>
    <h1>Privacy notice</h1>
    <p className="legal-lead">This notice explains how Vorlen Ltd, uses personal information when providing permanent recruitment services, operating its partner and client workspaces, developing business relationships and responding to enquiries.</p>
 
@@ -56,6 +56,7 @@ export default function Privacy(){
     <p>A privacy acknowledgement in an application confirms that you have seen this notice; it is not used to convert processing that relies on contract steps, legal obligation or legitimate interests into consent-based processing.</p>
    </section>
 
+   <section><h2>Website enquiry attribution</h2><p>When you submit a public enquiry, we may save the public landing-page path, recognised search-engine referral category where available and any supplied campaign labels alongside your enquiry. This helps us understand which resources lead to enquiries and improve our recruitment service, on the basis of legitimate interests. During navigation this limited context is held in page memory; this attribution feature does not use cookies, browser storage, advertising identifiers or third-party tracking requests. We do not retain full referral URLs or other query parameters through this feature.</p></section>
    <section><h2>Candidate applications and introductions</h2>
     <p>When you apply or register interest, Vorlen may create a candidate record, store your CV securely, record your application and provide a secure candidate portal. Before introducing you to a hirer for a specific vacancy, Vorlen records the relevant job information, checks job-related evidence and confirms the required authority or willingness for that introduction. Joining the database alone does not authorise Vorlen to send your CV to every client.</p>
    </section>
