@@ -34,6 +34,7 @@ const tools=[
  {name:'set_client_commercial_terms',description:'Set explicitly agreed commercial terms for one Vorlen client. Owner or manager only. Do not use unless the terms were actually agreed or otherwise verified.',inputSchema:{type:'object',required:['client_id'],properties:{client_id:{type:'string'},recruitment_fee_percent:{type:'number'},payment_terms_days:{type:'integer'},rebate_terms:{type:'string'},terms_version:{type:'string'},terms_accepted_by:{type:'string'},terms_acceptance_method:{type:'string'},terms_evidence:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
  {name:'set_commercial_terms',description:'Set workspace default commercial terms. Owner only. Values are authoritative for future calls until changed.',inputSchema:{type:'object',properties:{recruitment_fee_percent:{type:'number'},payment_terms_days:{type:'integer'},rebate_terms:{type:'string'},guarantee_terms:{type:'string'},exclusivity_terms:{type:'string'},negotiation_authority:{type:'string'},terms_version:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
  {name:'record_call_outcome',description:'Record a structured B2B call outcome with provenance after a real call. Include the live speaker identity and recruitment authority when established.',inputSchema:{type:'object',required:['outcome'],properties:{client_id:{type:'string'},job_id:{type:'string'},request_id:{type:'string'},outcome:{type:'string'},decision_maker_reached:{type:'boolean'},contact_name:{type:'string'},contact_role:{type:'string'},recruitment_authority:{type:'string'},hiring_status:{type:'string'},objections:{type:'array',items:{type:'string'}},commitments:{type:'array',items:{type:'string'}},next_action:{type:'string'},follow_up_at:{type:'string'},prospect_stated_facts:{type:'array',items:{type:'string'}},alex_inferences:{type:'array',items:{type:'string'}}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
+ {name:'send_vorlen_email',description:'Preview or send a single email through Vorlen hello@vorlen.co.uk with up to three user-supplied PDF attachments. Owner/manager only. ALWAYS preview first, show exact recipient, subject, message and attachment names to the user, and obtain explicit approval before mode=send. Send requires unchanged preview digest. Attachments must be independently reviewed for irreversible redaction and lawful disclosure; never attach original candidate CVs or unreviewed candidate material. Client outreach requires verified existing contact, recorded email compliance and no suppression. Internal test is owner-only to hello@vorlen.co.uk or jefferygo0o@gmail.com and must contain synthetic/non-personal material. No automatic sends.',inputSchema:{"type":"object","required":["mode","subject","message"],"properties":{"mode":{"type":"string","enum":["preview","send"]},"client_id":{"type":"string"},"recipient":{"type":"string"},"subject":{"type":"string"},"message":{"type":"string"},"internal_test":{"type":"boolean"},"attachment_1":{"type":"object","properties":{"download_url":{"type":"string"},"file_id":{"type":"string"},"mime_type":{"type":"string"},"file_name":{"type":"string"}},"required":["download_url","file_id"],"additionalProperties":false},"attachment_2":{"type":"object","properties":{"download_url":{"type":"string"},"file_id":{"type":"string"},"mime_type":{"type":"string"},"file_name":{"type":"string"}},"required":["download_url","file_id"],"additionalProperties":false},"attachment_3":{"type":"object","properties":{"download_url":{"type":"string"},"file_id":{"type":"string"},"mime_type":{"type":"string"},"file_name":{"type":"string"}},"required":["download_url","file_id"],"additionalProperties":false},"attachments_reviewed":{"type":"boolean"},"approved":{"type":"boolean"},"approval_digest":{"type":"string"}},"additionalProperties":false},annotations:{readOnlyHint:false,destructiveHint:true,openWorldHint:true,idempotentHint:true},outputSchema,securitySchemes:oauthScheme,_meta:{...toolMeta,'openai/fileParams':['attachment_1','attachment_2','attachment_3']}},
  {name:'upload_candidate_cv',description:'Attach an original user-provided PDF CV to an existing candidate. Owner or manager only. Does not replace an existing CV. Pass the actual uploaded file, never a guessed URL.',inputSchema:{type:'object',required:['candidate_id','file'],properties:{candidate_id:{type:'string'},file:{type:'object',properties:{download_url:{type:'string'},file_id:{type:'string'},mime_type:{type:'string'},file_name:{type:'string'}},required:['download_url','file_id'],additionalProperties:false}},additionalProperties:false},annotations:{readOnlyHint:false,destructiveHint:false,openWorldHint:true,idempotentHint:false},outputSchema,securitySchemes:oauthScheme,_meta:{...toolMeta,'openai/fileParams':['file']}},
  {name:'create_candidate',description:'Create a candidate record in Vorlen.',inputSchema:{type:'object',required:['full_name'],properties:{full_name:{type:'string'},email:{type:'string'},phone:{type:'string'},location:{type:'string'},source:{type:'string'},recruiter_summary:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
  {name:'create_application',description:'Attach a candidate to a job as an application.',inputSchema:{type:'object',required:['candidate_id','job_id'],properties:{candidate_id:{type:'string'},job_id:{type:'string'},status:{type:'string'}},additionalProperties:false},outputSchema,securitySchemes:oauthScheme,_meta:toolMeta},
@@ -210,6 +211,78 @@ Deno.serve(async(req)=>{
    const metadata:any={source:'live_b2b_call',client_id:uuid(a.client_id)?a.client_id:null,request_id:uuid(a.request_id)?a.request_id:null,decision_maker_reached:a.decision_maker_reached===true,contact_name:clean(a.contact_name,200)||null,contact_role:clean(a.contact_role,200)||null,recruitment_authority:clean(a.recruitment_authority,40)||null,hiring_status:clean(a.hiring_status,200)||null,objections:arr(a.objections),commitments:arr(a.commitments),next_action:clean(a.next_action,1000)||null,follow_up_at:clean(a.follow_up_at,80)||null,prospect_stated_facts:arr(a.prospect_stated_facts),alex_inferences:arr(a.alex_inferences)};
    const payload:any={company_id,actor_id:user.id,event_type:'b2b_call_outcome',detail:outcome,metadata};if(uuid(a.job_id))payload.job_id=a.job_id;
    const {data,error}=await db.from('activity_log').insert(payload).select().single();if(error)throw error;await audit(`record_call_outcome:${data.id}`);return done(data);
+  }
+  if(name==='send_vorlen_email'){
+   if(!['owner','manager'].includes(profile.role))return err(id,-32003,'Owner or manager access required',403);
+   if(!['preview','send'].includes(a.mode))return err(id,-32602,'Select preview or send');
+   const internal=a.internal_test===true,from='Vorlen <hello@vorlen.co.uk>',reply='hello@vorlen.co.uk';
+   const subject=typeof a.subject==='string'?a.subject.trim():'',message=typeof a.message==='string'?a.message.trim():'';
+   if(!subject||subject.length>300||/[\r\n]/.test(subject)||!message||message.length>10000)return err(id,-32602,'Valid subject and message required');
+   let recipient='',client:any=null;
+   if(internal){
+    recipient=String(a.recipient||reply).trim().toLowerCase();
+    if(profile.role!=='owner'||a.client_id||!['hello@vorlen.co.uk','jefferygo0o@gmail.com'].includes(recipient))return err(id,-32003,'Internal test is restricted to owner-approved test mailboxes',403);
+   }else{
+    if(!uuid(a.client_id))return err(id,-32602,'Existing client ID required');
+    const {data:c,error:ce}=await db.from('clients').select('id,email,phone,call_status,pecr_subscriber_type,email_marketing_basis,email_marketing_assessed_at,email_marketing_evidence').eq('company_id',company_id).eq('id',a.client_id).maybeSingle();
+    if(ce||!c)return err(id,-32003,'Client lookup failed',403);client=c;
+    recipient=String(a.recipient||c.email||'').trim().toLowerCase();
+    if(!/^[^\s@<>(),;]+@[^\s@<>(),;]+\.[^\s@<>(),;]+$/.test(recipient)||recipient.length>254)return err(id,-32602,'Valid single recipient required');
+    if(recipient!==String(c.email||'').trim().toLowerCase()){
+     const {data:contacts,error:contactError}=await db.from('client_recruitment_contacts').select('email').eq('company_id',company_id).eq('client_id',c.id).limit(100);
+     if(contactError||!contacts?.some(x=>String(x.email||'').trim().toLowerCase()===recipient))return err(id,-32003,'Recipient is not a recorded client recruitment contact',403);
+    }
+    const phone=String(c.phone||'').replace(/[^0-9]/g,'');
+    const checks=await Promise.all([
+     db.from('b2b_call_suppressions').select('id').eq('company_id',company_id).eq('client_id',c.id).limit(1),
+     db.from('b2b_call_suppressions').select('id').eq('company_id',company_id).eq('email_normalized',recipient).limit(1),
+     phone?db.from('b2b_call_suppressions').select('id').eq('company_id',company_id).eq('phone_normalized',phone).limit(1):Promise.resolve({data:[],error:null}),
+     db.from('partner_client_activity').select('id').eq('company_id',company_id).eq('client_id',c.id).eq('status','do_not_contact').limit(1)
+    ]);
+    if(checks.some(x=>x.error))return err(id,-32603,'Suppression check unavailable',503);
+    if(c.call_status==='do_not_call'||checks.some(x=>x.data?.length))return err(id,-32003,'Client or recipient is suppressed',409);
+    const permitted=!!c.email_marketing_assessed_at&&!!String(c.email_marketing_evidence||'').trim()&&((c.pecr_subscriber_type==='corporate'&&['legitimate_interests','consent','solicited'].includes(c.email_marketing_basis))||(c.pecr_subscriber_type==='individual'&&['consent','soft_opt_in','solicited'].includes(c.email_marketing_basis)));
+    if(!permitted)return err(id,-32003,'Recorded email compliance assessment required',409);
+   }
+   const digest=async(bytes:Uint8Array)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))).map(v=>v.toString(16).padStart(2,'0')).join('');
+   const attachments:any[]=[],manifest:any[]=[];let total=0;
+   for(const f of [a.attachment_1,a.attachment_2,a.attachment_3].filter(Boolean)){
+    if(!f.file_id||typeof f.download_url!=='string'||(f.mime_type&&f.mime_type!=='application/pdf'))return err(id,-32602,'Select a reviewed PDF file');
+    if(!internal&&candidateAllowed!==true)return err(id,-32003,'Candidate processing is disabled',409);
+    let download:URL;try{download=new URL(f.download_url)}catch{return err(id,-32602,'Invalid attachment URL')}
+    if(download.protocol!=='https:'||!['files.oaiusercontent.com','oaisdmntpritalynorth.blob.core.windows.net','oaisdmntprukwest.blob.core.windows.net','oaisdmntprdenmarkeast.blob.core.windows.net','oaisdmntprnortheu.blob.core.windows.net'].includes(download.hostname)||download.port||download.username||download.password)return err(id,-32602,'Unsupported attachment host');
+    const max=10*1024*1024;let response:Response;try{response=await fetch(download,{redirect:'error',signal:AbortSignal.timeout(25000)})}catch{return err(id,-32602,'Attachment download failed')}
+    if(!response.ok||!response.body)return err(id,-32602,'Attachment unavailable');
+    if(Number(response.headers.get('content-length')||0)>max-total){await response.body.cancel();return err(id,-32602,'Attachments exceed 10 MB combined')}
+    const reader=response.body.getReader(),chunks:Uint8Array[]=[];let size=0;
+    try{while(true){const next=await reader.read();if(next.done)break;size+=next.value.length;if(size+total>max){await reader.cancel();return err(id,-32602,'Attachments exceed 10 MB combined')}chunks.push(next.value)}}catch{return err(id,-32602,'Attachment download interrupted')}finally{reader.releaseLock()}
+    const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length}
+    if(size<8||new TextDecoder().decode(bytes.subarray(0,5))!=='%PDF-')return err(id,-32602,'Invalid PDF attachment');
+    total+=size;const filename=String(f.file_name||'Attachment.pdf').replace(/[^a-zA-Z0-9._-]/g,'_').slice(0,100);
+    if(!filename.toLowerCase().endsWith('.pdf'))return err(id,-32602,'PDF filename required');
+    if(manifest.some(x=>x.filename===filename))return err(id,-32602,'Attachment filenames must be unique');
+    let binary='';for(let i=0;i<bytes.length;i+=0x8000)binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000));
+    attachments.push({filename,content:btoa(binary)});manifest.push({filename,size_bytes:size,sha256:await digest(bytes)});
+   }
+   const text=message+'\n\nKind regards,\nVorlen Team\nhello@vorlen.co.uk\nwww.vorlen.co.uk'+(internal?'':'\n\nIf you would prefer not to receive further recruitment emails from Vorlen, please reply to let us know.');
+   const approvalDigest=await digest(new TextEncoder().encode(JSON.stringify({company_id,actor_id:user.id,client_id:client?.id||null,internal,recipient,subject,text,manifest})));
+   const key=Deno.env.get('RESEND_API_KEY');if(!key)return err(id,-32603,'Vorlen email delivery not configured',503);
+   if(a.mode==='preview')return done({preview:true,from,reply_to:reply,recipient,subject,message:text,attachments:manifest,approval_digest:approvalDigest,send_allowed:true,requires_explicit_approval:true,attachment_review_required:manifest.length>0});
+   if(a.approved!==true||a.approval_digest!==approvalDigest||(manifest.length&&a.attachments_reviewed!==true))return err(id,-32003,'Exact preview approval and attachment review required',409);
+   const idem='vorlen-mcp-email:'+approvalDigest;
+   const existing=await db.from('outbound_deliveries').select('id,status,provider_message_id').eq('company_id',company_id).eq('idempotency_key',idem).maybeSingle();
+   if(existing.error)return err(id,-32603,'Delivery audit unavailable',503);
+   if(existing.data)return done({sent:existing.data.status==='sent',deduplicated:true,status:existing.data.status,delivery_id:existing.data.id,provider_message_id:existing.data.provider_message_id,warning:existing.data.status==='sent'?null:'Previous attempt requires reconciliation; do not resend automatically'});
+   const reservation=await db.from('outbound_deliveries').insert({company_id,kind:'mcp_client_email',idempotency_key:idem,recipient,provider:'resend',status:'reserved',payload:{sender_id:user.id,client_id:client?.id||null,internal_test:internal,subject,message_text:text,attachments:manifest,approval_digest:approvalDigest}}).select('id').single();
+   if(reservation.error||!reservation.data)return err(id,-32003,'Delivery reservation failed or already exists',409);
+   const deliveryId=reservation.data.id;
+   let response:Response;try{response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json','Idempotency-Key':idem},body:JSON.stringify({from,to:[recipient],reply_to:reply,subject,text,attachments}),signal:AbortSignal.timeout(25000)})}catch{return done({sent:false,status:'reserved',delivery_id:deliveryId,warning:'Provider response uncertain; reconcile before retrying'})}
+   const out=await response.json().catch(()=>({}));if(!response.ok||!out.id){await db.from('outbound_deliveries').update({status:'failed',last_error:'Provider response '+response.status}).eq('id',deliveryId).eq('company_id',company_id);return done({sent:false,status:'failed',delivery_id:deliveryId,provider_status:response.status})}
+   const saved=await db.from('outbound_deliveries').update({status:'sent',provider_message_id:out.id,sent_at:new Date().toISOString(),last_error:null}).eq('id',deliveryId).eq('company_id',company_id);
+   let logWarning=false;
+   if(client){const logged=await userDb.rpc('partner_log_communication',{p_client:client.id,p_event_type:'email',p_summary:'Sent via Vorlen MCP: '+subject,p_channel:'email',p_direction:'outbound',p_contact:null,p_candidate:null,p_job:null,p_subject:subject,p_occurred_at:new Date().toISOString(),p_metadata:{provider:'resend',message_id:out.id,delivery_id:deliveryId,attachments:manifest}});logWarning=!!logged.error}
+   await audit('send_vorlen_email:'+deliveryId);
+   return done({sent:true,provider_accepted:true,recipient,subject,attachments:manifest,delivery_id:deliveryId,provider_message_id:out.id,audit_warning:!!saved.error||logWarning});
   }
   if(name==='upload_candidate_cv'){
    if(!['owner','manager'].includes(profile.role))return err(id,-32003,'Owner or manager access required',403);
