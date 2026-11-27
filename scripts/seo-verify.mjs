@@ -5,7 +5,7 @@ import {publicJobSlug} from '../src/lib/publicJobSlug.mjs';
 
 const root = new URL('../dist/', import.meta.url);
 const base = 'https://www.vorlen.co.uk';
-const publicRoutes = ["/sectors/telesales-recruitment","/sectors/childrens-residential-care-recruitment","/tools/recruitment-fee-calculator","/sectors/electrical-design-engineer-recruitment",'/sectors/hgv-driver-recruitment', '/', '/about', '/our-approach', '/guides/employer-recruitment-questions', '/guides/choosing-a-recruitment-agency', '/employers', '/contact', '/careers', '/services/permanent-recruitment',
+const publicRoutes = ["/guides/how-to-hire-hgv-drivers","/tools/recruitment-brief-template","/sectors/telesales-recruitment","/sectors/childrens-residential-care-recruitment","/tools/recruitment-fee-calculator","/sectors/electrical-design-engineer-recruitment",'/sectors/hgv-driver-recruitment', '/', '/about', '/our-approach', '/guides/employer-recruitment-questions', '/guides/choosing-a-recruitment-agency', '/employers', '/contact', '/careers', '/services/permanent-recruitment',
   '/services/candidate-sourcing', '/services/recruitment-for-smes', '/sectors/technology',
   '/sectors/engineering', '/sectors/finance-accounting', '/sectors/sales-business-development',
   '/locations/manchester', '/locations/greater-manchester', '/partners', '/candidates', '/privacy', '/candidate-terms', '/accessibility'];
@@ -104,6 +104,14 @@ assert.ok(residentialHtml.includes('https://www.gov.uk/guidance/childrens-homes-
 assert.match(residentialHtml,/registered provider remains responsible/);
 assert.ok(homeHtml.includes('href="/sectors/telesales-recruitment">Telesales recruitment</a>'));
 assert.ok(homeHtml.includes('href="/sectors/childrens-residential-care-recruitment">Children&#39;s residential care recruitment</a>'));
+const hgvGuideHtml=await read('guides/how-to-hire-hgv-drivers/index.html');
+assert.match(hgvGuideHtml,/operator remains responsible/i);
+assert.ok(hgvGuideHtml.includes('https://www.gov.uk/being-a-goods-vehicle-operator/employing-or-using-drivers'));
+const briefHtml=await read('tools/recruitment-brief-template/index.html');
+assert.match(briefHtml,/essential skills/i);
+assert.match(briefHtml,/does not submit your entries/i);
+assert.ok(homeHtml.includes('href="/guides/how-to-hire-hgv-drivers">How to hire HGV drivers</a>'));
+assert.ok(homeHtml.includes('href="/tools/recruitment-brief-template">Recruitment brief template</a>'));
 const driverHtml=await read('sectors/hgv-driver-recruitment/index.html');
 assert.match(driverHtml,/Class 1 and Class 2/);
 assert.match(driverHtml,/15%/);

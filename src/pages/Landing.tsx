@@ -95,7 +95,7 @@ export default function Landing(){
           <p className="vp-kicker">PEOPLE FIRST, ALWAYS</p>
           <h2 id="vp-people-feature-title">First, we get to know the job.</h2>
           <p>A job title alone rarely tells the whole story. We ask about the day-to-day work, who the person will work with and what experience really matters.</p>
-          <Link className="vp-text-link" to="/employers">How we work with employers <ArrowRight size={15}/></Link><p><Link className="vp-text-link" to="/tools/recruitment-fee-calculator">Calculate your recruitment fee <ArrowRight size={15}/></Link></p>
+          <Link className="vp-text-link" to="/employers">How we work with employers <ArrowRight size={15}/></Link><p><Link className="vp-text-link" to="/tools/recruitment-fee-calculator">Calculate your recruitment fee <ArrowRight size={15}/></Link></p><p><Link className="vp-text-link" to="/tools/recruitment-brief-template">Create your recruitment brief <ArrowRight size={15}/></Link></p>
         </div>
       </section>
 
