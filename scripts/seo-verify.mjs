@@ -5,7 +5,7 @@ import {publicJobSlug} from '../src/lib/publicJobSlug.mjs';
 
 const root = new URL('../dist/', import.meta.url);
 const base = 'https://www.vorlen.co.uk';
-const publicRoutes = ["/guides/how-to-hire-hgv-drivers","/tools/recruitment-brief-template","/sectors/telesales-recruitment","/sectors/childrens-residential-care-recruitment","/tools/recruitment-fee-calculator","/sectors/electrical-design-engineer-recruitment",'/sectors/hgv-driver-recruitment', '/', '/about', '/our-approach', '/guides/employer-recruitment-questions', '/guides/choosing-a-recruitment-agency', '/employers', '/contact', '/careers', '/services/permanent-recruitment',
+const publicRoutes = ["/sectors/transport-logistics-recruitment-cheshire","/guides/how-to-hire-hgv-drivers","/tools/recruitment-brief-template","/sectors/telesales-recruitment","/sectors/childrens-residential-care-recruitment","/tools/recruitment-fee-calculator","/sectors/electrical-design-engineer-recruitment",'/sectors/hgv-driver-recruitment', '/', '/about', '/our-approach', '/guides/employer-recruitment-questions', '/guides/choosing-a-recruitment-agency', '/employers', '/contact', '/careers', '/services/permanent-recruitment',
   '/services/candidate-sourcing', '/services/recruitment-for-smes', '/sectors/technology',
   '/sectors/engineering', '/sectors/finance-accounting', '/sectors/sales-business-development',
   '/locations/manchester', '/locations/greater-manchester', '/partners', '/candidates', '/privacy', '/candidate-terms', '/accessibility'];
@@ -112,6 +112,10 @@ assert.match(briefHtml,/essential skills/i);
 assert.match(briefHtml,/does not submit your entries/i);
 assert.ok(homeHtml.includes('href="/guides/how-to-hire-hgv-drivers">How to hire HGV drivers</a>'));
 assert.ok(homeHtml.includes('href="/tools/recruitment-brief-template">Recruitment brief template</a>'));
+const transportHtml=await read('sectors/transport-logistics-recruitment-cheshire/index.html');
+assert.match(transportHtml,/fleet coordinator/i);
+assert.match(transportHtml,/Warrington, Widnes/i);
+assert.ok(homeHtml.includes('href="/sectors/transport-logistics-recruitment-cheshire">Transport and logistics recruitment in Cheshire</a>'));
 const driverHtml=await read('sectors/hgv-driver-recruitment/index.html');
 assert.match(driverHtml,/Class 1 and Class 2/);
 assert.match(driverHtml,/15%/);
