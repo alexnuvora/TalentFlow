@@ -5,7 +5,7 @@ import {publicJobSlug} from '../src/lib/publicJobSlug.mjs';
 
 const root = new URL('../dist/', import.meta.url);
 const base = 'https://www.vorlen.co.uk';
-const publicRoutes = ["/tools/recruitment-fee-calculator","/sectors/electrical-design-engineer-recruitment",'/sectors/hgv-driver-recruitment', '/', '/about', '/our-approach', '/guides/employer-recruitment-questions', '/guides/choosing-a-recruitment-agency', '/employers', '/contact', '/careers', '/services/permanent-recruitment',
+const publicRoutes = ["/sectors/telesales-recruitment","/sectors/childrens-residential-care-recruitment","/tools/recruitment-fee-calculator","/sectors/electrical-design-engineer-recruitment",'/sectors/hgv-driver-recruitment', '/', '/about', '/our-approach', '/guides/employer-recruitment-questions', '/guides/choosing-a-recruitment-agency', '/employers', '/contact', '/careers', '/services/permanent-recruitment',
   '/services/candidate-sourcing', '/services/recruitment-for-smes', '/sectors/technology',
   '/sectors/engineering', '/sectors/finance-accounting', '/sectors/sales-business-development',
   '/locations/manchester', '/locations/greater-manchester', '/partners', '/candidates', '/privacy', '/candidate-terms', '/accessibility'];
@@ -95,6 +95,15 @@ assert.ok(homeHtml.includes('href="/tools/recruitment-fee-calculator">Recruitmen
 const electricalHtml=await read('sectors/electrical-design-engineer-recruitment/index.html');
 assert.match(electricalHtml,/EPLAN/);
 assert.match(electricalHtml,/technical interviews/);
+const telesalesHtml=await read('sectors/telesales-recruitment/index.html');
+assert.match(telesalesHtml,/appointment setter/i);
+assert.match(telesalesHtml,/commission/i);
+const residentialHtml=await read('sectors/childrens-residential-care-recruitment/index.html');
+assert.match(residentialHtml,/Schedule 2/);
+assert.ok(residentialHtml.includes('https://www.gov.uk/guidance/childrens-homes-recruiting-staff'));
+assert.match(residentialHtml,/registered provider remains responsible/);
+assert.ok(homeHtml.includes('href="/sectors/telesales-recruitment">Telesales recruitment</a>'));
+assert.ok(homeHtml.includes('href="/sectors/childrens-residential-care-recruitment">Children&#39;s residential care recruitment</a>'));
 const driverHtml=await read('sectors/hgv-driver-recruitment/index.html');
 assert.match(driverHtml,/Class 1 and Class 2/);
 assert.match(driverHtml,/15%/);
