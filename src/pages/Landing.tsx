@@ -124,6 +124,8 @@ export default function Landing(){
           {[
             ['Engineering & technical','Permanent roles requiring relevant technical knowledge, qualifications and practical experience.','/sectors/engineering'],
             ['HGV & logistics','Permanent Class 1 and Class 2 driver recruitment for transport employers.','/sectors/hgv-driver-recruitment'],
+            ['Telesales & inside sales','Permanent telesales executives, appointment setters and inside sales professionals.','/sectors/telesales-recruitment'],
+            ['Residential childcare','Permanent residential childcare and senior support worker recruitment for children’s homes in England.','/sectors/childrens-residential-care-recruitment'],
             ['Office & administration','Reliable administrative and operational support, from office staff to experienced coordinators.'],
             ['Accounting & finance','Finance and accounts positions where accuracy, experience and attention to detail count.']
           ].map(([title,copy,route])=><article key={title}><h3>{title}</h3><p>{copy}</p><Link to={route||'/contact'}>{route?'Explore recruitment':'Discuss a role'} <ArrowRight size={15}/></Link></article>)}
