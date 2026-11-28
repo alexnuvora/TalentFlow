@@ -1,0 +1,25 @@
+/* Isolated consent UI, with equally prominent reject and accept controls. */
+.website-privacy{position:fixed;z-index:90;bottom:16px;left:16px;right:16px;max-width:1060px;margin:auto;background:#142c25;color:#fff;border:1px solid #526e63;border-radius:12px;box-shadow:0 8px 28px #071a1640;max-height:calc(100dvh - 32px);overflow:auto;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5}
+.website-privacy-inner{display:flex;align-items:center;gap:24px;padding:22px}
+.website-privacy-copy{flex:1;min-width:0}
+.website-privacy h2{font-size:19px;line-height:1.3;margin:0 0 8px;color:#fff;letter-spacing:normal;font-family:inherit;font-weight:700}
+.website-privacy p{color:#edf4f0;font-size:14px;line-height:1.55;margin:0 0 12px}
+.website-privacy-links{display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.website-privacy-links a,.website-privacy-links button{font:inherit;color:#fff;text-decoration:underline;text-underline-offset:3px;background:transparent;border:0;padding:4px 0;cursor:pointer}
+.website-privacy-actions{display:grid;grid-template-columns:repeat(2,minmax(128px,1fr));gap:8px}
+.website-privacy-actions button{font:700 13px/1.3 Arial,Helvetica,sans-serif;border:1px solid #e5eee9;border-radius:8px;padding:12px;background:#fff;color:#142c25;cursor:pointer;min-height:44px;white-space:normal}
+.website-privacy-actions button:hover{background:#e5eee9}
+.website-privacy-actions .website-privacy-save{grid-column:1/-1;background:#e5eee9}
+.website-privacy button:focus-visible,.website-privacy a:focus-visible,.cookie-settings-link:focus-visible{outline:3px solid #f3c866;outline-offset:3px}
+.website-privacy-options{display:grid;gap:10px;margin:12px 0;padding:14px;border:1px solid #749084;border-radius:8px}
+.website-privacy-options>div,.website-privacy-options label{display:flex;gap:12px;justify-content:space-between;align-items:center;color:#fff}
+.website-privacy-options strong{display:block;color:#fff;font-size:14px}
+.website-privacy-options span{display:block;color:#edf4f0;font-size:13px}
+.website-privacy-options input{width:22px;height:22px;flex-shrink:0;accent-color:#b8ddcc}
+.website-privacy-options p{margin:0;font-size:12px}
+.cookie-settings-link{appearance:none;background:none;border:0;font:inherit;color:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:3px 0;text-align:left}
+.vp-footer .cookie-settings-link,.vorlen-footer .cookie-settings-link,.careers-footer .cookie-settings-link{font-size:11px;color:inherit}
+.vp-site .vp-footer .cookie-settings-link{color:#e4f0ea}
+.cookie-settings-floating{position:fixed;bottom:8px;left:8px;z-index:50;background:#142c25;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;box-shadow:0 1px 8px #0003}
+@media(max-width:700px){.website-privacy{bottom:8px;left:8px;right:8px;max-height:calc(100dvh - 16px)}.website-privacy-inner{display:block;padding:16px}.website-privacy-actions{margin-top:14px;grid-template-columns:repeat(2,minmax(0,1fr))}.website-privacy-options>div{display:block}}
+@media(max-width:340px){.website-privacy-actions{grid-template-columns:1fr}}
