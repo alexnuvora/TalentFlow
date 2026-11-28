@@ -1,0 +1,11 @@
+export type ConsentChoice={version:number;analytics:boolean;savedAt:number};
+export const CONSENT_KEY:string, CONSENT_VERSION:number, CONSENT_TTL:number, CONSENT_EVENT:string, OPEN_SETTINGS:string;
+export function analyticsPath(path:unknown):string;
+export function isPublicPrivacyPage(path:string):boolean;
+export function parseConsent(raw:string|null,now?:number):ConsentChoice|null;
+export function readConsent():ConsentChoice|null;
+export function saveConsent(analytics:boolean):ConsentChoice|null;
+export function analyticsAllowed(path:string):boolean;
+export const SOURCE_VALUES:string[];
+export function trafficSource(search?:string,referrer?:string):string;
+export function validAnalyticsEvent(body:unknown):boolean;

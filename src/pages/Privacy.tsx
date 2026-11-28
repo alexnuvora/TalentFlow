@@ -1,3 +1,4 @@
+import {CookieSettingsLink} from '../components/WebsitePrivacy';
 import MarketingHeader from '../components/MarketingHeader';
 import {useEffect} from 'react';
 import {Link} from 'react-router-dom';
@@ -10,10 +11,11 @@ export default function Privacy(){
   description:'How Vorlen Ltd handles personal information for recruitment, client development, partner operations and website enquiries.',
   path:'/privacy'
  }),[]);
+ useEffect(()=>{if(window.location.hash==='#cookies')document.getElementById('cookies')?.scrollIntoView()},[]);
  return <div className="legal-public">
   <MarketingHeader/>
   <main>
-   <div className="legal-kicker">PRIVACY NOTICE · VERSION 27 NOVEMBER 2026</div>
+   <div className="legal-kicker">PRIVACY NOTICE · VERSION 28 NOVEMBER 2026</div>
    <h1>Privacy notice</h1>
    <p className="legal-lead">This notice explains how Vorlen Ltd, uses personal information when providing permanent recruitment services, operating its partner and client workspaces, developing business relationships and responding to enquiries.</p>
 
@@ -57,6 +59,12 @@ export default function Privacy(){
    </section>
 
    <section><h2>Website enquiry attribution</h2><p>When you submit a public enquiry, we may save the public landing-page path, recognised search-engine referral category where available and any supplied campaign labels alongside your enquiry. This helps us understand which resources lead to enquiries and improve our recruitment service, on the basis of legitimate interests. During navigation this limited context is held in page memory; this attribution feature does not use cookies, browser storage, advertising identifiers or third-party tracking requests. We do not retain full referral URLs or other query parameters through this feature.</p></section>
+   <section id="cookies"><h2>Cookie and analytics policy</h2>
+    <p>Essential technologies support secure sign-in, session management, fraud prevention and requested recruitment services. The <code>vorlen_privacy_v1</code> browser storage entry saves your analytics choice and its date for 180 days; it contains no visitor identifier. If browser storage is unavailable, the choice lasts only in page memory.</p>
+    <p>Optional first-party analytics are off unless you affirmatively accept them. We count visits to public pages, broad traffic-source categories and completed employer enquiries, candidate applications and interest registrations. General site measurement records only daily aggregate counts, public page categories and broad sources; it does not store visitor IDs, full URLs, search terms, CVs, contact details or form answers. Hosting and security services may process network information to deliver and protect the service.</p>
+    <p>With analytics permission, recruitment campaign measurement may also record the campaign, referral link, public opportunity, event type and supplied campaign labels. Security rate limiting may process network addresses. We keep application and enquiry records needed to respond to your request separately; refusing analytics does not prevent you from applying or contacting us.</p>
+    <p>Google Analytics and Meta advertising pixels are not currently active. We will update this notice and obtain a fresh choice before introducing new optional providers or purposes. You may reject analytics or change your choice at any time using <CookieSettingsLink/>. Rejecting or withdrawing permission stops future optional measurement; it does not remove previously aggregated statistics.</p>
+   </section>
    <section><h2>Candidate applications and introductions</h2>
     <p>When you apply or register interest, Vorlen may create a candidate record, store your CV securely, record your application and provide a secure candidate portal. Before introducing you to a hirer for a specific vacancy, Vorlen records the relevant job information, checks job-related evidence and confirms the required authority or willingness for that introduction. Joining the database alone does not authorise Vorlen to send your CV to every client.</p>
    </section>
