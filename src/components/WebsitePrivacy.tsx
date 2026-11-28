@@ -39,7 +39,7 @@ export default function WebsitePrivacy(){
  };
  const visible=publicPage&&(!choice||open);
  // Some public pages have no footer; keep a settings control available there too.
- const hasFooter=location.pathname==='/'||location.pathname==='/about'||location.pathname==='/careers'||
+ const hasFooter=location.pathname==='/'||location.pathname==='/about'||location.pathname==='/careers'||location.pathname==='/privacy'||
   /^\/(services|sectors|locations|guides|tools)\//.test(location.pathname)||
   ['/employers','/our-approach','/candidates','/partners'].includes(location.pathname);
  if(!publicPage)return null;
