@@ -3,9 +3,8 @@ import MarketingHeader from '../components/MarketingHeader';
 import {useEffect} from 'react';
 import {useLocation} from 'react-router-dom';
 import '../privacy-notice.css';
-import {Link} from 'react-router-dom';
 import {setSeo} from '../lib/seo';
-import VorlenBrand from '../components/VorlenBrand';
+import MarketingFooter from '../components/MarketingFooter';
 
 const contents=[["controller","Who we are"],["operating-model","Operating model"],["information","Information we collect"],["sources","Where information comes from"],["lawful-bases","How we use information"],["enquiry-attribution","Enquiry attribution"],["cookies","Cookies and analytics"],["applications","Candidate applications"],["ai-recruitment","AI-assisted recruitment"],["sharing","Information sharing"],["transfers","International transfers"],["retention","Retention"],["marketing","Direct marketing"],["security","Security"],["rights","Your rights"],["ico","ICO registration"],["changes","Changes to this notice"]];
 export default function Privacy(){
@@ -121,6 +120,6 @@ export default function Privacy(){
     </article>
    </div>
   </main>
-  <footer className="privacy-page-footer"><div><VorlenBrand/><p>© {new Date().getFullYear()} Vorlen Ltd · Company No. 17387520</p></div><nav aria-label="Legal footer"><Link to="/">Home</Link><Link to="/candidate-terms">Candidate terms</Link><Link to="/accessibility">Accessibility</Link><a href="#cookies">Cookie policy</a><CookieSettingsLink/></nav></footer>
+  <div className="vp-site"><MarketingFooter/></div>
  </div>
 }
