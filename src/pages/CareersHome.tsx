@@ -1,3 +1,4 @@
+import {CookieSettingsLink} from '../components/WebsitePrivacy';
 import MarketingHeader from '../components/MarketingHeader';
 import {useEffect,useState} from 'react';
 import {Link} from 'react-router-dom';
@@ -10,7 +11,7 @@ type Opportunity={id:string;slug:string;title:string;location:string|null;employ
 
 export function CareersHeader(){return <MarketingHeader/>}
 
-export function CareersFooter(){return <footer className="careers-footer careers-footer-editorial"><div><VorlenBrand/><p>Find work that suits you.</p></div><nav><Link to="/candidates">For candidates</Link><Link to="/privacy">Privacy</Link><Link to="/candidate-terms">Candidate terms</Link><Link to="/accessibility">Accessibility</Link></nav></footer>}
+export function CareersFooter(){return <footer className="careers-footer careers-footer-editorial"><div><VorlenBrand/><p>Find work that suits you.</p></div><nav><Link to="/candidates">For candidates</Link><Link to="/privacy">Privacy</Link><Link to="/candidate-terms">Candidate terms</Link><Link to="/accessibility">Accessibility</Link><Link to="/privacy#cookies">Cookie policy</Link><CookieSettingsLink/></nav></footer>}
 
 export default function CareersHome(){
   const [jobs,setJobs]=useState<Opportunity[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(false),[query,setQuery]=useState(''),[place,setPlace]=useState(''),[type,setType]=useState('');
