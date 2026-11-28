@@ -6,7 +6,7 @@
 .privacy-notice-page h1{font-size:clamp(40px,5vw,64px);line-height:1.05;margin:0 0 18px;letter-spacing:-.045em;color:#142c25}
 .privacy-notice-page .legal-lead{font-size:18px;line-height:1.65;color:#465c51;max-width:70ch;margin:0 0 22px;padding:0;border:0}
 .privacy-quick-links{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px}
-.privacy-quick-links a,.privacy-quick-links button{font:600 14px/1.5 inherit;color:#235b47;text-decoration:underline;text-underline-offset:3px}
+.privacy-quick-links a,.privacy-quick-links button{font-family:inherit;font-size:14px;font-weight:600;line-height:1.5;color:#235b47;text-decoration:underline;text-underline-offset:3px}
 .privacy-reading-layout{display:grid;grid-template-columns:minmax(180px,240px) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:start}
 .privacy-contents{position:sticky;top:104px;max-height:calc(100dvh - 128px);overflow:auto;padding:22px 18px;background:#eaece5;border:1px solid #d7ded4;border-radius:10px}
 .privacy-contents h2{font:700 14px/1.4 Arial,Helvetica,sans-serif;margin:0 0 12px;color:#172d25}
@@ -27,11 +27,5 @@
 .privacy-document code{font-size:.88em;background:#f0f2ee;border-radius:4px;padding:2px 5px}
 .privacy-back-top{display:inline-block;margin-top:10px;font-size:14px;font-weight:600}
 .privacy-notice-page a:focus-visible,.privacy-notice-page button:focus-visible{outline:2px solid #28704f;outline-offset:4px}
-.privacy-page-footer{background:#142c25;color:#e4f0ea;padding:32px clamp(20px,6vw,90px);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:24px}
-.privacy-page-footer .vorlen-brand,.privacy-page-footer .vorlen-wordmark{color:#fff}
-.privacy-page-footer p{font-size:13px;margin:12px 0 0;color:#d7e3de}
-.privacy-page-footer nav{display:flex;gap:12px 20px;flex-wrap:wrap}
-.privacy-page-footer a,.privacy-page-footer button{color:#fff;font-size:13px;text-decoration:underline;text-underline-offset:3px}
-.privacy-page-footer a:focus-visible,.privacy-page-footer button:focus-visible{outline-color:#f3c866}
 @media(max-width:850px){.privacy-reading-layout{grid-template-columns:1fr;gap:24px}.privacy-contents{position:static;max-height:none;padding:18px}.privacy-contents ol{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.privacy-notice-page .privacy-intro{margin-bottom:28px}}
-@media(max-width:480px){.privacy-notice-page>main{padding:30px 16px 48px}.privacy-document{padding:20px 18px}.privacy-contents ol{grid-template-columns:1fr}.privacy-notice-page .legal-lead{font-size:16px}.privacy-quick-links{gap:8px 16px}.legal-public.privacy-notice-page .privacy-document section{padding:24px 0}.legal-public.privacy-notice-page .privacy-document section:first-child{padding-top:0}.privacy-page-footer{padding:24px 20px}}
+@media(max-width:480px){.privacy-notice-page>main{padding:30px 16px 48px}.privacy-document{padding:20px 18px}.privacy-contents ol{grid-template-columns:1fr}.privacy-notice-page .legal-lead{font-size:16px}.privacy-quick-links{gap:8px 16px}.legal-public.privacy-notice-page .privacy-document section{padding:24px 0}.legal-public.privacy-notice-page .privacy-document section:first-child{padding-top:0}}
