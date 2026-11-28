@@ -1,0 +1,46 @@
+/* Dedicated, responsive calculator rather than a generic marketing copy grid. */
+.fee-calculator{max-width:1212px;margin:0 auto;padding:48px 28px 40px;color:#142c25}
+.fee-intro{max-width:850px;margin:0 0 28px}
+.fee-kicker{font-size:11px;letter-spacing:.14em;font-weight:800;color:#53685c;margin:0 0 12px}
+.fee-intro h1{font-size:clamp(34px,4.2vw,56px);letter-spacing:-.045em;line-height:1.08;margin:0 0 14px;font-weight:720}
+.fee-intro>p:last-child{font-size:17px;line-height:1.6;color:#465e52;margin:0}
+.fee-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:24px;align-items:start}
+.fee-layout article{min-width:0;border:1px solid #d6ded5;border-radius:16px;background:#fff;padding:clamp(22px,3vw,36px)}
+.fee-layout h2{font-size:23px;letter-spacing:-.025em;line-height:1.25;margin:0 0 22px;font-weight:700}
+.fee-input-panel label{display:block;font-size:15px;font-weight:650;margin:0 0 9px}
+.fee-input-wrap{display:flex;align-items:center;gap:12px;border:1px solid #899c90;border-radius:9px;padding:0 15px;min-height:54px;background:#fff}
+.fee-input-wrap:focus-within{outline:2px solid #316d50;outline-offset:2px}
+.fee-input-wrap span{font-size:21px;font-weight:700;color:#526b5e}
+.fee-input-wrap input{min-width:0;width:100%;border:0!important;outline:none!important;box-shadow:none!important;background:transparent;padding:12px 0;font:600 22px/1.3 Arial,Helvetica,sans-serif;color:#142c25}
+.fee-input-wrap:has(input[aria-invalid=true]){border-color:#a33c32}
+.fee-help{font-size:13px;color:#516459;line-height:1.55;margin:8px 0 22px}
+.fee-input-panel .fee-range-label{font-size:13px;color:#40584a;margin:4px 0}
+.fee-range{width:100%;height:28px;accent-color:#285c43;cursor:pointer;margin:0}
+.fee-range:focus-visible,.fee-presets button:focus-visible{outline:2px solid #316d50;outline-offset:3px}
+.fee-range-ends{display:flex;justify-content:space-between;color:#516459;font-size:12px;margin:1px 0 12px}
+.fee-presets{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 22px}
+.fee-presets button{font:600 14px/1.3 Arial,Helvetica,sans-serif;background:#fff;color:#142c25;border:1px solid #a9b8ae;border-radius:7px;padding:9px 16px;cursor:pointer;min-height:40px}
+.fee-presets button[aria-pressed=true]{background:#173a31;border-color:#173a31;color:#fff}
+.fee-standard{border-top:1px solid #dce4dc;padding-top:18px;font-size:15px}
+.fee-standard p{color:#516459;font-size:13px;line-height:1.6;margin:6px 0 0}
+.fee-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.fee-result{padding:14px 12px;background:#f3f4f1;border:1px solid #e0e4df;border-radius:9px;min-width:0}
+.fee-result-vorlen{background:#eaf1e9;border-color:#cbdacb}
+.fee-result span{display:block;font-size:13px;color:#42594c;margin:0 0 8px}
+.fee-result strong{display:block;font-size:clamp(21px,2.5vw,32px);line-height:1.15;letter-spacing:-.045em;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.fee-bars{display:grid;gap:11px;margin:20px 0}
+.fee-bars span{display:block;color:#52675b;font-size:12px;margin:0 0 5px}
+.fee-bar-track{height:12px;border-radius:4px;background:#e9ede9;overflow:hidden}
+.fee-bar-other,.fee-bar-vorlen{height:100%;border-radius:4px;transition:width .15s ease}
+.fee-bar-other{background:#87988e}.fee-bar-vorlen{background:#265c43}
+.fee-difference{border:1px solid #cedbcf;border-radius:10px;padding:19px;margin-bottom:20px;background:#eef4eb}
+.fee-difference>span{display:block;font-size:14px;font-weight:650;color:#254a35}
+.fee-difference strong{display:block;font-size:clamp(32px,4.5vw,51px);line-height:1.1;letter-spacing:-.045em;margin:6px 0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;color:#194a30}
+.fee-difference p{font-size:14px;line-height:1.5;color:#365741;margin:8px 0 0}
+.fee-neutral{background:#f3f4f1;border-color:#dce2dc}.fee-neutral>span,.fee-neutral strong,.fee-neutral p{color:#34483e}
+.fee-cta{display:inline-flex;align-items:center;justify-content:center;gap:12px;width:100%;text-align:center}
+.fee-disclaimer{font-size:12px;line-height:1.65;color:#52645a;margin:14px 0 0}
+.fee-invalid{padding:20px;background:#f3f4f1;border-radius:9px;color:#40584a;line-height:1.5}
+@media(max-width:800px){.fee-layout{grid-template-columns:1fr}.fee-calculator{padding:32px 20px 26px}.fee-intro>p:last-child{font-size:16px}}
+@media(max-width:360px){.fee-comparison{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.fee-bar-other,.fee-bar-vorlen{transition:none}}
