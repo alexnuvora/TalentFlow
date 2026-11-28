@@ -93,7 +93,7 @@
 .vp-nav-actions{justify-self:end;display:flex;align-items:center;gap:18px}
 .vp-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:0 20px;background:var(--vp-ink);color:#fff!important;text-decoration:none;font-size:12px;font-weight:750;border:1px solid var(--vp-ink);border-radius:10px;transition:background .18s ease,transform .18s ease}
 .vp-btn:hover{background:var(--vp-forest);transform:translateY(-1px)}.vp-btn-small{min-height:40px;padding:0 16px}
-.vp-kicker{font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#6a7771;margin:0}.vp-kicker-light{color:#b8c7c1}
+.vp-kicker{font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#59685f;margin:0}.vp-kicker-light{color:#b8c7c1}
 
 .vp-hero{max-width:1280px;margin:0 auto;padding:92px 32px 82px;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(330px,.65fr);gap:72px;align-items:end}
 .vp-hero-copy{max-width:760px}.vp-hero h1{font-size:clamp(58px,7vw,92px);line-height:.95;letter-spacing:-.055em;font-weight:760;margin:18px 0 28px;max-width:860px}
@@ -457,3 +457,8 @@
   .vorlen-contact-page .vorlen-contact-direct{align-items:flex-start;flex-direction:column}
   .vorlen-contact-page .vorlen-contact-direct a{font-size:16px}
 }
+
+/* Preferred Sources is an ordinary external link, styled like the original button. */
+.vp-site .vp-footer a.google-preferred-source-btn,.vp-site .vp-footer a.google-preferred-source-btn:hover,.vp-site .vp-footer a.google-preferred-source-btn:focus-visible,.vorlen-footer a.google-preferred-source-btn,.vorlen-footer a.google-preferred-source-btn:hover,.vorlen-footer a.google-preferred-source-btn:focus-visible{color:#153329!important;text-decoration:none;font-size:13px;font-weight:600;line-height:1.2}
+.vp-site .vp-footer a.google-preferred-source-btn span,.vorlen-footer a.google-preferred-source-btn span{color:#153329!important;font-size:inherit}
+.vp-site .vp-footer a.google-preferred-source-btn .google-g,.vorlen-footer a.google-preferred-source-btn .google-g{font-size:16px;font-weight:800}
