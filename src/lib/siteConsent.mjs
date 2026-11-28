@@ -29,9 +29,10 @@ export function parseConsent(raw, now=Date.now()) {
   return {version:CONSENT_VERSION, analytics:v.analytics, savedAt:v.savedAt};
  } catch { return null; }
 }
-let memory=null;
+let memory=null, volatileOnly=false;
 export function readConsent() {
  if (typeof window==='undefined') return null;
+ if(volatileOnly)return parseConsent(JSON.stringify(memory));
  try { return parseConsent(window.localStorage.getItem(CONSENT_KEY)); }
  catch { return parseConsent(JSON.stringify(memory)); }
 }
@@ -39,7 +40,7 @@ export function saveConsent(analytics) {
  if (typeof window==='undefined') return null;
  const value={version:CONSENT_VERSION,analytics:analytics===true,savedAt:Date.now()};
  memory=value;
- try { window.localStorage.setItem(CONSENT_KEY,JSON.stringify(value)); } catch { /* session-memory fallback */ }
+ try { window.localStorage.setItem(CONSENT_KEY,JSON.stringify(value)); volatileOnly=false; } catch { volatileOnly=true; /* page-memory fallback */ }
  window.dispatchEvent(new Event(CONSENT_EVENT));
  return value;
 }
