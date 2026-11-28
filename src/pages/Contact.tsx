@@ -1,3 +1,4 @@
+import {trackSiteEvent} from '../lib/siteAnalytics';
 import {getPublicAttribution} from '../lib/publicAttribution.mjs';
 import MarketingHeader from '../components/MarketingHeader';
 import {useEffect,useState} from 'react';
@@ -18,7 +19,7 @@ export default function Contact(){
   useEffect(()=>setSeo({title:'Contact Vorlen | UK Permanent Recruitment',description:'Talk to Vorlen about a permanent vacancy, candidate query or recruitment partnership.',path:'/contact'}),[]);
   async function submit(e:any){
     e.preventDefault();setError('');setBusy(true);
-    try{const {data,error:e}=await supabase.functions.invoke('public-enquiry',{body:{name,email,company,reason,message,website,role_title:reason==='employer'?roleTitle:'',...getPublicAttribution(window.location.pathname,window.location.search,document.referrer,window.location.origin)}});if(e||!data?.ok)throw new Error(data?.error||e?.message||'Unable to submit enquiry.');setReference(data.reference||'');setSent(true);if(reason==='employer'){window.dispatchEvent(new CustomEvent('vorlen:employer-enquiry-success',{detail:{reference:data.reference||'',source:'contact-form'}}));}}catch(e){setError(e instanceof Error?e.message:'Unable to submit enquiry.');}finally{setBusy(false)}
+    try{const {data,error:e}=await supabase.functions.invoke('public-enquiry',{body:{name,email,company,reason,message,website,role_title:reason==='employer'?roleTitle:'',...getPublicAttribution(window.location.pathname,window.location.search,document.referrer,window.location.origin)}});if(e||!data?.ok)throw new Error(data?.error||e?.message||'Unable to submit enquiry.');setReference(data.reference||'');setSent(true);if(reason==='employer'){trackSiteEvent('employer_enquiry');window.dispatchEvent(new CustomEvent('vorlen:employer-enquiry-success',{detail:{reference:data.reference||'',source:'contact-form'}}));}}catch(e){setError(e instanceof Error?e.message:'Unable to submit enquiry.');}finally{setBusy(false)}
   }
 
   return <div className="vorlen-contact-page">
